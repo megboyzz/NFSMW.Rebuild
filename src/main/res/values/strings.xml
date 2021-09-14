@@ -64,5 +64,6 @@
     <string name="cancel_title">Cancel</string>
 
     <string name="saves_title">Saves</string>
+    <string name="current_lang" translatable="false">current_lang</string>
 
 </resources>

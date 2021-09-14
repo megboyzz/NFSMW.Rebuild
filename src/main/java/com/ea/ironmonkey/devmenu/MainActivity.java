@@ -3,8 +3,10 @@ package com.ea.ironmonkey.devmenu;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,13 +18,17 @@ import com.ea.ironmonkey.GameActivity;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Locale;
 
 public class MainActivity extends Activity {
 
     private final String LOG_TAG = "InjectedActivity";
+    private File internalFiles;
 
     private void runGame() {
 
@@ -62,12 +68,64 @@ public class MainActivity extends Activity {
 
         getActionBar().setTitle(title);
 
+        internalFiles = new File(getFilesDir().getAbsolutePath() + "/var");
+
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.options, menu);
         return true;
+    }
+
+    private void updateLanguage(){
+        //Получаем текущий язык
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String current_lang = preferences.getString(getString(R.string.current_lang), "00");
+        if(current_lang.equals("sys"))
+            current_lang = Locale.getDefault().getLanguage();
+
+        byte[] current_lang_bytes = current_lang.getBytes();
+
+        //Открываем языковой файл и создаем поток чтения
+        File locale = new File(internalFiles.getAbsolutePath() + "/locale");
+        FileInputStream inputStream = null;
+
+        //Байтовое представление файла
+        byte[] bytes_locale = new byte[4];
+        try {
+
+            inputStream = new FileInputStream(locale);
+            inputStream.read(bytes_locale);
+
+        } catch (FileNotFoundException e) {
+            Log.wtf(LOG_TAG, "No found locale(((((");
+            return;
+        }catch (IOException e){
+            Log.wtf(LOG_TAG, "Couldn't read the locale file((((((");
+            return;
+        }
+
+        if(
+                bytes_locale[2] != current_lang_bytes[0] &
+                bytes_locale[3] != current_lang_bytes[1]
+        )
+        {
+            bytes_locale[2] = current_lang_bytes[0];
+            bytes_locale[3] = current_lang_bytes[1];
+        }
+        else return;
+
+        FileOutputStream outputStream = null;
+        try {
+            outputStream = new FileOutputStream(locale, false);
+            outputStream.write(bytes_locale, 0, 4);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -77,6 +135,7 @@ public class MainActivity extends Activity {
         switch (item.getItemId()) {
 
             case R.id.optionRunTheGame: {
+                updateLanguage();
                 runGame();
             }
             break;
