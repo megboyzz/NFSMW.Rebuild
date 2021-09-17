@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.ea.games.nfs13_na.BuildConfig;
@@ -17,7 +18,7 @@ public class InjectedSettingsActivity extends PreferenceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(com.ea.games.nfs13_na.R.xml.settings_xml);
+        addPreferencesFromResource(R.xml.settings_xml);
 
         String title = String.format(getString(R.string.dev_menu_title), BuildConfig.DEV_MENU_VERSION);
         getActionBar().setTitle(title);
@@ -38,6 +39,17 @@ public class InjectedSettingsActivity extends PreferenceActivity {
             return true;
         });
 
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
