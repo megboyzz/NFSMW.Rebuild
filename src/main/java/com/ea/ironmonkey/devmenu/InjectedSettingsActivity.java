@@ -27,6 +27,7 @@ public class InjectedSettingsActivity extends PreferenceActivity {
 
         final Context myContext = this;
 
+
         chooseSaveFileButton.setOnPreferenceClickListener(preference -> {
 
             OpenFileDialog fileDialog = new OpenFileDialog(myContext);

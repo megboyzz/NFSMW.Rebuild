@@ -7,24 +7,27 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Environment;
-import android.preference.Preference;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.Display;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.view.Display;
-import android.view.Gravity;
 import android.widget.Toast;
-import android.content.DialogInterface;
-import java.io.*;
-import java.util.*;
+
 import com.ea.games.nfs13_na.R;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class OpenFileDialog extends AlertDialog.Builder {
 
@@ -47,12 +50,9 @@ public class OpenFileDialog extends AlertDialog.Builder {
         linearLayout.addView(listView);
         setCustomTitle(title)
                 .setView(linearLayout)
-                .setPositiveButton(R.string.ok_title, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (selectedIndex > -1 && listener != null) {
-                            listener.OnSelectedFile(listView.getItemAtPosition(selectedIndex).toString());
-                        }
+                .setPositiveButton(R.string.ok_title, (dialog, which) -> {
+                    if (selectedIndex > -1 && listener != null) {
+                        listener.OnSelectedFile(listView.getItemAtPosition(selectedIndex).toString());
                     }
                 })
                 .setNegativeButton(R.string.cancel_title, null);
@@ -66,25 +66,19 @@ public class OpenFileDialog extends AlertDialog.Builder {
     }
 
     private <T> List<T> asList(T[] a){
-        List<T> list = new ArrayList<>();
-        for(T elem : a)
-            list.add(elem);
-        return list;
+        return Arrays.asList(a);
     }
 
     private List<File> getFiles(String directoryPath){
         File directory = new File(directoryPath);
         List<File> fileList = asList(directory.listFiles(filenameFilter));
-        Collections.sort(fileList, new Comparator<File>() {
-            @Override
-            public int compare(File file, File file2) {
-                if (file.isDirectory() && file2.isFile())
-                    return -1;
-                else if (file.isFile() && file2.isDirectory())
-                    return 1;
-                else
-                    return file.getPath().compareTo(file2.getPath());
-            }
+        Collections.sort(fileList, (file, file2) -> {
+            if (file.isDirectory() && file2.isFile())
+                return -1;
+            else if (file.isFile() && file2.isDirectory())
+                return 1;
+            else
+                return file.getPath().compareTo(file2.getPath());
         });
         return fileList;
     }
@@ -159,37 +153,29 @@ public class OpenFileDialog extends AlertDialog.Builder {
     }
 
     public OpenFileDialog setFilter(final String filter) {
-        filenameFilter = new FilenameFilter() {
-
-            @Override
-            public boolean accept(File file, String fileName) {
-                File tempFile = new File(String.format("%s/%s", file.getPath(), fileName));
-                if (tempFile.isFile())
-                    return tempFile.getName().matches(filter);
-                return true;
-            }
+        filenameFilter = (file, fileName) -> {
+            File tempFile = new File(String.format("%s/%s", file.getPath(), fileName));
+            if (tempFile.isFile())
+                return tempFile.getName().matches(filter);
+            return true;
         };
         return this;
     }
 
     private ListView createListView(Context context) {
         ListView listView = new ListView(context);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int index, long l) {
-                final ArrayAdapter<File> adapter = (FileAdapter) adapterView.getAdapter();
-                File file = adapter.getItem(index);
-                if (file.isDirectory()) {
-                    currentPath = file.getPath();
-                    RebuildFiles(adapter);
-                } else {
-                    if (index != selectedIndex)
-                        selectedIndex = index;
-                    else
-                        selectedIndex = -1;
-                    adapter.notifyDataSetChanged();
-                }
+        listView.setOnItemClickListener((adapterView, view, index, l) -> {
+            FileAdapter adapter = (FileAdapter) adapterView.getAdapter();
+            File file = adapter.getItem(index);
+            if (file.isDirectory()) {
+                currentPath = file.getPath();
+                RebuildFiles(adapter);
+            } else {
+                if (index != selectedIndex)
+                    selectedIndex = index;
+                else
+                    selectedIndex = -1;
+                adapter.notifyDataSetChanged();
             }
         });
         return listView;
@@ -212,9 +198,26 @@ public class OpenFileDialog extends AlertDialog.Builder {
         return linearLayout;
     }
 
-    private class FileAdapter extends ArrayAdapter<File> {
+    private TextView createBackItem(Context context) {
+        TextView textView = createTextView(context, android.R.style.TextAppearance_DeviceDefault_Small);
+        Drawable drawable = getContext().getResources().getDrawable(android.R.drawable.ic_menu_directions);
+        drawable.setBounds(0, 0, 60, 60);
+        textView.setCompoundDrawables(drawable, null, null, null);
+        textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        textView.setOnClickListener(view -> {
+            File file = new File(currentPath);
+            File parentDirectory = file.getParentFile();
+            if (parentDirectory != null) {
+                currentPath = parentDirectory.getPath();
+                RebuildFiles(((FileAdapter) listView.getAdapter()));
+            }
+        });
+        return textView;
+    }
 
-        public FileAdapter(Context context, List<File> files) {
+    class FileAdapter extends ArrayAdapter<File> {
+
+        public FileAdapter(Context context, List files) {
             super(context, android.R.layout.simple_list_item_1, files);
         }
 
@@ -231,29 +234,8 @@ public class OpenFileDialog extends AlertDialog.Builder {
         }
     }
 
-    private TextView createBackItem(Context context) {
-        TextView textView = createTextView(context, android.R.style.TextAppearance_DeviceDefault_Small);
-        Drawable drawable = getContext().getResources().getDrawable(android.R.drawable.ic_menu_directions);
-        drawable.setBounds(0, 0, 60, 60);
-        textView.setCompoundDrawables(drawable, null, null, null);
-        textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        textView.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                File file = new File(currentPath);
-                File parentDirectory = file.getParentFile();
-                if (parentDirectory != null) {
-                    currentPath = parentDirectory.getPath();
-                    RebuildFiles(((FileAdapter) listView.getAdapter()));
-                }
-            }
-        });
-        return textView;
-    }
-
     public interface OpenDialogListener{
-        public void OnSelectedFile(String fileName);
+        void OnSelectedFile(String fileName);
     }
     private OpenDialogListener listener;
 
@@ -261,26 +243,4 @@ public class OpenFileDialog extends AlertDialog.Builder {
         this.listener = listener;
         return this;
     }
-
-    public static class PreferenceClickListener implements Preference.OnPreferenceClickListener{
-
-        private Context context;
-
-        PreferenceClickListener(Context context){
-            this.context = context;
-        }
-
-        @Override
-    	public boolean onPreferenceClick(Preference preference) { 
-        	OpenFileDialog fileDialog = new OpenFileDialog(context);
-			fileDialog.show();
-        	return true;
-    	}
-
-    }
-
-
-    
-
-
 }

@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.ea.games.nfs13_na.BuildConfig;
@@ -29,6 +30,7 @@ public class MainActivity extends Activity {
 
     private final String LOG_TAG = "InjectedActivity";
     private File internalFiles;
+    private ListView fileList;
 
     private void runGame() {
 
@@ -37,12 +39,14 @@ public class MainActivity extends Activity {
 
     }
 
+    //(new ContextWrapper(this)).getFilesDir().getAbsolutePath()
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         String flag;
 
-        File activityFlag = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/mode.txt");
+        File activityFlag = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + this.getPackageName() + "/mode.txt");
         try {
             Log.d(LOG_TAG, "activityFlag is exists))");
 
@@ -70,6 +74,8 @@ public class MainActivity extends Activity {
 
         internalFiles = new File(getFilesDir().getAbsolutePath() + "/var");
 
+        fileList = (ListView) findViewById(R.id.FileList);
+
     }
 
     @Override
@@ -82,6 +88,10 @@ public class MainActivity extends Activity {
         //Получаем текущий язык
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String current_lang = preferences.getString(getString(R.string.current_lang), "00");
+        if(current_lang.equals("00")) {
+            Log.e(LOG_TAG, "Not found currentLang preference(");
+            return;
+        }
         if(current_lang.equals("sys"))
             current_lang = Locale.getDefault().getLanguage();
 
