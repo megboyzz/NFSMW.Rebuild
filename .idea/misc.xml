@@ -3,7 +3,8 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Projects/AndroidStudioProjects/NFSMW_Raincarnation/src/main/res/layout/custom.xml" value="0.10729166666666666" />
+        <entry key="..\:/Projects/AndroidStudioProjects/NFSMW_Raincarnation/src/main/res/layout/custom.xml" value="0.25" />
+        <entry key="..\:/Projects/AndroidStudioProjects/NFSMW_Raincarnation/src/main/res/layout/list_files_elem.xml" value="0.14895833333333333" />
         <entry key="..\:/Projects/AndroidStudioProjects/NFSMW_Raincarnation/src/main/res/xml/settings_xml.xml" value="0.1" />
       </map>
     </option>

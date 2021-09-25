@@ -64,5 +64,6 @@
     <string name="cancel_title">Отмена</string>
 
     <string name="saves_title">Сохранения</string>
+    <string name="back_title">Назад</string>
 
 </resources>

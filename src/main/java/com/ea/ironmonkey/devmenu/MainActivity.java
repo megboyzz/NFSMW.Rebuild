@@ -10,27 +10,36 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ea.games.nfs13_na.BuildConfig;
 import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.GameActivity;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends Activity {
 
     private final String LOG_TAG = "InjectedActivity";
-    private File internalFiles;
+
+    private String internalFiles;
+    private String externalFiles;
+
+    private String globalPath = "";
+
     private ListView fileList;
+    private List<File> listFiles;
 
     private void runGame() {
 
@@ -39,32 +48,27 @@ public class MainActivity extends Activity {
 
     }
 
-    //(new ContextWrapper(this)).getFilesDir().getAbsolutePath()
+    private <T> List<T> asList(T[] a){
+        return Arrays.asList(a);
+    }
+
+    private List<File> asList(String path){
+        return asList(new File(path).listFiles());
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        String flag;
-
-        File activityFlag = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + this.getPackageName() + "/mode.txt");
-        try {
-            Log.d(LOG_TAG, "activityFlag is exists))");
-
-            BufferedReader reader = new BufferedReader(new FileReader(activityFlag));
-
-            flag = reader.readLine();
-
-        } catch (FileNotFoundException e) {
-            Log.e(LOG_TAG, "FileNotFoundException " + e.getLocalizedMessage());
-            flag = "false";
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "IOException " + e.getLocalizedMessage());
-            flag = "false";
-        }
-
-        if (flag == null || !flag.equals("true")) runGame();
-
         super.onCreate(savedInstanceState);
+
+        internalFiles = "/data/data/" + getPackageName();
+        externalFiles = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + getPackageName() + "/files";
+
+        File activityFlag = new File(externalFiles + "/" + BuildConfig.DEV_MENU_ID);
+        if(!activityFlag.exists()){
+            updateLanguage();
+            runGame();
+            return;
+        }
 
         setContentView(R.layout.custom);
 
@@ -72,9 +76,50 @@ public class MainActivity extends Activity {
 
         getActionBar().setTitle(title);
 
-        internalFiles = new File(getFilesDir().getAbsolutePath() + "/var");
 
         fileList = (ListView) findViewById(R.id.FileList);
+
+        fileList.setAdapter(new FileAdapter(this, asList(externalFiles)));
+        globalPath = externalFiles;
+
+        RadioGroup group = (RadioGroup) findViewById(R.id.switcherFiles);
+
+        fileList.setOnItemClickListener((parent, view, position, id) -> {
+            TextView textView = (TextView) view;
+            String chosenElem = textView.getText().toString(); // получаем текст нажатого элемента
+
+            //String currentPath = (group.getCheckedRadioButtonId() == R.id.externalStoreButton) ? externalFiles : internalFiles;
+            if((new File(globalPath + "/" + chosenElem)).isDirectory()) {
+                globalPath += "/" + chosenElem;
+                File file = new File(globalPath);
+                fileList.setAdapter(new FileAdapter(getApplicationContext(), asList(file.listFiles())));
+            }
+
+        });
+
+        group.setOnCheckedChangeListener((group1, checkedId) -> {
+
+            if ((checkedId == R.id.externalStoreButton)) {
+                fileList.setAdapter(new FileAdapter(this, asList(externalFiles)));
+                globalPath = externalFiles;
+            }
+            else {
+                fileList.setAdapter(new FileAdapter(this, asList(internalFiles)));
+                globalPath = internalFiles;
+            }
+        });
+
+        Button backButton = (Button)findViewById(R.id.back_button);
+
+        backButton.setOnClickListener(v -> {
+            if(!( globalPath.equals(internalFiles) | globalPath.equals(externalFiles) )
+                    & !globalPath.isEmpty()
+                    & (new File(globalPath).exists())) {
+                globalPath = globalPath.substring(0, globalPath.lastIndexOf("/"));
+                fileList.setAdapter(new FileAdapter(this, asList(globalPath)));
+            }
+        });
+
 
     }
 
@@ -98,8 +143,8 @@ public class MainActivity extends Activity {
         byte[] current_lang_bytes = current_lang.getBytes();
 
         //Открываем языковой файл и создаем поток чтения
-        File locale = new File(internalFiles.getAbsolutePath() + "/locale");
-        FileInputStream inputStream = null;
+        File locale = new File(internalFiles + "/files/var/locale");
+        FileInputStream inputStream;
 
         //Байтовое представление файла
         byte[] bytes_locale = new byte[4];
