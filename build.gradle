@@ -38,15 +38,15 @@ android {
     lintOptions {
         abortOnError false
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
 
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
     }
     ndkVersion '21.0.6113669'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
     /*externalNativeBuild {
         cmake {
             path file('src/main/cpp/CMakeLists.txt')

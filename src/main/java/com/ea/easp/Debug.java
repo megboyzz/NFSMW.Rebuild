@@ -1,7 +1,7 @@
 package com.ea.easp;
 
 public class Debug {
-    public static boolean LogEnabled = false;
+    public static boolean LogEnabled = true;
 
     public static class Log {
         public static void d(String str, String str2) {

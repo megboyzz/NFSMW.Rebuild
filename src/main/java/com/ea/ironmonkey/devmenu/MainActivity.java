@@ -4,12 +4,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RadioGroup;
@@ -25,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +42,7 @@ public class MainActivity extends Activity {
     private String globalPath = "";
 
     private ListView fileList;
-    private List<File> listFiles;
+    private Button backButton;
 
     private void runGame() {
 
@@ -54,6 +57,14 @@ public class MainActivity extends Activity {
 
     private List<File> asList(String path){
         return asList(new File(path).listFiles());
+    }
+
+    private ArrayList<File> asList2(String path){
+        ArrayList<File> arrayList = new ArrayList<>();
+        File file = new File(path);
+        for(int i = 0; i < file.list().length; i++)
+            arrayList.add(file.listFiles()[i]);
+        return arrayList;
     }
 
     @Override
@@ -89,12 +100,29 @@ public class MainActivity extends Activity {
             String chosenElem = textView.getText().toString(); // получаем текст нажатого элемента
 
             //String currentPath = (group.getCheckedRadioButtonId() == R.id.externalStoreButton) ? externalFiles : internalFiles;
-            if((new File(globalPath + "/" + chosenElem)).isDirectory()) {
+            File intermid =  new File(globalPath + "/" + chosenElem);
+            if(intermid.isDirectory()) {
                 globalPath += "/" + chosenElem;
                 File file = new File(globalPath);
                 fileList.setAdapter(new FileAdapter(getApplicationContext(), asList(file.listFiles())));
             }
+            else{
+               String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(".JPG");
 
+                Intent intent = new Intent();
+                intent.setAction(android.content.Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.fromFile(intermid), mime);
+                startActivityForResult(intent, 10);
+            }
+
+        });
+
+        fileList.setOnItemLongClickListener((parent, view, position, id) -> {
+            TextView textView = (TextView) view;
+            String chosenElem = textView.getText().toString();
+
+            DataNinja ninja = new DataNinja(this, globalPath + "/" + chosenElem);
+            return true;
         });
 
         group.setOnCheckedChangeListener((group1, checkedId) -> {
@@ -109,7 +137,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        Button backButton = (Button)findViewById(R.id.back_button);
+        backButton = (Button)findViewById(R.id.back_button);
 
         backButton.setOnClickListener(v -> {
             if(!( globalPath.equals(internalFiles) | globalPath.equals(externalFiles) )
@@ -121,6 +149,11 @@ public class MainActivity extends Activity {
         });
 
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        backButton.callOnClick();
     }
 
     @Override

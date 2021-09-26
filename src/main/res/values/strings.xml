@@ -66,5 +66,12 @@
     <string name="saves_title">Saves</string>
     <string name="current_lang" translatable="false">current_lang</string>
     <string name="back_title">Back</string>
+    <string name="replace_file_title">Replace file</string>
+    <string name="remove_file_title">Remove file</string>
+    <string name="track_file_title">Track the file</string>
+    <string name="folder_title">Folder</string>
+    <string name="file_title">File</string>
+    <string name="recover_file_title">Recover</string>
+    <string name="sure_remove_title">Sure you want to delete %s?</string>
 
 </resources>

@@ -9,7 +9,7 @@ public class InputMan {
 
     public InputMan() {
         try {
-            MotionEvent.class.getMethod("getSource", new Class[0]);
+            MotionEvent.class.getMethod("getSource");
             this.gbMotionEvent_GetSource = true;
         } catch (Exception e) {
         }

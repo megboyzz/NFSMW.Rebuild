@@ -12,23 +12,20 @@ import java.util.List;
 class FileAdapter extends ArrayAdapter<File> {
 
     private List files;
+    private Context context;
 
     public FileAdapter(Context context, List files) {
 
         super(context, android.R.layout.simple_list_item_1, files);
+        this.context = context;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+
         TextView view = (TextView) super.getView(position, convertView, parent);
         File file = getItem(position);
         view.setText(file.getName());
-
-        /*
-        if (selectedIndex == position)
-            view.setBackgroundColor(getContext().getResources().getColor(android.R.color.holo_blue_light));
-        else
-            view.setBackgroundColor(getContext().getResources().getColor(android.R.color.background_dark));*/
         return view;
     }
 

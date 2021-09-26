@@ -65,5 +65,12 @@
 
     <string name="saves_title">Сохранения</string>
     <string name="back_title">Назад</string>
+    <string name="replace_file_title">Заменить</string>
+    <string name="remove_file_title">Удалить</string>
+    <string name="track_file_title">Отслеживать</string>
+    <string name="folder_title">Папка</string>
+    <string name="file_title">Файл</string>
+    <string name="recover_file_title">Восстановить</string>
+    <string name="sure_remove_title">Уверен, что хочешь удалить %s?</string>
 
 </resources>

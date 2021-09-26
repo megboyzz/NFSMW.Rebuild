@@ -53,4 +53,5 @@ public class InjectedSettingsActivity extends PreferenceActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+    
 }
