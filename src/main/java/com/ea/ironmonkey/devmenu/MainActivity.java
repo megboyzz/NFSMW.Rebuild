@@ -88,6 +88,8 @@ public class MainActivity extends Activity {
         getActionBar().setTitle(title);
 
 
+
+
         fileList = (ListView) findViewById(R.id.FileList);
 
         fileList.setAdapter(new FileAdapter(this, asList(externalFiles)));

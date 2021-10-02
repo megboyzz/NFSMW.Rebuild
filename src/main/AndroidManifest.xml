@@ -29,6 +29,10 @@
 
         </activity>
 
+        <activity android:name="com.ea.ironmonkey.devmenu.PuppetActivity">
+
+        </activity>
+
         <activity 
             android:name="com.ea.ironmonkey.devmenu.InjectedSettingsActivity"
             android:title="@string/settings_title">

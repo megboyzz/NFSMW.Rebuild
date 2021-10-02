@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.ea.games.nfs13_na.BuildConfig;
 import com.ea.games.nfs13_na.R;
+import com.ea.nimble.ApplicationLifecycle;
 
 public class InjectedSettingsActivity extends PreferenceActivity {
 
@@ -19,6 +20,8 @@ public class InjectedSettingsActivity extends PreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.settings_xml);
+
+        ApplicationLifecycle.onActivityCreate(savedInstanceState, this);
 
         String title = String.format(getString(R.string.dev_menu_title), BuildConfig.DEV_MENU_VERSION);
         getActionBar().setTitle(title);

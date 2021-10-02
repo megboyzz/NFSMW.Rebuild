@@ -474,17 +474,6 @@ public class GameActivity extends Activity implements DrawFrameListener, IDevice
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             requestWindowFeature(1);
             Log.d("Model", Build.MODEL);
-            if (Build.MODEL.length() > 4 && Build.MODEL.substring(0, 4).equals("R800")) {
-                this.isXperiaPlay = true;
-            }
-            String packageName = getPackageName();
-            if (packageName.endsWith("_azn_na") || packageName.endsWith("_azn_row")) {
-                Log.d(TAG, "It's Amazon dev");
-                isAmazonDev = true;
-            }
-            if (!isAmazonDev) {
-                mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            }
             SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
             Sensor defaultSensor = sensorManager.getDefaultSensor(1);
 
@@ -514,7 +503,7 @@ public class GameActivity extends Activity implements DrawFrameListener, IDevice
             this.mFrameLayout = new FrameLayout(this);
             this.mFrameLayout.addView(this.gameGLSurfaceView);
             setContentView(this.mFrameLayout);
-            this.googleDrm = new GoogleDrm(this);
+            //this.googleDrm = new GoogleDrm(this);
             System.loadLibrary("nimble");
             System.loadLibrary("app");
             Log.d(TAG, "Init EAIO/EAMIO");
