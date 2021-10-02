@@ -474,6 +474,7 @@ public class GameActivity extends Activity implements DrawFrameListener, IDevice
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             requestWindowFeature(1);
             Log.d("Model", Build.MODEL);
+            mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
             Sensor defaultSensor = sensorManager.getDefaultSensor(1);
 

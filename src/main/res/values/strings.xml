@@ -73,5 +73,8 @@
     <string name="file_title">File</string>
     <string name="recover_file_title">Recover</string>
     <string name="sure_remove_title">Sure you want to delete %s?</string>
+    <string name="file_props_title">Properties</string>
+    <string name="file_lastmod_title">Last modified:</string>
+    <string name="file_size_title">Size:</string>
 
 </resources>

@@ -123,7 +123,7 @@ public class MainActivity extends Activity {
             TextView textView = (TextView) view;
             String chosenElem = textView.getText().toString();
 
-            DataNinja ninja = new DataNinja(this, globalPath + "/" + chosenElem);
+            DataNinja ninja = new DataNinja(this, globalPath + "/" + chosenElem, fileList, position);
             return true;
         });
 

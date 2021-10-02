@@ -72,5 +72,8 @@
     <string name="file_title">Файл</string>
     <string name="recover_file_title">Восстановить</string>
     <string name="sure_remove_title">Уверен, что хочешь удалить %s?</string>
+    <string name="file_props_title">Свойства</string>
+    <string name="file_lastmod_title">Последние изменение:</string>
+    <string name="file_size_title">Размер:</string>
 
 </resources>
