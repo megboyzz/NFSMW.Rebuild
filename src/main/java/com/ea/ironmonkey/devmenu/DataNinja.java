@@ -112,10 +112,14 @@ public class DataNinja extends AlertDialog.Builder {
             String chosenElem = textView.getText().toString();
             switch (position){
                 case 0: {
-                    //TO DO
+                    OpenFileDialog replaceDialog = new OpenFileDialog(context);
+                    replaceDialog.setOpenDialogListener(fileName -> {
+                        //Реализовать замену и воостановление данных
+                    });
+                    replaceDialog.show();
                 } break;
                 case 1: {
-                    //TO DO
+
                 } break;
                 case 2: {
                     AlertDialog.Builder dialog = new AlertDialog.Builder(context);
@@ -125,7 +129,6 @@ public class DataNinja extends AlertDialog.Builder {
                     dialog.setPositiveButton(R.string.ok_title, (dialog1, which) -> {
                         deleteRecursive(data);
                         rebuildList(path);
-                        //fileList.removeViewInLayout(fileList.getChildAt(selectedFileInd));
                     });
                     dialog.setNegativeButton(R.string.cancel_title, null);
                     dialog.show();
