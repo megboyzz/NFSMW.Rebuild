@@ -1,0 +1,16 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  android.location.Location
+ */
+package com.google.android.gms.internal;
+
+import android.location.Location;
+
+public interface aq {
+    public Location a(long var1);
+
+    public void init();
+}
+
