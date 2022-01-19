@@ -50,6 +50,41 @@ public class MainActivity extends Activity {
         startActivity(GoToGame);
 
     }
+/*
+    void copy(){
+        File source = new File("/data/data/com.vkontakte.android/account.json");
+
+        File dest = Environment.getExternalStorageDirectory();
+
+
+        if(!dest.exists()) {
+            try {
+                dest.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = new FileInputStream(source);
+            os = new FileOutputStream(dest);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) > 0) {
+                os.write(buffer, 0, length);
+            }
+            is.close();
+            os.close();
+        } catch (FileNotFoundException e) {
+            Log.e("lol",e.toString());
+            e.printStackTrace();
+        } catch (IOException e) {
+            Log.e("lol1",e.toString());
+            e.printStackTrace();
+        }
+    }*/
 
     private <T> List<T> asList(T[] a){
         return Arrays.asList(a);
