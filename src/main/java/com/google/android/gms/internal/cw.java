@@ -13,20 +13,9 @@ import android.net.Uri;
 import android.net.UrlQuerySanitizer;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import com.google.android.gms.internal.ak;
-import com.google.android.gms.internal.al;
-import com.google.android.gms.internal.am;
-import com.google.android.gms.internal.an;
-import com.google.android.gms.internal.bj;
-import com.google.android.gms.internal.bk;
-import com.google.android.gms.internal.bm;
-import com.google.android.gms.internal.bn;
-import com.google.android.gms.internal.bq;
-import com.google.android.gms.internal.cr;
-import com.google.android.gms.internal.cs;
-import com.google.android.gms.internal.cv;
-import com.google.android.gms.internal.i;
-import com.google.android.gms.internal.q;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
+
 import java.util.HashMap;
 
 public class cw
@@ -53,9 +42,7 @@ extends WebViewClient {
     }
 
     private static boolean b(Uri object) {
-        if ("http".equalsIgnoreCase((String)(object = object.getScheme()))) return true;
-        if (!"https".equalsIgnoreCase((String)object)) return false;
-        return true;
+        return "http".equalsIgnoreCase(object.getScheme());
     }
 
     private void c(Uri object) {
@@ -70,14 +57,8 @@ extends WebViewClient {
         urlQuerySanitizer2.setAllowUnregisteredParamaters(true);
         urlQuerySanitizer2.setUnregisteredParameterValueSanitizer(UrlQuerySanitizer.getAllButNulLegal());
         urlQuerySanitizer2.parseUrl(object.toString());
-        for (UrlQuerySanitizer urlQuerySanitizer2 : urlQuerySanitizer2.getParameterList()) {
-            hashMap.put(urlQuerySanitizer2.mParameter, urlQuerySanitizer2.mValue);
-        }
         if (cs.n(2)) {
             cs.u("Received GMSG: " + string22);
-            for (String string22 : hashMap.keySet()) {
-                cs.u("  " + string22 + ": " + hashMap.get(string22));
-            }
         }
         an2.a(this.gu, hashMap);
     }
@@ -201,41 +182,8 @@ extends WebViewClient {
      * Unable to fully structure code
      */
     public final boolean shouldOverrideUrlLoading(WebView var1_1, String var2_3) {
-        cs.u("AdWebView shouldOverrideUrlLoading: " + var2_3);
-        var3_4 = Uri.parse((String)var2_3);
-        if ("gmsg".equalsIgnoreCase(var3_4.getScheme()) && "mobileads.google.com".equalsIgnoreCase(var3_4.getHost())) {
-            this.c(var3_4);
-            return true;
-        }
-        if (this.iV && var1_1 == this.gu && cw.b(var3_4)) {
-            return super.shouldOverrideUrlLoading(var1_1, var2_3);
-        }
-        if (this.gu.willNotDraw()) {
-            cs.v("AdWebView unable to handle URL: " + var2_3);
-            return true;
-        }
-        try {
-            var4_5 = this.gu.aC();
-            var1_1 = var3_4;
-            if (var4_5 != null) {
-                var1_1 = var3_4;
-                if (var4_5.a(var3_4)) {
-                    var1_1 = var4_5.a(var3_4, this.gu.getContext());
-                }
-            }
-lbl18:
-            // 6 sources
-
-            while (true) {
-                this.a(new bj("android.intent.action.VIEW", var1_1.toString(), null, null, null, null, null));
-                return true;
-            }
-        }
-        catch (i var1_2) {
-            cs.v("Unable to append parameter to URL: " + var2_3);
-            var1_1 = var3_4;
-            ** continue;
-        }
+        Observer.onCallingMethod(Observer.Method.HARD_TO_RECOVER_LOGIC);
+        return true;
     }
 
     public static interface a {

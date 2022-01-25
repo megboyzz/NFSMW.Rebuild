@@ -1,41 +1,15 @@
-/*
- * Decompiled with CFR 0.152.
- * 
- * Could not load the following classes:
- *  android.content.BroadcastReceiver
- *  android.content.Context
- *  android.content.Intent
- *  android.preference.PreferenceManager
- */
 package com.ea.nimble;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.preference.PreferenceManager;
-import com.ea.nimble.ApplicationEnvironment;
-import com.ea.nimble.BaseCore;
-import com.ea.nimble.Component;
-import com.ea.nimble.EASPDataLoader;
-import com.ea.nimble.EnvironmentDataContainer;
-import com.ea.nimble.Error;
-import com.ea.nimble.ISynergyEnvironment;
-import com.ea.nimble.Log;
-import com.ea.nimble.LogSource;
-import com.ea.nimble.Network;
-import com.ea.nimble.NimbleConfiguration;
-import com.ea.nimble.Persistence;
-import com.ea.nimble.PersistenceService;
-import com.ea.nimble.SynergyEnvironmentUpdater;
-import com.ea.nimble.Utility;
+
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 
-public class SynergyEnvironmentImpl
-extends Component
-implements ISynergyEnvironment,
-LogSource {
+/* loaded from: stdlib.jar:com/ea/nimble/SynergyEnvironmentImpl.class */
+public class SynergyEnvironmentImpl extends Component implements ISynergyEnvironment, LogSource {
     private static final String PERSISTENCE_DATA_ID = "environmentData";
     public static final int SYNERGY_APP_VERSION_OK = 0;
     public static final int SYNERGY_APP_VERSION_UPDATE_RECOMMENDED = 1;
@@ -43,35 +17,44 @@ LogSource {
     private static final String SYNERGY_INT_SERVER_URL = "https://director-int.sn.eamobile.com";
     private static final String SYNERGY_LIVE_SERVER_URL = "https://syn-dir.sn.eamobile.com";
     private static final String SYNERGY_STAGE_SERVER_URL = "https://director-stage.sn.eamobile.com";
-    public static final double SYNERGY_UPDATE_RATE_LIMIT_PERIOD_IN_SECONDS = 60.0;
-    public static final double SYNERGY_UPDATE_REFRESH_PERIOD_IN_SECONDS = 300.0;
+    public static final double SYNERGY_UPDATE_RATE_LIMIT_PERIOD_IN_SECONDS = 60.0d;
+    public static final double SYNERGY_UPDATE_REFRESH_PERIOD_IN_SECONDS = 300.0d;
     private BaseCore m_core;
-    private boolean m_dataLoadedOnComponentSetup;
     private EnvironmentDataContainer m_environmentDataContainer;
-    private BroadcastReceiver m_networkStatusChangeReceiver;
     private EnvironmentDataContainer m_previousValidEnvironmentDataContainer;
     private Long m_synergyEnvironmentUpdateRateLimitTriggerTimestamp;
     private SynergyEnvironmentUpdater m_synergyStartupObject;
+    private BroadcastReceiver m_networkStatusChangeReceiver = null;
+    private boolean m_dataLoadedOnComponentSetup = false;
 
-    SynergyEnvironmentImpl(BaseCore baseCore) {
+    /* renamed from: com.ea.nimble.SynergyEnvironmentImpl$3  reason: invalid class name */
+    /* loaded from: stdlib.jar:com/ea/nimble/SynergyEnvironmentImpl$3.class */
+    static /* synthetic */ class AnonymousClass3 {
+        static final /* synthetic */ int[] $SwitchMap$com$ea$nimble$NimbleConfiguration = new int[NimbleConfiguration.values().length];
+
+        static {
+            try {
+                $SwitchMap$com$ea$nimble$NimbleConfiguration[NimbleConfiguration.INTEGRATION.ordinal()] = 1;
+            } catch (NoSuchFieldError e) {
+            }
+            try {
+                $SwitchMap$com$ea$nimble$NimbleConfiguration[NimbleConfiguration.STAGE.ordinal()] = 2;
+            } catch (NoSuchFieldError e2) {
+            }
+            try {
+                $SwitchMap$com$ea$nimble$NimbleConfiguration[NimbleConfiguration.LIVE.ordinal()] = 3;
+            } catch (NoSuchFieldError e3) {
+            }
+            try {
+                $SwitchMap$com$ea$nimble$NimbleConfiguration[NimbleConfiguration.CUSTOMIZED.ordinal()] = 4;
+            } catch (NoSuchFieldError e4) {
+            }
+        }
+    }
+
+    /* JADX INFO: Access modifiers changed from: package-private */
+    public SynergyEnvironmentImpl(BaseCore baseCore) {
         this.m_core = baseCore;
-        this.m_networkStatusChangeReceiver = null;
-        this.m_dataLoadedOnComponentSetup = false;
-    }
-
-    static /* synthetic */ BroadcastReceiver access$002(SynergyEnvironmentImpl synergyEnvironmentImpl, BroadcastReceiver broadcastReceiver) {
-        synergyEnvironmentImpl.m_networkStatusChangeReceiver = broadcastReceiver;
-        return broadcastReceiver;
-    }
-
-    static /* synthetic */ SynergyEnvironmentUpdater access$202(SynergyEnvironmentImpl synergyEnvironmentImpl, SynergyEnvironmentUpdater synergyEnvironmentUpdater) {
-        synergyEnvironmentImpl.m_synergyStartupObject = synergyEnvironmentUpdater;
-        return synergyEnvironmentUpdater;
-    }
-
-    static /* synthetic */ EnvironmentDataContainer access$302(SynergyEnvironmentImpl synergyEnvironmentImpl, EnvironmentDataContainer environmentDataContainer) {
-        synergyEnvironmentImpl.m_environmentDataContainer = environmentDataContainer;
-        return environmentDataContainer;
     }
 
     private void clearSynergyEnvironmentUpdateRateLimiting() {
@@ -79,147 +62,144 @@ LogSource {
     }
 
     private boolean isInSynergyEnvironmentUpdateRateLimitingPeriod() {
-        if (this.m_synergyEnvironmentUpdateRateLimitTriggerTimestamp == null) return false;
-        if (!((double)(System.currentTimeMillis() - this.m_synergyEnvironmentUpdateRateLimitTriggerTimestamp) <= 60000.0)) return false;
-        return true;
+        return this.m_synergyEnvironmentUpdateRateLimitTriggerTimestamp != null && ((double) (System.currentTimeMillis() - this.m_synergyEnvironmentUpdateRateLimitTriggerTimestamp.longValue())) <= 60000.0d;
     }
 
-    private boolean restoreEnvironmentDataFromPersistent(boolean bl2) {
-        boolean bl3 = true;
-        Object object = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.synergyEnvironment", Persistence.Storage.CACHE);
-        if (object != null) {
-            if ((object = ((Persistence)object).getValue(PERSISTENCE_DATA_ID)) == null) {
+    private boolean restoreEnvironmentDataFromPersistent(boolean z) {
+        boolean z2 = true;
+        Persistence persistenceForNimbleComponent = PersistenceService.getPersistenceForNimbleComponent(SynergyEnvironment.COMPONENT_ID, Persistence.Storage.CACHE);
+        if (persistenceForNimbleComponent != null) {
+            Serializable value = persistenceForNimbleComponent.getValue(PERSISTENCE_DATA_ID);
+            if (value == null) {
                 Log.Helper.LOGD(this, "Environment persistence data value not found in persistence object. Probably first install.", new Object[0]);
             } else {
                 try {
-                    this.m_environmentDataContainer = (EnvironmentDataContainer)object;
+                    this.m_environmentDataContainer = (EnvironmentDataContainer) value;
                     Log.Helper.LOGD(this, "Restored environment data from persistent. Restored data timestamp, %s", this.m_environmentDataContainer.getMostRecentDirectorResponseTimestamp());
                     if (this.m_environmentDataContainer.getEADeviceId() == null) {
                         this.m_environmentDataContainer.setEADeviceId(EASPDataLoader.loadEADeviceId());
                     }
-                    if (bl2) return bl3;
-                    Utility.sendBroadcast("nimble.environment.notification.restored_from_persistent", null);
-                    return true;
-                }
-                catch (ClassCastException classCastException) {
+                    if (!z) {
+                        Utility.sendBroadcast(SynergyEnvironment.NOTIFICATION_RESTORED_FROM_PERSISTENT, null);
+                        return true;
+                    }
+                } catch (ClassCastException e) {
                     Log.Helper.LOGE(this, "Environment persistence data value is not the expected type.", new Object[0]);
                 }
+                return z2;
             }
         } else {
             Log.Helper.LOGE(this, "Could not get environment persistence object to restore from", new Object[0]);
         }
         this.m_environmentDataContainer = null;
-        return false;
+        z2 = false;
+        return z2;
     }
 
-    private void saveEnvironmentDataToPersistent() {
-        Persistence persistence = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.synergyEnvironment", Persistence.Storage.CACHE);
-        if (persistence != null) {
+    /* JADX INFO: Access modifiers changed from: private */
+    public void saveEnvironmentDataToPersistent() {
+        Persistence persistenceForNimbleComponent = PersistenceService.getPersistenceForNimbleComponent(SynergyEnvironment.COMPONENT_ID, Persistence.Storage.CACHE);
+        if (persistenceForNimbleComponent != null) {
             Log.Helper.LOGD(this, "Saving environment data to persistent.", new Object[0]);
-            persistence.setValue(PERSISTENCE_DATA_ID, this.m_environmentDataContainer);
-            persistence.synchronize();
+            persistenceForNimbleComponent.setValue(PERSISTENCE_DATA_ID, this.m_environmentDataContainer);
+            persistenceForNimbleComponent.synchronize();
             return;
         }
         Log.Helper.LOGE(this, "Could not get environment persistence object to save to.", new Object[0]);
     }
 
-    private void startSynergyEnvironmentUpdate() {
-        if (this.isUpdateInProgress()) {
+    /* JADX INFO: Access modifiers changed from: private */
+    public void startSynergyEnvironmentUpdate() {
+        if (isUpdateInProgress()) {
             Log.Helper.LOGD(this, "Attempt made to start Synergy environment update while a previous one is active. Exiting.", new Object[0]);
-            return;
-        }
-        if (Network.getComponent().getStatus() != Network.Status.OK) {
-            if (this.m_networkStatusChangeReceiver != null) return;
-            this.m_networkStatusChangeReceiver = new BroadcastReceiver(){
-
-                public void onReceive(Context context, Intent intent) {
-                    if (!intent.getAction().equals("nimble.notification.networkStatusChanged")) return;
-                    if (Network.getComponent().getStatus() != Network.Status.OK) return;
-                    Log.Helper.LOGD((Object)this, "Network restored. Starting Synergy environment update.", new Object[0]);
-                    Utility.unregisterReceiver(SynergyEnvironmentImpl.this.m_networkStatusChangeReceiver);
-                    SynergyEnvironmentImpl.access$002(SynergyEnvironmentImpl.this, null);
-                    SynergyEnvironmentImpl.this.startSynergyEnvironmentUpdate();
-                }
-            };
-            Log.Helper.LOGD(this, "Network not available to perform environment update. Setting receiver to listen for network status change.", new Object[0]);
-            Utility.registerReceiver("nimble.notification.networkStatusChanged", this.m_networkStatusChangeReceiver);
-            return;
-        }
-        this.m_synergyStartupObject = new SynergyEnvironmentUpdater(this.m_core);
-        this.m_previousValidEnvironmentDataContainer = this.m_environmentDataContainer;
-        HashMap<String, String> hashMap = new HashMap<String, String>();
-        hashMap.put("result", "1");
-        Utility.sendBroadcast("nimble.environment.notification.startup_requests_started", hashMap);
-        this.m_synergyStartupObject.startSynergyStartupSequence(this.m_previousValidEnvironmentDataContainer, new SynergyEnvironmentUpdater.CompletionCallback(){
-
-            @Override
-            public void callback(Exception serializable) {
-                if (serializable == null) {
-                    if (SynergyEnvironmentImpl.this.m_synergyStartupObject != null && SynergyEnvironmentImpl.this.m_synergyStartupObject.getEnvironmentDataContainer() != null) {
-                        SynergyEnvironmentImpl.access$302(SynergyEnvironmentImpl.this, SynergyEnvironmentImpl.this.m_synergyStartupObject.getEnvironmentDataContainer());
-                        SynergyEnvironmentImpl.this.saveEnvironmentDataToPersistent();
-                        if (SynergyEnvironmentImpl.this.m_environmentDataContainer.getKeysOfDifferences(SynergyEnvironmentImpl.this.m_previousValidEnvironmentDataContainer) != null) {
-                            Utility.sendBroadcast("nimble.environment.notification.startup_environment_data_changed", null);
+        } else if (Network.getComponent().getStatus() == Network.Status.OK) {
+            this.m_synergyStartupObject = new SynergyEnvironmentUpdater(this.m_core);
+            this.m_previousValidEnvironmentDataContainer = this.m_environmentDataContainer;
+            HashMap hashMap = new HashMap();
+            hashMap.put(Global.NOTIFICATION_DICTIONARY_KEY_RESULT, Global.NOTIFICATION_DICTIONARY_RESULT_SUCCESS);
+            Utility.sendBroadcast(SynergyEnvironment.NOTIFICATION_STARTUP_REQUESTS_STARTED, hashMap);
+            this.m_synergyStartupObject.startSynergyStartupSequence(this.m_previousValidEnvironmentDataContainer, new SynergyEnvironmentUpdater.CompletionCallback() { // from class: com.ea.nimble.SynergyEnvironmentImpl.2
+                @Override // com.ea.nimble.SynergyEnvironmentUpdater.CompletionCallback
+                public void callback(Exception exc) {
+                    if (exc != null) {
+                        Log.Helper.LOGE(this, "StartupError(%s)", exc);
+                        if (exc instanceof Error) {
+                            Error error = (Error) exc;
+                            if (error.isError(Error.Code.SYNERGY_GET_DIRECTION_TIMEOUT) || error.isError(Error.Code.SYNERGY_SERVER_FULL)) {
+                                Log.Helper.LOGD(this, "GetDirection request timed out or ServerUnavailable signal received. Start rate limiting of /getDirection call.", new Object[0]);
+                                SynergyEnvironmentImpl.this.startSynergyEnvironmentUpdateRateLimiting();
+                            }
+                        } else if (SynergyEnvironmentImpl.this.m_synergyStartupObject == null || SynergyEnvironmentImpl.this.m_synergyStartupObject.getEnvironmentDataContainer() == null) {
+                            Log.Helper.LOGD(this, "Synergy Environment Update object or dataContainer null at callback. More than one update was being peroformed", new Object[0]);
                         }
-                        serializable = new HashMap();
-                        serializable.put("result", "1");
-                        if (ApplicationEnvironment.isMainApplicationRunning() && ApplicationEnvironment.getCurrentActivity() != null) {
-                            Log.Helper.LOGD(this, "App is running in forground, send the NOTIFICATION_STARTUP_REQUESTS_FINISHED notification", new Object[0]);
-                            Utility.sendBroadcast("nimble.environment.notification.startup_requests_finished", (Map<String, String>)((Object)serializable));
-                        } else {
+                        HashMap hashMap2 = new HashMap();
+                        hashMap2.put(Global.NOTIFICATION_DICTIONARY_KEY_RESULT, Global.NOTIFICATION_DICTIONARY_RESULT_FAIL);
+                        hashMap2.put("error", exc.toString());
+                        if (!ApplicationEnvironment.isMainApplicationRunning() || ApplicationEnvironment.getCurrentActivity() == null) {
                             Log.Helper.LOGI(this, "App is not running in forground, discard the NOTIFICATION_STARTUP_REQUESTS_FINISHED notification", new Object[0]);
-                        }
-                    } else {
-                        Log.Helper.LOGD(this, "Synergy Environment Update object or dataContainer null at callback. More than one update was being peroformed", new Object[0]);
-                    }
-                } else {
-                    Serializable serializable2;
-                    Log.Helper.LOGE(this, "StartupError(%s)", serializable);
-                    if (serializable instanceof Error) {
-                        serializable2 = (Error)serializable;
-                        if (((Error)serializable2).isError(Error.Code.SYNERGY_GET_DIRECTION_TIMEOUT) || ((Error)serializable2).isError(Error.Code.SYNERGY_SERVER_FULL)) {
-                            Log.Helper.LOGD(this, "GetDirection request timed out or ServerUnavailable signal received. Start rate limiting of /getDirection call.", new Object[0]);
-                            SynergyEnvironmentImpl.this.startSynergyEnvironmentUpdateRateLimiting();
+                        } else {
+                            Log.Helper.LOGD(this, "App is running in forground, send the NOTIFICATION_STARTUP_REQUESTS_FINISHED notification", new Object[0]);
+                            Utility.sendBroadcast(SynergyEnvironment.NOTIFICATION_STARTUP_REQUESTS_FINISHED, hashMap2);
                         }
                     } else if (SynergyEnvironmentImpl.this.m_synergyStartupObject == null || SynergyEnvironmentImpl.this.m_synergyStartupObject.getEnvironmentDataContainer() == null) {
                         Log.Helper.LOGD(this, "Synergy Environment Update object or dataContainer null at callback. More than one update was being peroformed", new Object[0]);
-                    }
-                    serializable2 = new HashMap();
-                    serializable2.put("result", "0");
-                    serializable2.put("error", ((Throwable)serializable).toString());
-                    if (ApplicationEnvironment.isMainApplicationRunning() && ApplicationEnvironment.getCurrentActivity() != null) {
-                        Log.Helper.LOGD(this, "App is running in forground, send the NOTIFICATION_STARTUP_REQUESTS_FINISHED notification", new Object[0]);
-                        Utility.sendBroadcast("nimble.environment.notification.startup_requests_finished", (Map<String, String>)((Object)serializable2));
                     } else {
-                        Log.Helper.LOGI(this, "App is not running in forground, discard the NOTIFICATION_STARTUP_REQUESTS_FINISHED notification", new Object[0]);
+                        SynergyEnvironmentImpl.this.m_environmentDataContainer = SynergyEnvironmentImpl.this.m_synergyStartupObject.getEnvironmentDataContainer();
+                        SynergyEnvironmentImpl.this.saveEnvironmentDataToPersistent();
+                        if (SynergyEnvironmentImpl.this.m_environmentDataContainer.getKeysOfDifferences(SynergyEnvironmentImpl.this.m_previousValidEnvironmentDataContainer) != null) {
+                            Utility.sendBroadcast(SynergyEnvironment.NOTIFICATION_STARTUP_ENVIRONMENT_DATA_CHANGED, null);
+                        }
+                        HashMap hashMap3 = new HashMap();
+                        hashMap3.put(Global.NOTIFICATION_DICTIONARY_KEY_RESULT, Global.NOTIFICATION_DICTIONARY_RESULT_SUCCESS);
+                        if (!ApplicationEnvironment.isMainApplicationRunning() || ApplicationEnvironment.getCurrentActivity() == null) {
+                            Log.Helper.LOGI(this, "App is not running in forground, discard the NOTIFICATION_STARTUP_REQUESTS_FINISHED notification", new Object[0]);
+                        } else {
+                            Log.Helper.LOGD(this, "App is running in forground, send the NOTIFICATION_STARTUP_REQUESTS_FINISHED notification", new Object[0]);
+                            Utility.sendBroadcast(SynergyEnvironment.NOTIFICATION_STARTUP_REQUESTS_FINISHED, hashMap3);
+                        }
+                    }
+                    SynergyEnvironmentImpl.this.m_synergyStartupObject = null;
+                }
+            });
+        } else if (this.m_networkStatusChangeReceiver == null) {
+            this.m_networkStatusChangeReceiver = new BroadcastReceiver() { // from class: com.ea.nimble.SynergyEnvironmentImpl.1
+                @Override // android.content.BroadcastReceiver
+                public void onReceive(Context context, Intent intent) {
+                    if (intent.getAction().equals(Global.NOTIFICATION_NETWORK_STATUS_CHANGE) && Network.getComponent().getStatus() == Network.Status.OK) {
+                        Log.Helper.LOGD(this, "Network restored. Starting Synergy environment update.", new Object[0]);
+                        Utility.unregisterReceiver(SynergyEnvironmentImpl.this.m_networkStatusChangeReceiver);
+                        SynergyEnvironmentImpl.this.m_networkStatusChangeReceiver = null;
+                        SynergyEnvironmentImpl.this.startSynergyEnvironmentUpdate();
                     }
                 }
-                SynergyEnvironmentImpl.access$202(SynergyEnvironmentImpl.this, null);
-            }
-        });
+            };
+            Log.Helper.LOGD(this, "Network not available to perform environment update. Setting receiver to listen for network status change.", new Object[0]);
+            Utility.registerReceiver(Global.NOTIFICATION_NETWORK_STATUS_CHANGE, this.m_networkStatusChangeReceiver);
+        }
     }
 
-    private void startSynergyEnvironmentUpdateRateLimiting() {
-        this.m_synergyEnvironmentUpdateRateLimitTriggerTimestamp = System.currentTimeMillis();
+    /* JADX INFO: Access modifiers changed from: private */
+    public void startSynergyEnvironmentUpdateRateLimiting() {
+        this.m_synergyEnvironmentUpdateRateLimitTriggerTimestamp = Long.valueOf(System.currentTimeMillis());
     }
 
-    @Override
+    @Override // com.ea.nimble.ISynergyEnvironment
     public Error checkAndInitiateSynergyEnvironmentUpdate() {
-        if (this.isUpdateInProgress()) {
+        if (isUpdateInProgress()) {
             return new Error(Error.Code.SYNERGY_ENVIRONMENT_UPDATE_FAILURE, "Update in progress.");
         }
         if (this.m_environmentDataContainer != null && this.m_environmentDataContainer.getMostRecentDirectorResponseTimestamp() != null) {
             return new Error(Error.Code.SYNERGY_ENVIRONMENT_UPDATE_FAILURE, "Environment data already cached.");
         }
-        if (this.isInSynergyEnvironmentUpdateRateLimitingPeriod()) {
-            Log.Helper.LOGD(this, "Attempt to re-initiate Synergy environment update blocked by rate limiting. %.2f seconds of rate limiting left", 60.0 - (double)(System.currentTimeMillis() - this.m_synergyEnvironmentUpdateRateLimitTriggerTimestamp) / 1000.0);
+        if (isInSynergyEnvironmentUpdateRateLimitingPeriod()) {
+            Log.Helper.LOGD(this, "Attempt to re-initiate Synergy environment update blocked by rate limiting. %.2f seconds of rate limiting left", Double.valueOf(60.0d - (((double) (System.currentTimeMillis() - this.m_synergyEnvironmentUpdateRateLimitTriggerTimestamp.longValue())) / 1000.0d)));
             return new Error(Error.Code.SYNERGY_ENVIRONMENT_UPDATE_FAILURE, "Synergy environment update rate limit in effect.");
         }
-        this.startSynergyEnvironmentUpdate();
+        startSynergyEnvironmentUpdate();
         return null;
     }
 
-    @Override
+    @Override // com.ea.nimble.Component
     public void cleanup() {
         Log.Helper.LOGD(this, "cleanup", new Object[0]);
         if (this.m_synergyStartupObject != null) {
@@ -230,161 +210,176 @@ LogSource {
             Utility.unregisterReceiver(this.m_networkStatusChangeReceiver);
             this.m_networkStatusChangeReceiver = null;
         }
-        this.saveEnvironmentDataToPersistent();
+        saveEnvironmentDataToPersistent();
         this.m_environmentDataContainer = null;
     }
 
-    @Override
+    @Override // com.ea.nimble.Component
     public String getComponentId() {
-        return "com.ea.nimble.synergyEnvironment";
+        return SynergyEnvironment.COMPONENT_ID;
     }
 
-    @Override
+    @Override // com.ea.nimble.ISynergyEnvironment
     public String getEADeviceId() {
-        this.checkAndInitiateSynergyEnvironmentUpdate();
-        if (this.m_environmentDataContainer != null) return this.m_environmentDataContainer.getEADeviceId();
-        return null;
+        checkAndInitiateSynergyEnvironmentUpdate();
+        if (this.m_environmentDataContainer == null) {
+            return null;
+        }
+        return this.m_environmentDataContainer.getEADeviceId();
     }
 
-    @Override
+    @Override // com.ea.nimble.ISynergyEnvironment
     public String getEAHardwareId() {
-        this.checkAndInitiateSynergyEnvironmentUpdate();
-        if (this.m_environmentDataContainer != null) return this.m_environmentDataContainer.getEAHardwareId();
-        return null;
+        checkAndInitiateSynergyEnvironmentUpdate();
+        if (this.m_environmentDataContainer == null) {
+            return null;
+        }
+        return this.m_environmentDataContainer.getEAHardwareId();
     }
 
-    @Override
+    @Override // com.ea.nimble.ISynergyEnvironment
     public String getGosMdmAppKey() {
-        this.checkAndInitiateSynergyEnvironmentUpdate();
-        if (this.m_environmentDataContainer != null) return this.m_environmentDataContainer.getGosMdmAppKey();
-        return null;
+        checkAndInitiateSynergyEnvironmentUpdate();
+        if (this.m_environmentDataContainer == null) {
+            return null;
+        }
+        return this.m_environmentDataContainer.getGosMdmAppKey();
     }
 
-    @Override
+    @Override // com.ea.nimble.ISynergyEnvironment
     public int getLatestAppVersionCheckResult() {
-        if (this.m_environmentDataContainer != null) return this.m_environmentDataContainer.getLatestAppVersionCheckResult();
-        return 0;
+        if (this.m_environmentDataContainer == null) {
+            return 0;
+        }
+        return this.m_environmentDataContainer.getLatestAppVersionCheckResult();
     }
 
-    @Override
+    @Override // com.ea.nimble.LogSource
     public String getLogSourceTitle() {
         return "SynergyEnv";
     }
 
-    @Override
+    @Override // com.ea.nimble.ISynergyEnvironment
     public String getNexusClientId() {
-        this.checkAndInitiateSynergyEnvironmentUpdate();
-        if (this.m_environmentDataContainer != null) return this.m_environmentDataContainer.getNexusClientId();
-        return null;
-    }
-
-    @Override
-    public String getNexusClientSecret() {
-        this.checkAndInitiateSynergyEnvironmentUpdate();
-        if (this.m_environmentDataContainer != null) return this.m_environmentDataContainer.getNexusClientSecret();
-        return null;
-    }
-
-    @Override
-    public String getProductId() {
-        this.checkAndInitiateSynergyEnvironmentUpdate();
-        if (this.m_environmentDataContainer != null) return this.m_environmentDataContainer.getProductId();
-        return null;
-    }
-
-    @Override
-    public String getSellId() {
-        this.checkAndInitiateSynergyEnvironmentUpdate();
-        if (this.m_environmentDataContainer != null) return this.m_environmentDataContainer.getSellId();
-        return null;
-    }
-
-    @Override
-    public String getServerUrlWithKey(String string2) {
-        this.checkAndInitiateSynergyEnvironmentUpdate();
-        if (this.m_environmentDataContainer != null) return this.m_environmentDataContainer.getServerUrlWithKey(string2);
-        return null;
-    }
-
-    @Override
-    public String getSynergyDirectorServerUrl(NimbleConfiguration nimbleConfiguration) {
-        switch (3.$SwitchMap$com$ea$nimble$NimbleConfiguration[nimbleConfiguration.ordinal()]) {
-            default: {
-                Log.Helper.LOGF(this, "Request for Synergy Director server URL with unknown NimbleConfiguration, %d.", new Object[]{nimbleConfiguration});
-                return SYNERGY_LIVE_SERVER_URL;
-            }
-            case 1: {
-                return SYNERGY_INT_SERVER_URL;
-            }
-            case 2: {
-                return SYNERGY_STAGE_SERVER_URL;
-            }
-            case 3: {
-                return SYNERGY_LIVE_SERVER_URL;
-            }
-            case 4: 
+        checkAndInitiateSynergyEnvironmentUpdate();
+        if (this.m_environmentDataContainer == null) {
+            return null;
         }
-        return PreferenceManager.getDefaultSharedPreferences((Context)ApplicationEnvironment.getComponent().getApplicationContext()).getString("NimbleCustomizedSynergyServerEndpointUrl", SYNERGY_LIVE_SERVER_URL);
+        return this.m_environmentDataContainer.getNexusClientId();
     }
 
-    @Override
+    @Override // com.ea.nimble.ISynergyEnvironment
+    public String getNexusClientSecret() {
+        checkAndInitiateSynergyEnvironmentUpdate();
+        if (this.m_environmentDataContainer == null) {
+            return null;
+        }
+        return this.m_environmentDataContainer.getNexusClientSecret();
+    }
+
+    @Override // com.ea.nimble.ISynergyEnvironment
+    public String getProductId() {
+        checkAndInitiateSynergyEnvironmentUpdate();
+        if (this.m_environmentDataContainer == null) {
+            return null;
+        }
+        return this.m_environmentDataContainer.getProductId();
+    }
+
+    @Override // com.ea.nimble.ISynergyEnvironment
+    public String getSellId() {
+        checkAndInitiateSynergyEnvironmentUpdate();
+        if (this.m_environmentDataContainer == null) {
+            return null;
+        }
+        return this.m_environmentDataContainer.getSellId();
+    }
+
+    @Override // com.ea.nimble.ISynergyEnvironment
+    public String getServerUrlWithKey(String str) {
+        checkAndInitiateSynergyEnvironmentUpdate();
+        if (this.m_environmentDataContainer == null) {
+            return null;
+        }
+        return this.m_environmentDataContainer.getServerUrlWithKey(str);
+    }
+
+    @Override // com.ea.nimble.ISynergyEnvironment
+    public String getSynergyDirectorServerUrl(NimbleConfiguration nimbleConfiguration) {
+        switch (AnonymousClass3.$SwitchMap$com$ea$nimble$NimbleConfiguration[nimbleConfiguration.ordinal()]) {
+            case 1:
+                return SYNERGY_INT_SERVER_URL;
+            case 2:
+                return SYNERGY_STAGE_SERVER_URL;
+            case 3:
+                return SYNERGY_LIVE_SERVER_URL;
+            case 4:
+                return PreferenceManager.getDefaultSharedPreferences(ApplicationEnvironment.getComponent().getApplicationContext()).getString("NimbleCustomizedSynergyServerEndpointUrl", SYNERGY_LIVE_SERVER_URL);
+            default:
+                Log.Helper.LOGF(this, "Request for Synergy Director server URL with unknown NimbleConfiguration, %d.", nimbleConfiguration);
+                return SYNERGY_LIVE_SERVER_URL;
+        }
+    }
+
+    @Override // com.ea.nimble.ISynergyEnvironment
     public String getSynergyId() {
-        this.checkAndInitiateSynergyEnvironmentUpdate();
-        if (this.m_environmentDataContainer != null) return this.m_environmentDataContainer.getSynergyId();
-        return null;
+        checkAndInitiateSynergyEnvironmentUpdate();
+        if (this.m_environmentDataContainer == null) {
+            return null;
+        }
+        return this.m_environmentDataContainer.getSynergyId();
     }
 
-    @Override
+    @Override // com.ea.nimble.ISynergyEnvironment
     public int getTrackingPostInterval() {
-        if (this.m_environmentDataContainer != null) return this.m_environmentDataContainer.getTrackingPostInterval();
-        return -1;
+        if (this.m_environmentDataContainer == null) {
+            return -1;
+        }
+        return this.m_environmentDataContainer.getTrackingPostInterval();
     }
 
-    @Override
+    @Override // com.ea.nimble.ISynergyEnvironment
     public boolean isDataAvailable() {
-        if (this.m_environmentDataContainer == null) return false;
-        return true;
+        return this.m_environmentDataContainer != null;
     }
 
-    @Override
+    @Override // com.ea.nimble.ISynergyEnvironment
     public boolean isUpdateInProgress() {
-        if (this.m_synergyStartupObject == null) return false;
-        return true;
+        return this.m_synergyStartupObject != null;
     }
 
-    @Override
+    @Override // com.ea.nimble.Component
     public void restore() {
         Log.Helper.LOGD(this, "restore", new Object[0]);
         if (this.m_dataLoadedOnComponentSetup) {
             this.m_dataLoadedOnComponentSetup = false;
-            Utility.sendBroadcast("nimble.environment.notification.restored_from_persistent", null);
+            Utility.sendBroadcast(SynergyEnvironment.NOTIFICATION_RESTORED_FROM_PERSISTENT, null);
         } else {
-            this.restoreEnvironmentDataFromPersistent(false);
+            restoreEnvironmentDataFromPersistent(false);
         }
-        if (this.m_environmentDataContainer != null && this.m_environmentDataContainer.getMostRecentDirectorResponseTimestamp() != null && !((double)(System.currentTimeMillis() - this.m_environmentDataContainer.getMostRecentDirectorResponseTimestamp()) / 1000.0 > 300.0)) {
-            this.checkAndInitiateSynergyEnvironmentUpdate();
-            return;
+        if (this.m_environmentDataContainer == null || this.m_environmentDataContainer.getMostRecentDirectorResponseTimestamp() == null || ((double) (System.currentTimeMillis() - this.m_environmentDataContainer.getMostRecentDirectorResponseTimestamp().longValue())) / 1000.0d > 300.0d) {
+            startSynergyEnvironmentUpdate();
+        } else {
+            checkAndInitiateSynergyEnvironmentUpdate();
         }
-        this.startSynergyEnvironmentUpdate();
     }
 
-    @Override
+    @Override // com.ea.nimble.Component
     public void resume() {
         Log.Helper.LOGD(this, "resume", new Object[0]);
-        this.clearSynergyEnvironmentUpdateRateLimiting();
-        if (this.m_environmentDataContainer != null && this.m_environmentDataContainer.getMostRecentDirectorResponseTimestamp() != null) {
-            if (!((double)(System.currentTimeMillis() - this.m_environmentDataContainer.getMostRecentDirectorResponseTimestamp()) / 1000.0 > 300.0)) return;
+        clearSynergyEnvironmentUpdateRateLimiting();
+        if (this.m_environmentDataContainer == null || this.m_environmentDataContainer.getMostRecentDirectorResponseTimestamp() == null || ((double) (System.currentTimeMillis() - this.m_environmentDataContainer.getMostRecentDirectorResponseTimestamp().longValue())) / 1000.0d > 300.0d) {
+            startSynergyEnvironmentUpdate();
         }
-        this.startSynergyEnvironmentUpdate();
     }
 
-    @Override
+    @Override // com.ea.nimble.Component
     public void setup() {
         Log.Helper.LOGD(this, "setup", new Object[0]);
-        this.m_dataLoadedOnComponentSetup = this.restoreEnvironmentDataFromPersistent(true);
+        this.m_dataLoadedOnComponentSetup = restoreEnvironmentDataFromPersistent(true);
     }
 
-    @Override
+    @Override // com.ea.nimble.Component
     public void suspend() {
         Log.Helper.LOGD(this, "suspend", new Object[0]);
         if (this.m_synergyStartupObject != null) {
@@ -395,12 +390,11 @@ LogSource {
             Utility.unregisterReceiver(this.m_networkStatusChangeReceiver);
             this.m_networkStatusChangeReceiver = null;
         }
-        this.saveEnvironmentDataToPersistent();
+        saveEnvironmentDataToPersistent();
     }
 
-    @Override
+    @Override // com.ea.nimble.Component
     public void teardown() {
         this.m_environmentDataContainer = null;
     }
 }
-

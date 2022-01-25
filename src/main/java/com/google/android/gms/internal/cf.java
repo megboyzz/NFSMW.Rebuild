@@ -15,23 +15,13 @@ import android.content.Context;
 import android.graphics.Color;
 import android.location.Location;
 import android.text.TextUtils;
-import com.google.android.gms.internal.ai;
-import com.google.android.gms.internal.bz;
-import com.google.android.gms.internal.cb;
-import com.google.android.gms.internal.ce;
-import com.google.android.gms.internal.ci;
-import com.google.android.gms.internal.cn;
-import com.google.android.gms.internal.cs;
-import com.google.android.gms.internal.v;
-import com.google.android.gms.internal.x;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public final class cf {
     private static final SimpleDateFormat hH = new SimpleDateFormat("yyyyMMdd");
@@ -40,93 +30,11 @@ public final class cf {
      * Enabled unnecessary exception pruning
      */
     public static cb a(Context object, bz object2, String string2) {
-        try {
-            int n2;
-            JSONObject jSONObject = new JSONObject(string2);
-            string2 = jSONObject.optString("ad_base_url", null);
-            Object object3 = jSONObject.optString("ad_url", null);
-            String string3 = jSONObject.optString("ad_size", null);
-            String string4 = jSONObject.optString("ad_html", null);
-            long l2 = jSONObject.has("interstitial_timeout") ? (long)(jSONObject.getDouble("interstitial_timeout") * 1000.0) : -1L;
-            Object object4 = jSONObject.optString("orientation", null);
-            int n3 = -1;
-            if ("portrait".equals(object4)) {
-                n3 = cn.au();
-            } else if ("landscape".equals(object4)) {
-                n3 = cn.at();
-            }
-            if (TextUtils.isEmpty((CharSequence)string4)) {
-                if (TextUtils.isEmpty((CharSequence)object3)) {
-                    cs.v("Could not parse the mediation config: Missing required ad_html or ad_url field.");
-                    return new cb(0);
-                }
-                object3 = ce.a((Context)object, ((bz)object2).ej.iF, (String)object3);
-                string2 = ((cb)object3).gK;
-                string4 = ((cb)object3).hu;
-            } else {
-                if (TextUtils.isEmpty((CharSequence)string2)) {
-                    cs.v("Could not parse the mediation config: Missing required ad_base_url field");
-                    return new cb(0);
-                }
-                object3 = null;
-            }
-            object4 = jSONObject.optJSONArray("click_urls");
-            object = object3 == null ? null : ((cb)object3).fK;
-            if (object4 == null) {
-                object4 = object;
-            } else {
-                object2 = object;
-                if (object == null) {
-                    object2 = new LinkedList();
-                }
-                for (n2 = 0; n2 < object4.length(); ++n2) {
-                    object2.add(object4.getString(n2));
-                }
-                object4 = object2;
-            }
-            Object object5 = jSONObject.optJSONArray("impression_urls");
-            object = object3 == null ? null : ((cb)object3).fL;
-            if (object5 == null) {
-                object5 = object;
-            } else {
-                object2 = object;
-                if (object == null) {
-                    object2 = new LinkedList();
-                }
-                for (n2 = 0; n2 < object5.length(); ++n2) {
-                    object2.add(object5.getString(n2));
-                }
-                object5 = object2;
-            }
-            jSONObject = jSONObject.optJSONArray("manual_impression_urls");
-            object = object3 == null ? null : ((cb)object3).hy;
-            if (jSONObject != null) {
-                object2 = object;
-                if (object == null) {
-                    object2 = new LinkedList();
-                }
-                for (n2 = 0; n2 < jSONObject.length(); ++n2) {
-                    object2.add(jSONObject.getString(n2));
-                }
-                object = object2;
-            }
-            long l3 = l2;
-            n2 = n3;
-            if (object3 == null) return new cb(string2, string4, (List<String>)object4, (List<String>)object5, l3, false, -1L, (List<String>)object, -1L, n2, string3);
-            if (((cb)object3).orientation != -1) {
-                n3 = ((cb)object3).orientation;
-            }
-            l3 = l2;
-            n2 = n3;
-            if (((cb)object3).hv <= 0L) return new cb(string2, string4, (List<String>)object4, (List<String>)object5, l3, false, -1L, (List<String>)object, -1L, n2, string3);
-            l3 = ((cb)object3).hv;
-            n2 = n3;
-            return new cb(string2, string4, (List<String>)object4, (List<String>)object5, l3, false, -1L, (List<String>)object, -1L, n2, string3);
-        }
-        catch (JSONException jSONException) {
-            cs.v("Could not parse the mediation config: " + jSONException.getMessage());
-            return new cb(0);
-        }
+        Observer.onCallingMethod(
+                Observer.Method.HARD_TO_RECOVER_LOGIC,
+                Observer.Method.RETURN_NULL
+                );
+        return null;
     }
 
     /*
@@ -134,55 +42,8 @@ public final class cf {
      * Enabled unnecessary exception pruning
      */
     public static String a(bz object, ci ci2, Location object2) {
-        try {
-            object2 = new HashMap();
-            if (((bz)object).ho != null) {
-                ((HashMap)object2).put("ad_pos", ((bz)object).ho);
-            }
-            cf.a((HashMap<String, Object>)object2, ((bz)object).hp);
-            ((HashMap)object2).put("format", ((bz)object).em.eF);
-            if (((bz)object).em.width == -1) {
-                ((HashMap)object2).put("smart_w", "full");
-            }
-            if (((bz)object).em.height == -2) {
-                ((HashMap)object2).put("smart_h", "auto");
-            }
-            if (((bz)object).em.eH != null) {
-                StringBuilder stringBuilder = new StringBuilder();
-                for (x x2 : ((bz)object).em.eH) {
-                    if (stringBuilder.length() != 0) {
-                        stringBuilder.append("|");
-                    }
-                    int n2 = x2.width == -1 ? (int)((float)x2.widthPixels / ci2.im) : x2.width;
-                    stringBuilder.append(n2);
-                    stringBuilder.append("x");
-                    n2 = x2.height == -2 ? (int)((float)x2.heightPixels / ci2.im) : x2.height;
-                    stringBuilder.append(n2);
-                }
-                ((HashMap)object2).put("sz", stringBuilder);
-            }
-            ((HashMap)object2).put("slotname", ((bz)object).adUnitId);
-            ((HashMap)object2).put("pn", ((bz)object).applicationInfo.packageName);
-            if (((bz)object).hq != null) {
-                ((HashMap)object2).put("vc", ((bz)object).hq.versionCode);
-            }
-            ((HashMap)object2).put("ms", ((bz)object).hr);
-            ((HashMap)object2).put("seq_num", ((bz)object).hs);
-            ((HashMap)object2).put("session_id", ((bz)object).ht);
-            ((HashMap)object2).put("js", ((bz)object).ej.iF);
-            cf.a((HashMap<String, Object>)object2, ci2);
-            if (((bz)object).hp.versionCode >= 2 && ((bz)object).hp.eE != null) {
-                cf.a((HashMap<String, Object>)object2, ((bz)object).hp.eE);
-            }
-            if (!cs.n(2)) return cn.m(object2).toString();
-            object = cn.m(object2).toString(2);
-            cs.u("Ad Request JSON: " + (String)object);
-            return cn.m(object2).toString();
-        }
-        catch (JSONException jSONException) {
-            cs.v("Problem serializing ad request to JSON: " + jSONException.getMessage());
-            return null;
-        }
+        Observer.onCallingMethod(Observer.Method.HARD_TO_RECOVER_LOGIC);
+        return "";
     }
 
     private static void a(HashMap<String, Object> hashMap, Location location) {
@@ -191,7 +52,7 @@ public final class cf {
         long l2 = location.getTime();
         long l3 = (long)(location.getLatitude() * 1.0E7);
         long l4 = (long)(location.getLongitude() * 1.0E7);
-        hashMap2.put("radius", Float.valueOf(f2 * 1000.0f));
+        hashMap2.put("radius", f2 * 1000.0f);
         hashMap2.put("lat", l3);
         hashMap2.put("long", l4);
         hashMap2.put("time", l2 * 1000L);
@@ -241,7 +102,6 @@ public final class cf {
         }
         switch (ai2.ff) {
             default: {
-                string2 = var3_2;
                 break;
             }
             case 2: {
@@ -290,9 +150,6 @@ public final class cf {
         hashMap.put("ma", cf.j(ci2.ic));
         hashMap.put("sp", cf.j(ci2.id));
         hashMap.put("hl", ci2.ie);
-        if (!TextUtils.isEmpty((CharSequence)ci2.if)) {
-            hashMap.put("mv", ci2.if);
-        }
         hashMap.put("muv", ci2.ig);
         if (ci2.ih != -2) {
             hashMap.put("cnt", ci2.ih);
@@ -301,7 +158,7 @@ public final class cf {
         hashMap.put("pt", ci2.ij);
         hashMap.put("rm", ci2.ik);
         hashMap.put("riv", ci2.il);
-        hashMap.put("u_sd", Float.valueOf(ci2.im));
+        hashMap.put("u_sd", ci2.im);
         hashMap.put("sh", ci2.io);
         hashMap.put("sw", ci2.in);
     }

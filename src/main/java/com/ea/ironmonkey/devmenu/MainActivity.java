@@ -241,7 +241,7 @@ public class MainActivity extends Activity {
         }
         else return;
 
-        FileOutputStream outputStream = null;
+        FileOutputStream outputStream;
         try {
             outputStream = new FileOutputStream(locale, false);
             outputStream.write(bytes_locale, 0, 4);

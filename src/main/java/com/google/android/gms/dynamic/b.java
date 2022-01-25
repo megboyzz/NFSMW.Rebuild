@@ -19,10 +19,10 @@ import android.os.RemoteException;
 public interface b
 extends IInterface {
 
-    public static abstract class com.google.android.gms.dynamic.b$a
+    abstract class b$a
     extends Binder
     implements b {
-        public com.google.android.gms.dynamic.b$a() {
+        public b$a() {
             this.attachInterface(this, "com.google.android.gms.dynamic.IObjectWrapper");
         }
 

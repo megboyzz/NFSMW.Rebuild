@@ -15,13 +15,15 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
 import com.google.android.gms.dynamic.b;
 
 public interface bt
 extends IInterface {
-    public IBinder a(b var1) throws RemoteException;
+    IBinder a(b var1) throws RemoteException;
 
-    public static abstract class com.google.android.gms.internal.bt$a
+    abstract class bt$a
     extends Binder
     implements bt {
         public static bt n(IBinder iBinder) {
@@ -46,9 +48,7 @@ extends IInterface {
                 case 1: 
             }
             parcel.enforceInterface("com.google.android.gms.ads.internal.overlay.client.IAdOverlayCreator");
-            parcel = this.a(b.a.C(parcel.readStrongBinder()));
             parcel2.writeNoException();
-            parcel2.writeStrongBinder((IBinder)parcel);
             return true;
         }
 
@@ -62,16 +62,15 @@ extends IInterface {
 
             @Override
             public IBinder a(b b2) throws RemoteException {
+                Observer.onCallingMethod(
+                        Observer.Method.RETURN_NULL,
+                        Observer.Method.HARD_TO_RECOVER_LOGIC
+                        );
                 Parcel parcel = Parcel.obtain();
                 Parcel parcel2 = Parcel.obtain();
                 try {
                     parcel.writeInterfaceToken("com.google.android.gms.ads.internal.overlay.client.IAdOverlayCreator");
-                    b2 = b2 != null ? b2.asBinder() : null;
-                    parcel.writeStrongBinder((IBinder)b2);
-                    this.dU.transact(1, parcel, parcel2, 0);
-                    parcel2.readException();
-                    b2 = parcel2.readStrongBinder();
-                    return b2;
+                    return null;
                 }
                 finally {
                     parcel2.recycle();

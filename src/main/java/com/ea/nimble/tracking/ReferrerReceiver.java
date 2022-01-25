@@ -12,12 +12,8 @@ package com.ea.nimble.tracking;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
-import com.ea.nimble.ApplicationEnvironment;
-import com.ea.nimble.Base;
-import com.ea.nimble.tracking.ITracking;
-import java.net.URLDecoder;
-import java.util.HashMap;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
 
 public class ReferrerReceiver
 extends BroadcastReceiver {
@@ -37,13 +33,15 @@ extends BroadcastReceiver {
      * Enabled unnecessary exception pruning
      */
     public void onReceive(Context var1_1, Intent var2_3) {
-        if (var2_3 /* !! */  == null) return;
-        if (var2_3 /* !! */ .getAction().equals("com.android.vending.INSTALL_REFERRER") == false) return;
+        Observer.onCallingMethod(Observer.Method.HARD_TO_RECOVER_LOGIC, Observer.Method.SUSPICIOUS_METHOD);
+        /*
+        if (var2_3 == null) return;
+        if (!Objects.equals(var2_3.getAction(), "com.android.vending.INSTALL_REFERRER")) return;
         Log.i((String)"ReferrerReceiver", (String)"Received install referrer notification from the OS.");
-        var2_3 /* !! */  = var2_3 /* !! */ .getStringExtra("referrer");
-        if (var2_3 /* !! */  == null) return;
-        var2_3 /* !! */  = URLDecoder.decode((String)var2_3 /* !! */ , "UTF-8");
-        Log.i((String)"ReferrerReceiver", (String)("Referrer Id from the notification: " + (String)var2_3 /* !! */ ));
+        var2_3   = var2_3  .getStringExtra("referrer");
+        if (var2_3   == null) return;
+        var2_3   = URLDecoder.decode((String)var2_3  , "UTF-8");
+        Log.i((String)"ReferrerReceiver", (String)("Referrer Id from the notification: " + (String)var2_3  ));
         {
             catch (Exception var1_2) {
                 Log.w((String)"ReferrerReceiver", (String)"Unable to log a Referrer - 106 event indicating that Nimble has received a referrer id from the OS.");
@@ -53,11 +51,11 @@ extends BroadcastReceiver {
                 if (ApplicationEnvironment.isMainApplicationRunning() && ApplicationEnvironment.getCurrentActivity() != null && Base.getComponent("com.ea.nimble.tracking") != null) {
                     var3_4 = (ITracking)Base.getComponent("com.ea.nimble.tracking");
                     var4_6 = new HashMap<String, String>();
-                    var4_6.put("NIMBLESTANDARD::KEY_REFERRER_ID", (String)var2_3 /* !! */ );
+                    var4_6.put("NIMBLESTANDARD::KEY_REFERRER_ID", (String)var2_3  );
                     var3_4.logEvent("NIMBLESTANDARD::REFERRER_ID_RECEIVED", var4_6);
                     return;
                 }
-                Log.w((String)"ReferrerReceiver", (String)("Unable to log Referrer - 106 event because the Tracking component isn't ready. Persisting referrerId (" + (String)var2_3 /* !! */  + ") to try again later."));
+                Log.w((String)"ReferrerReceiver", (String)("Unable to log Referrer - 106 event because the Tracking component isn't ready. Persisting referrerId (" + (String)var2_3   + ") to try again later."));
             }
             catch (Exception var3_5) {}
 lbl-1000:
@@ -65,15 +63,17 @@ lbl-1000:
 
             {
                 while (true) {
-                    var1_1.getSharedPreferences("referrer", 0).edit().putString("referrer", (String)var2_3 /* !! */ ).commit();
+                    var1_1.getSharedPreferences("referrer", 0).edit().putString("referrer", (String)var2_3  ).commit();
                     return;
                 }
             }
             {
-                Log.w((String)"ReferrerReceiver", (String)("Unable to log Referrer - 106 event because the Tracking component isn't ready. Persisting referrerId (" + (String)var2_3 /* !! */  + ") to try again later."));
+                Log.w((String)"ReferrerReceiver", (String)("Unable to log Referrer - 106 event because the Tracking component isn't ready. Persisting referrerId (" + (String)var2_3   + ") to try again later."));
                 ** continue;
             }
         }
+        */
     }
+    
 }
 

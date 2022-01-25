@@ -24,9 +24,9 @@
  */
 package com.google.android.gms.internal;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Message;
 import android.view.View;
 import android.webkit.ConsoleMessage;
@@ -36,12 +36,10 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import com.google.android.gms.internal.bk;
-import com.google.android.gms.internal.cs;
-import com.google.android.gms.internal.cv;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
 
 public class cx
 extends WebChromeClient {
@@ -52,53 +50,17 @@ extends WebChromeClient {
     }
 
     private static void a(AlertDialog.Builder builder, String string2, final JsResult jsResult) {
-        builder.setMessage((CharSequence)string2).setPositiveButton(17039370, new DialogInterface.OnClickListener(){
-
-            public void onClick(DialogInterface dialogInterface, int n2) {
-                jsResult.confirm();
-            }
-        }).setNegativeButton(0x1040000, new DialogInterface.OnClickListener(){
-
-            public void onClick(DialogInterface dialogInterface, int n2) {
-                jsResult.cancel();
-            }
-        }).setOnCancelListener(new DialogInterface.OnCancelListener(){
-
-            public void onCancel(DialogInterface dialogInterface) {
-                jsResult.cancel();
-            }
-        }).create().show();
+        Observer.onCallingMethod(
+                Observer.Method.HARD_TO_RECOVER_LOGIC
+        );
     }
 
+    @SuppressLint("ResourceType")
     private static void a(Context context, AlertDialog.Builder builder, String string2, String string3, final JsPromptResult jsPromptResult) {
         LinearLayout linearLayout = new LinearLayout(context);
         linearLayout.setOrientation(1);
         TextView textView = new TextView(context);
-        textView.setText((CharSequence)string2);
-        context = new EditText(context);
-        context.setText((CharSequence)string3);
-        linearLayout.addView((View)textView);
-        linearLayout.addView((View)context);
-        builder.setView((View)linearLayout).setPositiveButton(17039370, new DialogInterface.OnClickListener((EditText)context){
-            final /* synthetic */ EditText jc;
-            {
-                this.jc = editText;
-            }
-
-            public void onClick(DialogInterface dialogInterface, int n2) {
-                jsPromptResult.confirm(this.jc.getText().toString());
-            }
-        }).setNegativeButton(0x1040000, new DialogInterface.OnClickListener(){
-
-            public void onClick(DialogInterface dialogInterface, int n2) {
-                jsPromptResult.cancel();
-            }
-        }).setOnCancelListener(new DialogInterface.OnCancelListener(){
-
-            public void onCancel(DialogInterface dialogInterface) {
-                jsPromptResult.cancel();
-            }
-        }).create().show();
+        textView.setText(string2);
     }
 
     private static boolean a(Context context, String string2, String string3, String string4, JsResult jsResult, JsPromptResult jsPromptResult, boolean bl2) {
@@ -124,40 +86,15 @@ extends WebChromeClient {
     }
 
     public final void onCloseWindow(WebView object) {
-        if (!(object instanceof cv)) {
-            cs.v("Tried to close a WebView that wasn't an AdWebView.");
-            return;
-        }
-        if ((object = ((cv)((Object)object)).aA()) == null) {
-            cs.v("Tried to close an AdWebView not associated with an overlay.");
-            return;
-        }
-        ((bk)object).close();
+        Observer.onCallingMethod(
+                Observer.Method.HARD_TO_RECOVER_LOGIC
+        );
     }
 
     public final boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-        String string2 = "JS: " + consoleMessage.message() + " (" + consoleMessage.sourceId() + ":" + consoleMessage.lineNumber() + ")";
-        switch (7.jd[consoleMessage.messageLevel().ordinal()]) {
-            default: {
-                cs.t(string2);
-                return super.onConsoleMessage(consoleMessage);
-            }
-            case 1: {
-                cs.s(string2);
-                return super.onConsoleMessage(consoleMessage);
-            }
-            case 2: {
-                cs.v(string2);
-                return super.onConsoleMessage(consoleMessage);
-            }
-            case 3: 
-            case 4: {
-                cs.t(string2);
-                return super.onConsoleMessage(consoleMessage);
-            }
-            case 5: 
-        }
-        cs.r(string2);
+        Observer.onCallingMethod(
+                Observer.Method.HARD_TO_RECOVER_LOGIC
+        );
         return super.onConsoleMessage(consoleMessage);
     }
 

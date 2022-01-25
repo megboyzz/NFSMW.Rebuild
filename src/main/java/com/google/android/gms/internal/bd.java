@@ -18,22 +18,22 @@ import android.os.RemoteException;
 
 public interface bd
 extends IInterface {
-    public void onAdClosed() throws RemoteException;
+    void onAdClosed() throws RemoteException;
 
-    public void onAdFailedToLoad(int var1) throws RemoteException;
+    void onAdFailedToLoad(int var1) throws RemoteException;
 
-    public void onAdLeftApplication() throws RemoteException;
+    void onAdLeftApplication() throws RemoteException;
 
-    public void onAdLoaded() throws RemoteException;
+    void onAdLoaded() throws RemoteException;
 
-    public void onAdOpened() throws RemoteException;
+    void onAdOpened() throws RemoteException;
 
-    public void w() throws RemoteException;
+    void w() throws RemoteException;
 
-    public static abstract class com.google.android.gms.internal.bd$a
+    abstract class bd$a
     extends Binder
     implements bd {
-        public com.google.android.gms.internal.bd$a() {
+        public bd$a() {
             this.attachInterface(this, "com.google.android.gms.ads.internal.mediation.client.IMediationAdapterListener");
         }
 

@@ -8,16 +8,10 @@
 package com.google.android.gms.drive;
 
 import android.content.IntentSender;
-import android.os.RemoteException;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.drive.Contents;
-import com.google.android.gms.drive.Drive;
-import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.internal.CreateFileIntentSenderRequest;
-import com.google.android.gms.drive.internal.j;
 import com.google.android.gms.internal.du;
-import java.io.IOException;
 
 public class CreateFileActivityBuilder {
     public static final String EXTRA_RESPONSE_DRIVE_ID = "response_drive_id";
@@ -30,6 +24,9 @@ public class CreateFileActivityBuilder {
      * Unable to fully structure code
      */
     public IntentSender build(GoogleApiClient var1_1) {
+        Observer.onCallingMethod(Observer.Method.HARD_TO_RECOVER_LOGIC, Observer.Method.RETURN_NULL);
+        return null;
+        /*
         du.c(this.nZ, "Must provide initial contents to CreateFileActivityBuilder.");
         try {
             this.nZ.getParcelFileDescriptor().close();
@@ -52,6 +49,7 @@ lbl5:
         catch (RemoteException var1_2) {
             throw new RuntimeException("Unable to connect Drive Play Service", var1_2);
         }
+         */
     }
 
     public CreateFileActivityBuilder setActivityStartFolder(DriveId driveId) {

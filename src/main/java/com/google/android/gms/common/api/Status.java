@@ -13,9 +13,8 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.IntentSender;
 import android.os.Parcel;
+
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.Result;
-import com.google.android.gms.common.api.StatusCreator;
 import com.google.android.gms.common.internal.safeparcel.SafeParcelable;
 import com.google.android.gms.internal.ds;
 
@@ -46,10 +45,10 @@ SafeParcelable {
     public static final Status kW;
     public static final Status kX;
     public static final Status kY;
-    private final int kZ;
-    private final int ka;
-    private final String la;
-    private final PendingIntent mPendingIntent;
+    private int kZ = 0;
+    private int ka = 0;
+    private String la = "";
+    private PendingIntent mPendingIntent = null;
 
     static {
         kW = new Status(0, null, null);
@@ -71,6 +70,10 @@ SafeParcelable {
 
     public Status(int n2, String string2, PendingIntent pendingIntent) {
         this(1, n2, string2, pendingIntent);
+    }
+
+    public Status() {
+
     }
 
     private String aT() {

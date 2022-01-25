@@ -11,18 +11,8 @@ package com.google.android.gms.internal;
 import android.content.Context;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import com.google.android.gms.dynamic.c;
-import com.google.android.gms.internal.at;
-import com.google.android.gms.internal.au;
-import com.google.android.gms.internal.aw;
-import com.google.android.gms.internal.ay;
-import com.google.android.gms.internal.bb;
-import com.google.android.gms.internal.bc;
-import com.google.android.gms.internal.bd;
-import com.google.android.gms.internal.cr;
-import com.google.android.gms.internal.cs;
-import com.google.android.gms.internal.v;
-import com.google.android.gms.internal.x;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
 
 public final class ax
 implements ay.a {
@@ -72,19 +62,7 @@ implements ay.a {
     }
 
     private void a(aw aw2) {
-        try {
-            if (this.fU.eG) {
-                this.fV.a(c.h(this.mContext), this.eq, this.fT.fH, this.fT.adJson, (bd)aw2);
-                return;
-            }
-            this.fV.a(c.h(this.mContext), this.fU, this.eq, this.fT.fH, this.fT.adJson, aw2);
-            return;
-        }
-        catch (RemoteException remoteException) {
-            cs.b("Could not request ad from mediation adapter.", remoteException);
-            this.f(5);
-            return;
-        }
+        Observer.onCallingMethod(Observer.Method.HARD_TO_RECOVER_LOGIC);
     }
 
     private void b(long l2, long l3, long l4, long l5) {
@@ -143,27 +121,7 @@ implements ay.a {
      * Unable to fully structure code
      */
     public void cancel() {
-        var1_1 = this.fx;
-        synchronized (var1_1) {
-            try {
-                if (this.fV != null) {
-                    this.fV.destroy();
-                }
-lbl7:
-                // 4 sources
-
-                while (true) {
-                    this.fW = -1;
-                    this.fx.notify();
-                    break;
-                }
-            }
-            catch (RemoteException var2_2) {
-                cs.b("Could not destroy mediation adapter.", var2_2);
-                ** continue;
-            }
-            return;
-        }
+        Observer.onCallingMethod(Observer.Method.HARD_TO_RECOVER_LOGIC);
     }
 
     @Override

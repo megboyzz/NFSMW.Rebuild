@@ -7,7 +7,7 @@ import com.ea.nimble.Error;
 import com.ea.nimble.Utility;
 import com.ea.nimble.mtx.INimbleMTX;
 import com.ea.nimble.mtx.NimbleMTXTransaction;
-import com.ea.nimble.mtx.googleplay.GooglePlayCatalogItem;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -91,7 +91,7 @@ Externalizable {
 
     @Override
     public NimbleMTXTransaction.TransactionState getTransactionState() {
-        switch (1.$SwitchMap$com$ea$nimble$mtx$googleplay$GooglePlayTransaction$GooglePlayTransactionState[this.mGooglePlayTransactionState.ordinal()]) {
+        switch (this.mGooglePlayTransactionState.ordinal()) {
             default: {
                 return NimbleMTXTransaction.TransactionState.UNDEFINED;
             }
@@ -172,16 +172,21 @@ Externalizable {
         objectOutput.writeBoolean(this.mIsRecorded);
     }
 
-    public static enum GooglePlayTransactionState {
-        UNDEFINED,
-        USER_INITIATED,
-        WAITING_FOR_NONCE,
-        WAITING_FOR_GOOGLEPLAY_ACTIVITY_RESPONSE,
-        WAITING_FOR_SYNERGY_VERIFICATION,
-        WAITING_FOR_GAME_TO_CONFIRM_ITEM_GRANT,
-        WAITING_FOR_GOOGLEPLAY_CONSUMPTION,
-        COMPLETE;
+    public enum GooglePlayTransactionState {
+        UNDEFINED("UNDEFINED"),
+        USER_INITIATED("USER_INITIATED"),
+        WAITING_FOR_NONCE("WAITING_FOR_NONCE"),
+        WAITING_FOR_GOOGLEPLAY_ACTIVITY_RESPONSE("WAITING_FOR_GOOGLEPLAY_ACTIVITY_RESPONSE"),
+        WAITING_FOR_SYNERGY_VERIFICATION("WAITING_FOR_SYNERGY_VERIFICATION"),
+        WAITING_FOR_GAME_TO_CONFIRM_ITEM_GRANT("WAITING_FOR_GAME_TO_CONFIRM_ITEM_GRANT"),
+        WAITING_FOR_GOOGLEPLAY_CONSUMPTION("WAITING_FOR_GOOGLEPLAY_CONSUMPTION"),
+        COMPLETE("COMPLETE");
 
+        private String title;
+
+        GooglePlayTransactionState(String title) {
+            this.title = title;
+        }
     }
 }
 

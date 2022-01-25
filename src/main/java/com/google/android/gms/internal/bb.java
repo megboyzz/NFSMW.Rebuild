@@ -15,16 +15,15 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
-import com.google.android.gms.internal.bc;
 
 public interface bb
 extends IInterface {
-    public bc l(String var1) throws RemoteException;
+    bc l(String var1) throws RemoteException;
 
-    public static abstract class com.google.android.gms.internal.bb$a
+    abstract class bb$a
     extends Binder
     implements bb {
-        public com.google.android.gms.internal.bb$a() {
+        public bb$a() {
             this.attachInterface(this, "com.google.android.gms.ads.internal.mediation.client.IAdapterCreator");
         }
 
@@ -54,10 +53,6 @@ extends IInterface {
                 case 1: 
             }
             object.enforceInterface("com.google.android.gms.ads.internal.mediation.client.IAdapterCreator");
-            object = this.l(object.readString());
-            parcel.writeNoException();
-            object = object != null ? object.asBinder() : null;
-            parcel.writeStrongBinder((IBinder)object);
             return true;
         }
 
@@ -82,8 +77,7 @@ extends IInterface {
                     parcel.writeString((String)object);
                     this.dU.transact(1, parcel, parcel2, 0);
                     parcel2.readException();
-                    object = bc.a.j(parcel2.readStrongBinder());
-                    return object;
+                    return null;
                 }
                 finally {
                     parcel2.recycle();

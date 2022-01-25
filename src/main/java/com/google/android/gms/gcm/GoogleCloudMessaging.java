@@ -23,6 +23,9 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.Parcelable;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
+
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -44,19 +47,17 @@ public class GoogleCloudMessaging {
     private Handler tp = new Handler(Looper.getMainLooper()){
 
         public void handleMessage(Message message) {
-            message = (Intent)message.obj;
-            GoogleCloudMessaging.this.to.add((Intent)message);
+            GoogleCloudMessaging.this.to.add((Intent) message.obj);
         }
     };
     private Messenger tq = new Messenger(this.tp);
 
     private void b(String ... object) {
-        object = this.c((String)object);
         Intent intent = new Intent("com.google.android.c2dm.intent.REGISTER");
         intent.setPackage("com.google.android.gms");
         intent.putExtra("google.messenger", (Parcelable)this.tq);
         this.d(intent);
-        intent.putExtra("sender", (String)object);
+        intent.putExtra("sender",object);
         this.eh.startService(intent);
     }
 
@@ -75,8 +76,7 @@ public class GoogleCloudMessaging {
                 tm = new GoogleCloudMessaging();
                 GoogleCloudMessaging.tm.eh = object;
             }
-            object = tm;
-            return object;
+            return tm;
         }
     }
 
@@ -95,7 +95,7 @@ public class GoogleCloudMessaging {
     }
 
     public void close() {
-        this.do();
+        Observer.onCallingMethod(Observer.Method.HARD_TO_RECOVER_LOGIC);
     }
 
     void d(Intent intent) {
@@ -108,22 +108,13 @@ public class GoogleCloudMessaging {
         }
     }
 
-    void do() {
-        synchronized (this) {
-            if (this.tn == null) return;
-            this.tn.cancel();
-            this.tn = null;
-            return;
-        }
-    }
 
     public String getMessageType(Intent object) {
         if (!"com.google.android.c2dm.intent.RECEIVE".equals(object.getAction())) {
             return null;
         }
         String string2 = object.getStringExtra("message_type");
-        object = string2;
-        if (string2 != null) return object;
+        if (string2 != null) return string2;
         return MESSAGE_TYPE_MESSAGE;
     }
 
@@ -137,25 +128,7 @@ public class GoogleCloudMessaging {
         }
         this.to.clear();
         this.b((String[])object);
-        try {
-            object = this.to.poll(5000L, TimeUnit.MILLISECONDS);
-            if (object == null) {
-                throw new IOException(ERROR_SERVICE_NOT_AVAILABLE);
-            }
-        }
-        catch (InterruptedException interruptedException) {
-            throw new IOException(interruptedException.getMessage());
-        }
-        {
-            String string2 = object.getStringExtra("registration_id");
-            if (string2 != null) {
-                return string2;
-            }
-            object.getStringExtra("error");
-            object = object.getStringExtra("error");
-            if (object == null) throw new IOException(ERROR_SERVICE_NOT_AVAILABLE);
-            throw new IOException((String)object);
-        }
+        return "";
     }
 
     public void send(String string2, String string3, long l2, Bundle bundle) throws IOException {
@@ -196,13 +169,6 @@ public class GoogleCloudMessaging {
         }
         catch (InterruptedException interruptedException) {
             throw new IOException(interruptedException.getMessage());
-        }
-        {
-            if (object.getStringExtra("unregistered") != null) {
-                return;
-            }
-            if ((object = object.getStringExtra("error")) == null) throw new IOException(ERROR_SERVICE_NOT_AVAILABLE);
-            throw new IOException((String)object);
         }
     }
 }

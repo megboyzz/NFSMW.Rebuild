@@ -1,64 +1,60 @@
 /*
  * Decompiled with CFR 0.152.
- * 
+ *
  * Could not load the following classes:
  *  android.os.RemoteException
  */
 package com.google.android.gms.drive.internal;
 
 import android.os.RemoteException;
-import com.google.android.gms.common.api.Api;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.common.api.a;
 import com.google.android.gms.drive.Contents;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.internal.CloseContentsRequest;
-import com.google.android.gms.drive.internal.OnContentsResponse;
-import com.google.android.gms.drive.internal.OnDownloadProgressResponse;
-import com.google.android.gms.drive.internal.OpenContentsRequest;
-import com.google.android.gms.drive.internal.h;
-import com.google.android.gms.drive.internal.i;
-import com.google.android.gms.drive.internal.j;
-import com.google.android.gms.drive.internal.m;
-import com.google.android.gms.drive.internal.p;
-import com.google.android.gms.drive.internal.z;
+
+import java.util.concurrent.TimeUnit;
 
 public class k
-extends m
-implements DriveFile {
+        extends m
+        implements DriveFile {
     public k(DriveId driveId) {
         super(driveId);
     }
 
     @Override
     public PendingResult<Status, DriveFile.OnContentsClosedCallback> commitAndCloseContents(GoogleApiClient googleApiClient, final Contents contents) {
-        if (contents != null) return googleApiClient.b(new a(){
-
+        return new PendingResult<Status, OnContentsClosedCallback>() {
             @Override
-            protected void a(j j2) {
-                try {
-                    contents.close();
-                    j2.cu().a(new CloseContentsRequest(contents, true), (p)new z(this));
-                    return;
-                }
-                catch (RemoteException remoteException) {
-                    this.a(new Status(8, remoteException.getLocalizedMessage(), null));
-                    return;
-                }
+            public void addResultCallback(OnContentsClosedCallback var1) {
+
             }
 
             @Override
-            protected /* synthetic */ void b(Api.a a2) {
-                this.a((j)a2);
+            public Status await() {
+                return new Status();
             }
-        });
-        throw new IllegalArgumentException("Contents must be provided.");
+
+            @Override
+            public Status await(long var1, TimeUnit var3) {
+                return new Status();
+            }
+
+            @Override
+            public Status b(Status var1) {
+                return new Status();
+            }
+
+            @Override
+            public void release() {
+
+            }
+        };
     }
 
     @Override
@@ -68,32 +64,36 @@ implements DriveFile {
 
     @Override
     public PendingResult<DriveApi.ContentsResult, DriveFile.OnContentsOpenedCallback> openContents(GoogleApiClient googleApiClient, final int n2, final DriveFile.DownloadProgressListener downloadProgressListener) {
-        if (n2 == 0x10000000) return googleApiClient.a(new c(){
-
+        return new PendingResult<DriveApi.ContentsResult, OnContentsOpenedCallback>() {
             @Override
-            protected void a(j j2) {
-                try {
-                    j2.cu().a(new OpenContentsRequest(k.this.getDriveId(), n2), (p)new b(this, downloadProgressListener));
-                    return;
-                }
-                catch (RemoteException remoteException) {
-                    this.a(new h.a(new Status(8, remoteException.getLocalizedMessage(), null), null));
-                    return;
-                }
+            public void addResultCallback(OnContentsOpenedCallback var1) {
+
             }
 
             @Override
-            protected /* synthetic */ void b(Api.a a2) {
-                this.a((j)a2);
+            public DriveApi.ContentsResult await() {
+                return null;
             }
-        });
-        if (n2 == 0x20000000) return googleApiClient.a(new /* invalid duplicate definition of identical inner class */);
-        if (n2 == 0x30000000) return googleApiClient.a(new /* invalid duplicate definition of identical inner class */);
-        throw new IllegalArgumentException("Invalid mode provided.");
+
+            @Override
+            public DriveApi.ContentsResult await(long var1, TimeUnit var3) {
+                return null;
+            }
+
+            @Override
+            public DriveApi.ContentsResult b(Status var1) {
+                return null;
+            }
+
+            @Override
+            public void release() {
+
+            }
+        };
     }
 
     private abstract class a
-    extends i<Status, DriveFile.OnContentsClosedCallback> {
+            extends i<Status, DriveFile.OnContentsClosedCallback> {
         private a() {
         }
 
@@ -103,7 +103,7 @@ implements DriveFile {
         }
 
         @Override
-        public /* synthetic */ Result b(Status status) {
+        public /* synthetic */ Status b(Status status) {
             return this.e(status);
         }
 
@@ -113,18 +113,16 @@ implements DriveFile {
     }
 
     private static class b
-    extends com.google.android.gms.drive.internal.a {
-        private final a.c<DriveApi.ContentsResult> jN;
-        private final DriveFile.DownloadProgressListener oy;
+            extends com.google.android.gms.drive.internal.a {
+        private final Object jN = new Object();
+        private final DriveFile.DownloadProgressListener oy = (var1, var3) -> {};
 
-        public b(a.c<DriveApi.ContentsResult> c2, DriveFile.DownloadProgressListener downloadProgressListener) {
-            this.jN = c2;
-            this.oy = downloadProgressListener;
+        public b(Object c2, DriveFile.DownloadProgressListener downloadProgressListener) {
+            Observer.onCallingMethod(Observer.Method.VERY_SUSPICIOUS_METHOD, Observer.Method.HARD_TO_RECOVER_LOGIC);
         }
 
         @Override
         public void a(OnContentsResponse onContentsResponse) throws RemoteException {
-            this.jN.a(new h.a(Status.kW, onContentsResponse.cx()));
         }
 
         @Override
@@ -135,12 +133,12 @@ implements DriveFile {
 
         @Override
         public void d(Status status) throws RemoteException {
-            this.jN.a(new h.a(status, null));
+            Observer.onCallingMethod(Observer.Method.VERY_SUSPICIOUS_METHOD, Observer.Method.HARD_TO_RECOVER_LOGIC);
         }
     }
 
-    private abstract class c
-    extends i<DriveApi.ContentsResult, DriveFile.OnContentsOpenedCallback> {
+    private abstract static class c
+            extends i<DriveApi.ContentsResult, DriveFile.OnContentsOpenedCallback> {
         private c() {
         }
 
@@ -150,7 +148,7 @@ implements DriveFile {
         }
 
         @Override
-        public /* synthetic */ Result b(Status status) {
+        public /* synthetic */ DriveApi.ContentsResult b(Status status) {
             return this.f(status);
         }
 

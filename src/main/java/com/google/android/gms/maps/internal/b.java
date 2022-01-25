@@ -22,10 +22,10 @@ extends IInterface {
 
     public void onFinish() throws RemoteException;
 
-    public static abstract class com.google.android.gms.maps.internal.b$a
+    public static abstract class b$a
     extends Binder
     implements b {
-        public com.google.android.gms.maps.internal.b$a() {
+        public b$a() {
             this.attachInterface(this, "com.google.android.gms.maps.internal.ICancelableCallback");
         }
 

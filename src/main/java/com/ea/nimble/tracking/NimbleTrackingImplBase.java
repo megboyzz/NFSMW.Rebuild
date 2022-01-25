@@ -18,11 +18,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+
 import com.ea.nimble.ApplicationEnvironment;
 import com.ea.nimble.Component;
 import com.ea.nimble.EASPDataLoader;
 import com.ea.nimble.IHttpResponse;
-import com.ea.nimble.Log;
+import com.ea.nimble.Log.Helper;
 import com.ea.nimble.LogSource;
 import com.ea.nimble.Network;
 import com.ea.nimble.Persistence;
@@ -33,10 +34,7 @@ import com.ea.nimble.SynergyNetworkConnectionCallback;
 import com.ea.nimble.SynergyNetworkConnectionHandle;
 import com.ea.nimble.SynergyRequest;
 import com.ea.nimble.Utility;
-import com.ea.nimble.tracking.ITracking;
-import com.ea.nimble.tracking.NimbleTrackingThreadManager;
-import com.ea.nimble.tracking.Tracking;
-import com.ea.nimble.tracking.TrackingBaseSessionObject;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -115,17 +113,17 @@ ITracking {
     }
 
     private void configureTrackingOnFirstInstall() {
-        Log.Helper.LOGD(this, "First Install. Look for App Settings to enable/disable tracking", new Object[0]);
+        Helper.LOGD(this, "First Install. Look for App Settings to enable/disable tracking");
         try {
             String string2 = ApplicationEnvironment.getCurrentActivity().getPackageManager().getApplicationInfo((String)ApplicationEnvironment.getCurrentActivity().getPackageName(), (int)128).metaData.getString("com.ea.nimble.tracking.defaultEnable");
             if (Utility.validString(string2)) {
                 if (string2.equalsIgnoreCase("enable")) {
-                    Log.Helper.LOGD(this, "Default App Setting : Enable Tracking", new Object[0]);
+                    Helper.LOGD(this, "Default App Setting : Enable Tracking");
                     this.m_enable = true;
                     return;
                 }
                 if (!string2.equalsIgnoreCase("disable")) return;
-                Log.Helper.LOGD(this, "Default App Setting : Disable Tracking", new Object[0]);
+                Helper.LOGD(this, "Default App Setting : Disable Tracking");
                 this.m_enable = false;
                 return;
             }
@@ -138,9 +136,9 @@ ITracking {
 
     private void dropExtraSessions() {
         if (this.dropExtraSessions(true)) return;
-        Log.Helper.LOGD(this, "Failed to drop enough sessions. Dropping sessions without checking canDropSession.", new Object[0]);
+        Helper.LOGD(this, "Failed to drop enough sessions. Dropping sessions without checking canDropSession.");
         if (this.dropExtraSessions(false)) return;
-        Log.Helper.LOGE(this, "Still unable to drop enough sessions. Remaining number: " + (this.m_lastSessionIDNumber - this.m_firstSessionIDNumber + 1L), new Object[0]);
+        Helper.LOGE(this, "Still unable to drop enough sessions. Remaining number: " + (this.m_lastSessionIDNumber - this.m_firstSessionIDNumber + 1L));
     }
 
     private boolean dropExtraSessions(boolean bl2) {
@@ -148,7 +146,7 @@ ITracking {
         if (this.m_totalSessions < 50L) {
             return true;
         }
-        Log.Helper.LOGD(this, "Current number of sessions (%d) has reached maximum (%d). Removing old sessions.", this.m_totalSessions, 50);
+        Helper.LOGD(this, "Current number of sessions (%d) has reached maximum (%d). Removing old sessions.", this.m_totalSessions, 50);
         ArrayList<TrackingBaseSessionObject> arrayList = new ArrayList<TrackingBaseSessionObject>();
         for (l2 = this.m_firstSessionIDNumber; l2 <= this.m_lastSessionIDNumber; ++l2) {
             TrackingBaseSessionObject trackingBaseSessionObject;
@@ -214,7 +212,7 @@ ITracking {
 
     private String getFilenameForSessionID(long l2) {
         if (l2 >= 0L) return String.format(Locale.US, SESSION_FILE_FORMAT, this.getComponentId(), l2);
-        Log.Helper.LOGE(this, "Trying to find the filename for an invalid sessionID!", new Object[0]);
+        Helper.LOGE(this, "Trying to find the filename for an invalid sessionID!");
         return null;
     }
 
@@ -223,12 +221,12 @@ ITracking {
             return false;
         }
         if (!(bl2 || ApplicationEnvironment.isMainApplicationRunning() && ApplicationEnvironment.getCurrentActivity() != null)) {
-            Log.Helper.LOGD(this, "isAbleToPostEvent - return because the app is in background", new Object[0]);
+            Helper.LOGD(this, "isAbleToPostEvent - return because the app is in background");
             return false;
         }
         if (Network.getComponent().getStatus() != Network.Status.OK) {
             if (this.m_networkStatusChangedReceiver != null) return false;
-            Log.Helper.LOGD(this, "Network status not OK for event post. Adding receiver for network status change.", new Object[0]);
+            Helper.LOGD(this, "Network status not OK for event post. Adding receiver for network status change.");
             this.killPostTimer();
             this.m_networkStatusChangedReceiver = new BroadcastReceiver(){
 
@@ -267,12 +265,11 @@ ITracking {
     }
 
     private void logEvent(Tracking.Event iterator, boolean bl2) {
-        if ((iterator = this.convertEvent((Tracking.Event)((Object)iterator))) != null && !iterator.isEmpty()) {
-            iterator = iterator.iterator();
-            while (iterator.hasNext()) {
-                Map map = (Map)iterator.next();
+        List<Map<String, String>> maps = this.convertEvent((Tracking.Event) ((Object) iterator));
+        if (maps != null && !maps.isEmpty()) {
+            for (Map map : maps) {
                 this.m_currentSessionObject.events.add(map);
-                Log.Helper.LOGD(this, "Logged event, %s: \n", map);
+                Helper.LOGD(this, "Logged event, %s: \n", map);
             }
             this.saveToPersistence();
             if (!bl2 && (this.m_postTimer == null || this.m_postTimer.isDone() && !this.m_isRequestInProgress) && this.isAbleToPostEvent(false)) {
@@ -281,7 +278,7 @@ ITracking {
         }
         boolean bl3 = bl2;
         if (this.m_currentSessionObject.events.size() >= 50) {
-            Log.Helper.LOGD(this, "Current number of events (%d) has reached maximum (%d). Posting event queue now.", this.m_currentSessionObject.events.size(), 50);
+            Helper.LOGD(this, "Current number of events (%d) has reached maximum (%d). Posting event queue now.", this.m_currentSessionObject.events.size(), 50);
             bl3 = true;
         }
         if (!bl3) return;
@@ -292,7 +289,7 @@ ITracking {
 
     private void onNetworkStatusChange() {
         if (Network.getComponent().getStatus() != Network.Status.OK) return;
-        Log.Helper.LOGD(this, "Network status restored, kicking off event post.", new Object[0]);
+        Helper.LOGD(this, "Network status restored, kicking off event post.");
         Utility.unregisterReceiver(this.m_networkStatusChangedReceiver);
         this.m_networkStatusChangedReceiver = null;
         this.resetPostTimer(0.0);
@@ -300,22 +297,22 @@ ITracking {
 
     private void onOriginLoginStatusChanged(Intent object) {
         if (object.getExtras() == null) {
-            Log.Helper.LOGI(this, "Login status updated event received without extras bundle. Marking NOT logged in to Origin.", new Object[0]);
+            Helper.LOGI(this, "Login status updated event received without extras bundle. Marking NOT logged in to Origin.");
             this.m_loggedInToOrigin = false;
             return;
         }
-        if (!((String)(object = object.getExtras().getString(ORIGIN_NOTIFICATION_LOGIN_STATUS_UPDATE_KEY_STATUS))).equals(ORIGIN_LOGIN_STATUS_STRING_LIVE_USER) && !((String)object).equals(ORIGIN_LOGIN_STATUS_STRING_AUTO_LOGGING_IN)) {
-            Log.Helper.LOGI(this, "Login status update, FALSE", new Object[0]);
+        if (!(object.getExtras().getString(ORIGIN_NOTIFICATION_LOGIN_STATUS_UPDATE_KEY_STATUS)).equals(ORIGIN_LOGIN_STATUS_STRING_LIVE_USER) && !object.equals(ORIGIN_LOGIN_STATUS_STRING_AUTO_LOGGING_IN)) {
+            Helper.LOGI(this, "Login status update, FALSE");
             this.m_loggedInToOrigin = false;
             return;
         }
-        Log.Helper.LOGI(this, "Login status update, TRUE", new Object[0]);
+        Helper.LOGI(this, "Login status update, TRUE");
         this.m_loggedInToOrigin = true;
     }
 
     private void onPostComplete(SynergyNetworkConnectionHandle synergyNetworkConnectionHandle, TrackingBaseSessionObject trackingBaseSessionObject) {
         if (synergyNetworkConnectionHandle == null || synergyNetworkConnectionHandle.getResponse() == null) {
-            Log.Helper.LOGE(this, "No response exists in this post!", new Object[0]);
+            Helper.LOGE(this, "No response exists in this post!");
             return;
         }
         boolean bl2 = false;
@@ -327,16 +324,16 @@ ITracking {
         } else {
             IHttpResponse iHttpResponse = synergyNetworkConnectionHandle.getResponse().getHttpResponse();
             if (iHttpResponse != null && (iHttpResponse.getStatusCode() == 400 || iHttpResponse.getStatusCode() == 415)) {
-                Log.Helper.LOGE(this, "Received HTTP status %d. Discarding post.", iHttpResponse.getStatusCode());
+                Helper.LOGE(this, "Received HTTP status %d. Discarding post.", iHttpResponse.getStatusCode());
                 this.removeSessionAndFillQueue(trackingBaseSessionObject);
                 this.m_postRetryDelay = 1.0;
                 d2 = this.m_postInterval;
             } else {
-                Log.Helper.LOGE(this, "Failed to send tracking events. Error: %s", synergyNetworkConnectionHandle.getResponse().getError().getLocalizedMessage());
+                Helper.LOGE(this, "Failed to send tracking events. Error: %s", synergyNetworkConnectionHandle.getResponse().getError().getLocalizedMessage());
                 bl2 = true;
             }
         }
-        Log.Helper.LOGI(this, "Telemetry post request finished, resetting isRequestInProgress flag to false.", new Object[0]);
+        Helper.LOGI(this, "Telemetry post request finished, resetting isRequestInProgress flag to false.");
         this.m_isRequestInProgress = false;
         if (bl2) {
             d2 = this.m_postRetryDelay;
@@ -344,16 +341,16 @@ ITracking {
             if (this.m_postRetryDelay > 300.0) {
                 this.m_postRetryDelay = 300.0;
             }
-            Log.Helper.LOGI(this, "Posting a retry with delay of %s due to failed send. Queue size: %d", d2, this.m_sessionsToPost.size());
+            Helper.LOGI(this, "Posting a retry with delay of %s due to failed send. Queue size: %d", d2, this.m_sessionsToPost.size());
             this.resetPostTimer(d2, false);
             return;
         }
         if (this.m_sessionsToPost != null && !this.m_sessionsToPost.isEmpty()) {
-            Log.Helper.LOGI(this, "More items found in the queue. Post the next one now. Queue size: %d", this.m_sessionsToPost.size());
+            Helper.LOGI(this, "More items found in the queue. Post the next one now. Queue size: %d", this.m_sessionsToPost.size());
             this.resetPostTimer(0.0, false);
             return;
         }
-        Log.Helper.LOGI(this, "No more items found in the queue. Wait on the timer. Queue size: %d", this.m_sessionsToPost.size());
+        Helper.LOGI(this, "No more items found in the queue. Wait on the timer. Queue size: %d", this.m_sessionsToPost.size());
         this.resetPostTimer(d2, true);
     }
 
@@ -370,24 +367,24 @@ ITracking {
                     object2 = SynergyEnvironment.getComponent().getSellId();
                     trackingBaseSessionObject.sessionData.put("sellId", Utility.safeString((String)object2));
                     if (object2 == null || ((String)object2).equals("") || ((String)object2).equals("0")) {
-                        Log.Helper.LOGE(this, "Sell Id was still null after synergy update", new Object[0]);
+                        Helper.LOGE(this, "Sell Id was still null after synergy update");
                     }
                 }
                 if ((object2 = trackingBaseSessionObject.sessionData.get("hwId")) != null && object2 instanceof String && ((String)object2).equals("")) {
                     object2 = SynergyEnvironment.getComponent().getEAHardwareId();
                     trackingBaseSessionObject.sessionData.put("hwId", Utility.safeString((String)object2));
                     if (object2 == null || ((String)object2).equals("")) {
-                        Log.Helper.LOGE(this, "Hardware Id was still null after synergy update", new Object[0]);
+                        Helper.LOGE(this, "Hardware Id was still null after synergy update");
                     }
                 }
                 if ((object2 = trackingBaseSessionObject.sessionData.get("deviceId")) == null || !(object2 instanceof String) || !((String)object2).equals("") && !((String)object2).equals("0")) continue;
                 object2 = SynergyEnvironment.getComponent().getEADeviceId();
                 trackingBaseSessionObject.sessionData.put("deviceId", Utility.safeString((String)object2));
                 if (object2 != null && !((String)object2).equals("") && !((String)object2).equals("0")) continue;
-                Log.Helper.LOGE(this, "Device Id was still null after synergy update", new Object[0]);
+                Helper.LOGE(this, "Device Id was still null after synergy update");
             }
         }
-        Log.Helper.LOGI(this, "Synergy environment update successful. Removing observer and re-attempting event post.", new Object[0]);
+        Helper.LOGI(this, "Synergy environment update successful. Removing observer and re-attempting event post.");
         if (this.m_receiver != null) {
             Utility.unregisterReceiver(this.m_receiver);
             this.m_receiver = null;
@@ -409,14 +406,14 @@ ITracking {
             return;
         }
         if (this.m_sessionsToPost == null || this.m_sessionsToPost.size() <= 0) {
-            Log.Helper.LOGD(this, "No tracking sessions to post.", new Object[0]);
+            Helper.LOGD(this, "No tracking sessions to post.");
             return;
         }
-        final TrackingBaseSessionObject trackingBaseSessionObject = this.m_sessionsToPost.get(0);
+        TrackingBaseSessionObject trackingBaseSessionObject = this.m_sessionsToPost.get(0);
         while (trackingBaseSessionObject == null) {
             this.removeSessionAndFillQueue(null);
             if (this.m_sessionsToPost.size() <= 0) {
-                Log.Helper.LOGD(this, "No valid tracking sessions to post.", new Object[0]);
+                Helper.LOGD(this, "No valid tracking sessions to post.");
                 return;
             }
             trackingBaseSessionObject = this.m_sessionsToPost.get(0);
@@ -424,11 +421,12 @@ ITracking {
         SynergyRequest synergyRequest = this.createPostRequest(trackingBaseSessionObject);
         if (synergyRequest == null) return;
         synergyRequest.httpRequest.runInBackground = bl2;
-        Log.Helper.LOGD(this, "Event queue marshalled. Incrementing repost count from %d to %d", trackingBaseSessionObject.repostCount, trackingBaseSessionObject.repostCount + 1);
+        Helper.LOGD(this, "Event queue marshalled. Incrementing repost count from %d to %d", trackingBaseSessionObject.repostCount, trackingBaseSessionObject.repostCount + 1);
         ++trackingBaseSessionObject.repostCount;
         this.m_isRequestInProgress = true;
         final NimbleTrackingThreadManager nimbleTrackingThreadManager = NimbleTrackingThreadManager.acquireInstance();
         try {
+            TrackingBaseSessionObject finalTrackingBaseSessionObject = trackingBaseSessionObject;
             SynergyNetwork.getComponent().sendRequest(synergyRequest, new SynergyNetworkConnectionCallback(){
 
                 @Override
@@ -437,7 +435,7 @@ ITracking {
 
                         @Override
                         public void run() {
-                            NimbleTrackingImplBase.this.onPostComplete(synergyNetworkConnectionHandle, trackingBaseSessionObject);
+                            NimbleTrackingImplBase.this.onPostComplete(synergyNetworkConnectionHandle, finalTrackingBaseSessionObject);
                         }
                     });
                     NimbleTrackingThreadManager.releaseInstance();
@@ -448,12 +446,12 @@ ITracking {
         catch (OutOfMemoryError outOfMemoryError) {
             Activity activity = ApplicationEnvironment.getCurrentActivity();
             if (activity != null) {
-                nimbleTrackingThreadManager = new ActivityManager.MemoryInfo();
-                ((ActivityManager)activity.getSystemService("activity")).getMemoryInfo((ActivityManager.MemoryInfo)nimbleTrackingThreadManager);
-                long l2 = ((ActivityManager.MemoryInfo)nimbleTrackingThreadManager).availMem / 0x100000L;
-                Log.Helper.LOGI(this, "OutOfMemoryError with " + l2 + " MB left. Dropping current session", new Object[0]);
+                ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+                ((ActivityManager)activity.getSystemService(Activity.ACTIVITY_SERVICE)).getMemoryInfo(memoryInfo);
+                long l2 = memoryInfo.availMem / 0x100000L;
+                Helper.LOGI(this, "OutOfMemoryError with " + l2 + " MB left. Dropping current session");
             } else {
-                Log.Helper.LOGI(this, "Out of memory. Dropping current session", new Object[0]);
+                Helper.LOGI(this, "Out of memory. Dropping current session");
             }
             NimbleTrackingThreadManager.releaseInstance();
             double d2 = this.m_postInterval;
@@ -461,11 +459,11 @@ ITracking {
             this.m_postRetryDelay = 1.0;
             this.m_isRequestInProgress = false;
             if (this.m_sessionsToPost != null && !this.m_sessionsToPost.isEmpty()) {
-                Log.Helper.LOGI(this, "More items found in the queue. Post the next one now. Queue size: %d", this.m_sessionsToPost.size());
+                Helper.LOGI(this, "More items found in the queue. Post the next one now. Queue size: %d", this.m_sessionsToPost.size());
                 this.resetPostTimer(0.0, false);
                 return;
             }
-            Log.Helper.LOGI(this, "No more items found in the queue. Wait on the timer. Queue size: %d", this.m_sessionsToPost.size());
+            Helper.LOGI(this, "No more items found in the queue. Wait on the timer. Queue size: %d", this.m_sessionsToPost.size());
             this.resetPostTimer(d2, true);
             return;
         }
@@ -487,17 +485,17 @@ ITracking {
         double d3;
         double d4 = d3 = d2;
         if (d3 < 0.0) {
-            Log.Helper.LOGE(this, "resetPostTimer called with an invalid period: period < 0.0. Timer reset with period 0.0 instead", new Object[0]);
+            Helper.LOGE(this, "resetPostTimer called with an invalid period: period < 0.0. Timer reset with period 0.0 instead");
             d4 = 0.0;
         }
-        Log.Helper.LOGI(this, "Resetting event post timer for %s seconds.", d2);
+        Helper.LOGI(this, "Resetting event post timer for %s seconds.", d2);
         this.killPostTimer();
         this.m_postTimer = this.m_threadManager.createTimer(d4, new PostTask(bl2));
     }
 
     private void saveSessionDataToPersistent() {
         Persistence persistence = PersistenceService.getPersistenceForNimbleComponent(this.getComponentId(), Persistence.Storage.CACHE);
-        Log.Helper.LOGI(this, "Saving event queue to persistence.", new Object[0]);
+        Helper.LOGI(this, "Saving event queue to persistence.");
         persistence.setValue(PERSISTENCE_SESSION_DATA_ID, this.m_customSessionData);
         persistence.synchronize();
     }
@@ -506,24 +504,17 @@ ITracking {
      * Unable to fully structure code
      */
     private void saveSessionToFile(TrackingBaseSessionObject var1_1, long var2_3) {
-        var4_4 = this.getFilenameForSessionID(var2_3);
-        var5_5 = PersistenceService.getPersistenceForNimbleComponent(var4_4, Persistence.Storage.DOCUMENT);
+        String var4_4 = this.getFilenameForSessionID(var2_3);
+        Persistence var5_5 = PersistenceService.getPersistenceForNimbleComponent(var4_4, Persistence.Storage.DOCUMENT);
         if (var5_5.getBackUp()) {
             var5_5.setBackUp(false);
         }
         try {
             var5_5.setValue("savedSession", var1_1);
-lbl7:
-            // 2 sources
-
-            while (true) {
-                var5_5.synchronize();
-                break;
-            }
+            var5_5.synchronize();
         }
         catch (OutOfMemoryError var1_2) {
-            Log.Helper.LOGE(this, "OutOfMemoryError occurred while saving a session object to file. Exception: %s", new Object[]{var1_2.getLocalizedMessage()});
-            ** continue;
+            Helper.LOGE(this, "OutOfMemoryError occurred while saving a session object to file. Exception: %s", var1_2.getLocalizedMessage());
         }
         PersistenceService.cleanReferenceToPersistence(var4_4, Persistence.Storage.DOCUMENT);
     }
@@ -620,7 +611,7 @@ lbl7:
         }
         boolean bl2 = false;
         if (string2.equals("NIMBLESTANDARD::SESSION_END")) {
-            Log.Helper.LOGD(this, "Logging session end event, " + string2 + ". Posting event queue now.", new Object[0]);
+            Helper.LOGD(this, "Logging session end event, " + string2 + ". Posting event queue now.");
             bl2 = true;
         }
         Tracking.Event event = new Tracking.Event();
@@ -633,14 +624,14 @@ lbl7:
     protected abstract void packageCurrentSession();
 
     protected void queueCurrentEventsForPost() {
-        Log.Helper.LOGI(this, "queueCurrentEventsForPost called. Starting queue size: %d", this.m_sessionsToPost.size());
+        Helper.LOGI(this, "queueCurrentEventsForPost called. Starting queue size: %d", this.m_sessionsToPost.size());
         if (this.m_sessionsToPost == null) {
             this.m_sessionsToPost = new ArrayList();
         }
         if (this.m_currentSessionObject == null) {
-            Log.Helper.LOGE(this, "Unexpected state, currentSessionObject is null.", new Object[0]);
+            Helper.LOGE(this, "Unexpected state, currentSessionObject is null.");
         } else if (this.m_currentSessionObject.countOfEvents() == 0) {
-            Log.Helper.LOGE(this, "Unexpected state, currentSessionObject events list is null or empty.", new Object[0]);
+            Helper.LOGE(this, "Unexpected state, currentSessionObject events list is null or empty.");
         } else {
             this.addCurrentSessionObjectToBackOfQueue();
             this.dropExtraSessions();
@@ -698,7 +689,7 @@ lbl7:
     @Override
     public void setEnable(boolean bl2) {
         Object object = bl2 ? "ENABLED" : "DISABLED";
-        Log.Helper.LOGI(this, "setEnable called. enable = %s", object);
+        Helper.LOGI(this, "setEnable called. enable = %s", object);
         if (this.m_enable == bl2) {
             return;
         }
@@ -709,11 +700,11 @@ lbl7:
             this.packageCurrentSession();
             this.postPendingEvents(false);
             if (this.m_currentSessionObject.countOfEvents() > 0) {
-                Log.Helper.LOGI(this, "Removing %d remaining events that couldn't be sent from queue.", this.m_currentSessionObject.countOfEvents());
+                Helper.LOGI(this, "Removing %d remaining events that couldn't be sent from queue.", this.m_currentSessionObject.countOfEvents());
             }
             this.m_currentSessionObject = new TrackingBaseSessionObject();
             if (this.m_sessionsToPost != null && this.m_sessionsToPost.size() > 0) {
-                Log.Helper.LOGI(this, "Removing unposted sessions.", new Object[0]);
+                Helper.LOGI(this, "Removing unposted sessions.");
                 this.m_sessionsToPost.clear();
             }
             this.killPostTimer();

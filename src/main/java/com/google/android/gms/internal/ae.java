@@ -18,12 +18,12 @@ import android.os.RemoteException;
 
 public interface ae
 extends IInterface {
-    public void onAppEvent(String var1, String var2) throws RemoteException;
+    void onAppEvent(String var1, String var2) throws RemoteException;
 
-    public static abstract class com.google.android.gms.internal.ae$a
+    abstract class ae$a
     extends Binder
     implements ae {
-        public com.google.android.gms.internal.ae$a() {
+        public ae$a() {
             this.attachInterface(this, "com.google.android.gms.ads.internal.client.IAppEventListener");
         }
 

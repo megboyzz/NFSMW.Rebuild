@@ -26,7 +26,7 @@ public enum NimbleConfiguration {
     }
 
     public String toString() {
-        switch (1.$SwitchMap$com$ea$nimble$NimbleConfiguration[this.ordinal()]) {
+        switch (this.ordinal()) {
             default: {
                 return "unknown";
             }

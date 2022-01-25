@@ -28,11 +28,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import com.google.android.gms.internal.co;
-import com.google.android.gms.internal.cp;
-import com.google.android.gms.internal.cq;
-import com.google.android.gms.internal.cr;
-import com.google.android.gms.internal.cs;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.CharBuffer;
@@ -41,9 +43,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public final class cn {
     private static final Object hA = new Object();
@@ -69,10 +68,9 @@ public final class cn {
 
     private static JSONArray a(Collection<?> object) throws JSONException {
         JSONArray jSONArray = new JSONArray();
-        object = object.iterator();
-        while (object.hasNext()) {
-            cn.a(jSONArray, object.next());
-        }
+        Observer.onCallingMethod(
+                Observer.Method.HARD_TO_RECOVER_LOGIC
+        );
         return jSONArray;
     }
 
@@ -102,9 +100,8 @@ public final class cn {
     }
 
     public static void a(Context context, String string2, List<String> object) {
-        object = object.iterator();
-        while (object.hasNext()) {
-            new cq(context, string2, (String)object.next()).start();
+        for (String s : object) {
+            new cq(context, string2, s).start();
         }
     }
 
@@ -165,8 +162,7 @@ public final class cn {
     }
 
     public static boolean a(PackageManager packageManager, String string2, String string3) {
-        if (packageManager.checkPermission(string3, string2) != 0) return false;
-        return true;
+        return packageManager.checkPermission(string3, string2) == PackageManager.PERMISSION_GRANTED;
     }
 
     public static boolean as() {
@@ -188,49 +184,10 @@ public final class cn {
      * Enabled unnecessary exception pruning
      */
     private static String b(final Context var0, String var1_3) {
-        var2_4 = cn.hA;
-        synchronized (var2_4) {
-            block10: {
-                if (cn.iA != null) {
-                    return cn.iA;
-                }
-                if (Build.VERSION.SDK_INT < 17) break block10;
-                cn.iA = cp.getDefaultUserAgent(var0 /* !! */ );
-                ** GOTO lbl14
-            }
-            if (!cr.ax()) {
-                cr.iE.post(new Runnable(){
-
-                    @Override
-                    public void run() {
-                        Object object = hA;
-                        synchronized (object) {
-                            cn.p(cn.j(var0));
-                            hA.notifyAll();
-                            return;
-                        }
-                    }
-                });
-            } else {
-                cn.iA = cn.j(var0 /* !! */ );
-lbl14:
-                // 3 sources
-
-                while (true) {
-                    cn.iA = cn.iA + " (Mobile; " + var1_3 + ")";
-                    return cn.iA;
-                }
-            }
-            while (true) {
-                if ((var0 /* !! */  = cn.iA) != null) ** continue;
-                try {
-                    cn.hA.wait();
-                }
-                catch (InterruptedException var0_1) {
-                    return cn.iA;
-                }
-            }
-        }
+        Observer.onCallingMethod(
+                Observer.Method.HARD_TO_RECOVER_LOGIC
+        );
+        return "";
     }
 
     public static void b(WebView webView) {
@@ -239,43 +196,10 @@ lbl14:
     }
 
     public static boolean h(Context context) {
-        boolean bl2;
-        Intent intent = new Intent();
-        intent.setClassName(context, "com.google.android.gms.ads.AdActivity");
-        context = context.getPackageManager().resolveActivity(intent, 65536);
-        if (context == null || context.activityInfo == null) {
-            cs.v("Could not find com.google.android.gms.ads.AdActivity, please make sure it is declared in AndroidManifest.xml.");
-            return false;
-        }
-        if ((context.activityInfo.configChanges & 0x10) == 0) {
-            cs.v(String.format("com.google.android.gms.ads.AdActivity requires the android:configChanges value to contain \"%s\".", "keyboard"));
-            bl2 = false;
-        } else {
-            bl2 = true;
-        }
-        if ((context.activityInfo.configChanges & 0x20) == 0) {
-            cs.v(String.format("com.google.android.gms.ads.AdActivity requires the android:configChanges value to contain \"%s\".", "keyboardHidden"));
-            bl2 = false;
-        }
-        if ((context.activityInfo.configChanges & 0x80) == 0) {
-            cs.v(String.format("com.google.android.gms.ads.AdActivity requires the android:configChanges value to contain \"%s\".", "orientation"));
-            bl2 = false;
-        }
-        if ((context.activityInfo.configChanges & 0x100) == 0) {
-            cs.v(String.format("com.google.android.gms.ads.AdActivity requires the android:configChanges value to contain \"%s\".", "screenLayout"));
-            bl2 = false;
-        }
-        if ((context.activityInfo.configChanges & 0x200) == 0) {
-            cs.v(String.format("com.google.android.gms.ads.AdActivity requires the android:configChanges value to contain \"%s\".", "uiMode"));
-            bl2 = false;
-        }
-        if ((context.activityInfo.configChanges & 0x400) == 0) {
-            cs.v(String.format("com.google.android.gms.ads.AdActivity requires the android:configChanges value to contain \"%s\".", "screenSize"));
-            bl2 = false;
-        }
-        if ((context.activityInfo.configChanges & 0x800) != 0) return bl2;
-        cs.v(String.format("com.google.android.gms.ads.AdActivity requires the android:configChanges value to contain \"%s\".", "smallestScreenSize"));
-        return false;
+        Observer.onCallingMethod(
+                Observer.Method.HARD_TO_RECOVER_LOGIC
+        );
+        return true;
     }
 
     public static void i(Context context) {

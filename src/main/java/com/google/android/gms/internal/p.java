@@ -16,6 +16,8 @@ import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
 
+import com.ea.ironmonkey.devmenu.util.Observer;
+
 public interface p
 extends IInterface {
     public boolean a(boolean var1) throws RemoteException;
@@ -26,7 +28,7 @@ extends IInterface {
 
     public String getId() throws RemoteException;
 
-    public static abstract class com.google.android.gms.internal.p$a
+    public static abstract class p$a
     extends Binder
     implements p {
         public static p b(IBinder iBinder) {
@@ -40,51 +42,9 @@ extends IInterface {
         }
 
         public boolean onTransact(int n2, Parcel object, Parcel parcel, int n3) throws RemoteException {
-            boolean bl2 = false;
-            int n4 = 0;
-            switch (n2) {
-                default: {
-                    return super.onTransact(n2, object, parcel, n3);
-                }
-                case 1598968902: {
-                    parcel.writeString("com.google.android.gms.ads.identifier.internal.IAdvertisingIdService");
-                    return true;
-                }
-                case 1: {
-                    object.enforceInterface("com.google.android.gms.ads.identifier.internal.IAdvertisingIdService");
-                    object = this.getId();
-                    parcel.writeNoException();
-                    parcel.writeString((String)object);
-                    return true;
-                }
-                case 2: {
-                    object.enforceInterface("com.google.android.gms.ads.identifier.internal.IAdvertisingIdService");
-                    bl2 = object.readInt() != 0;
-                    bl2 = this.a(bl2);
-                    parcel.writeNoException();
-                    n2 = n4;
-                    if (bl2) {
-                        n2 = 1;
-                    }
-                    parcel.writeInt(n2);
-                    return true;
-                }
-                case 3: {
-                    object.enforceInterface("com.google.android.gms.ads.identifier.internal.IAdvertisingIdService");
-                    object = this.e(object.readString());
-                    parcel.writeNoException();
-                    parcel.writeString((String)object);
-                    return true;
-                }
-                case 4: 
-            }
-            object.enforceInterface("com.google.android.gms.ads.identifier.internal.IAdvertisingIdService");
-            String string2 = object.readString();
-            if (object.readInt() != 0) {
-                bl2 = true;
-            }
-            this.b(string2, bl2);
-            parcel.writeNoException();
+            Observer.onCallingMethod(
+                    Observer.Method.HARD_TO_RECOVER_LOGIC,
+                    Observer.Method.VERY_SUSPICIOUS_METHOD);
             return true;
         }
 

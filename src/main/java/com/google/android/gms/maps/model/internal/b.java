@@ -15,47 +15,49 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
 import com.google.android.gms.maps.model.LatLng;
 
 public interface b
 extends IInterface {
-    public boolean a(b var1) throws RemoteException;
+    boolean a(b var1) throws RemoteException;
 
-    public LatLng getCenter() throws RemoteException;
+    LatLng getCenter() throws RemoteException;
 
-    public int getFillColor() throws RemoteException;
+    int getFillColor() throws RemoteException;
 
-    public String getId() throws RemoteException;
+    String getId() throws RemoteException;
 
-    public double getRadius() throws RemoteException;
+    double getRadius() throws RemoteException;
 
-    public int getStrokeColor() throws RemoteException;
+    int getStrokeColor() throws RemoteException;
 
-    public float getStrokeWidth() throws RemoteException;
+    float getStrokeWidth() throws RemoteException;
 
-    public float getZIndex() throws RemoteException;
+    float getZIndex() throws RemoteException;
 
-    public int hashCodeRemote() throws RemoteException;
+    int hashCodeRemote() throws RemoteException;
 
-    public boolean isVisible() throws RemoteException;
+    boolean isVisible() throws RemoteException;
 
-    public void remove() throws RemoteException;
+    void remove() throws RemoteException;
 
-    public void setCenter(LatLng var1) throws RemoteException;
+    void setCenter(LatLng var1) throws RemoteException;
 
-    public void setFillColor(int var1) throws RemoteException;
+    void setFillColor(int var1) throws RemoteException;
 
-    public void setRadius(double var1) throws RemoteException;
+    void setRadius(double var1) throws RemoteException;
 
-    public void setStrokeColor(int var1) throws RemoteException;
+    void setStrokeColor(int var1) throws RemoteException;
 
-    public void setStrokeWidth(float var1) throws RemoteException;
+    void setStrokeWidth(float var1) throws RemoteException;
 
-    public void setVisible(boolean var1) throws RemoteException;
+    void setVisible(boolean var1) throws RemoteException;
 
-    public void setZIndex(float var1) throws RemoteException;
+    void setZIndex(float var1) throws RemoteException;
 
-    public static abstract class com.google.android.gms.maps.model.internal.b$a
+    abstract class b$a
     extends Binder
     implements b {
         public static b ah(IBinder iBinder) {
@@ -69,151 +71,9 @@ extends IInterface {
         }
 
         public boolean onTransact(int n2, Parcel object, Parcel parcel, int n3) throws RemoteException {
-            int n4 = 0;
-            int n5 = 0;
-            boolean bl2 = false;
-            switch (n2) {
-                default: {
-                    return super.onTransact(n2, (Parcel)object, parcel, n3);
-                }
-                case 1598968902: {
-                    parcel.writeString("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    return true;
-                }
-                case 1: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    this.remove();
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 2: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    object = this.getId();
-                    parcel.writeNoException();
-                    parcel.writeString((String)object);
-                    return true;
-                }
-                case 3: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    object = object.readInt() != 0 ? LatLng.CREATOR.createFromParcel((Parcel)object) : null;
-                    this.setCenter((LatLng)object);
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 4: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    object = this.getCenter();
-                    parcel.writeNoException();
-                    if (object != null) {
-                        parcel.writeInt(1);
-                        ((LatLng)object).writeToParcel(parcel, 1);
-                        return true;
-                    }
-                    parcel.writeInt(0);
-                    return true;
-                }
-                case 5: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    this.setRadius(object.readDouble());
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 6: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    double d2 = this.getRadius();
-                    parcel.writeNoException();
-                    parcel.writeDouble(d2);
-                    return true;
-                }
-                case 7: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    this.setStrokeWidth(object.readFloat());
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 8: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    float f2 = this.getStrokeWidth();
-                    parcel.writeNoException();
-                    parcel.writeFloat(f2);
-                    return true;
-                }
-                case 9: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    this.setStrokeColor(object.readInt());
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 10: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    n2 = this.getStrokeColor();
-                    parcel.writeNoException();
-                    parcel.writeInt(n2);
-                    return true;
-                }
-                case 11: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    this.setFillColor(object.readInt());
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 12: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    n2 = this.getFillColor();
-                    parcel.writeNoException();
-                    parcel.writeInt(n2);
-                    return true;
-                }
-                case 13: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    this.setZIndex(object.readFloat());
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 14: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    float f3 = this.getZIndex();
-                    parcel.writeNoException();
-                    parcel.writeFloat(f3);
-                    return true;
-                }
-                case 15: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    if (object.readInt() != 0) {
-                        bl2 = true;
-                    }
-                    this.setVisible(bl2);
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 16: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    bl2 = this.isVisible();
-                    parcel.writeNoException();
-                    n2 = n4;
-                    if (bl2) {
-                        n2 = 1;
-                    }
-                    parcel.writeInt(n2);
-                    return true;
-                }
-                case 17: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    bl2 = this.a(com.google.android.gms.maps.model.internal.b$a.ah(object.readStrongBinder()));
-                    parcel.writeNoException();
-                    n2 = n5;
-                    if (bl2) {
-                        n2 = 1;
-                    }
-                    parcel.writeInt(n2);
-                    return true;
-                }
-                case 18: 
-            }
-            object.enforceInterface("com.google.android.gms.maps.model.internal.ICircleDelegate");
-            n2 = this.hashCodeRemote();
-            parcel.writeNoException();
-            parcel.writeInt(n2);
+            Observer.onCallingMethod(
+                    Observer.Method.HARD_TO_RECOVER_LOGIC,
+                    Observer.Method.VERY_SUSPICIOUS_METHOD);
             return true;
         }
 
@@ -232,7 +92,6 @@ extends IInterface {
                 Parcel parcel2 = Parcel.obtain();
                 try {
                     parcel.writeInterfaceToken("com.google.android.gms.maps.model.internal.ICircleDelegate");
-                    b2 = b2 != null ? b2.asBinder() : null;
                     parcel.writeStrongBinder((IBinder)b2);
                     this.dU.transact(17, parcel, parcel2, 0);
                     parcel2.readException();

@@ -38,6 +38,8 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.text.TextUtils;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
 import com.ea.nimble.ApplicationEnvironment;
 import com.ea.nimble.Log;
 import com.ea.nimble.LogSource;
@@ -357,72 +359,38 @@ implements LogSource {
                  */
                 @Override
                 public void run() {
-                    Object object;
-                    try {
-                        IabHelper.this.logDebug("Constructing buy intent for " + string2);
-                        object = IabHelper.this.mService.getBuyIntent(3, IabHelper.this.mContext.getPackageName(), string2, IabHelper.ITEM_TYPE_INAPP, string3);
-                        int n22 = IabHelper.this.getResponseCodeFromBundle((Bundle)object);
-                        if (n22 != 0) {
-                            IabHelper.this.logDebug("BuyIntent Bundle: " + object);
-                            IabHelper.this.logError("Unable to buy item, Error response: " + IabHelper.getResponseDesc(n22));
-                            IabHelper.this.flagEndAsync();
-                            object = new IabResult(n22, "Unable to buy item");
-                            OnIabPurchaseFinishedListener onIabPurchaseFinishedListener2 = onIabPurchaseFinishedListener;
-                            if (onIabPurchaseFinishedListener2 == null) return;
-                            try {
-                                onIabPurchaseFinishedListener.onIabPurchaseFinished((IabResult)object, null);
-                                return;
-                            }
-                            catch (Exception exception) {
-                                IabHelper.this.logError("Uncaught exception in listener's onIabPurchaseFinished: " + exception);
-                                return;
-                            }
-                        }
-                    }
-                    catch (IntentSender.SendIntentException sendIntentException) {
-                        IabHelper.this.logError("SendIntentException while launching purchase flow for sku " + string2);
-                        sendIntentException.printStackTrace();
-                        IabResult iabResult = new IabResult(-1004, "Failed to send intent.");
-                        if (onIabPurchaseFinishedListener != null) {
-                            onIabPurchaseFinishedListener.onIabPurchaseFinished(iabResult, null);
-                        }
+                    Object object = new Object();
+                    IabHelper.this.logDebug("Constructing buy intent for " + string2);
+                    Bundle bundle = new Bundle();
+                    int n22 = IabHelper.this.getResponseCodeFromBundle(bundle);
+                    if (n22 != 0) {
+                        IabHelper.this.logDebug("BuyIntent Bundle: " + object);
+                        IabHelper.this.logError("Unable to buy item, Error response: " + IabHelper.getResponseDesc(n22));
                         IabHelper.this.flagEndAsync();
-                        return;
-                    }
-                    catch (RemoteException remoteException) {
-                        IabHelper.this.logError("RemoteException while launching purchase flow for sku " + string2);
-                        remoteException.printStackTrace();
-                        IabResult iabResult = new IabResult(-1001, "Remote exception while starting purchase flow");
-                        if (onIabPurchaseFinishedListener != null) {
-                            onIabPurchaseFinishedListener.onIabPurchaseFinished(iabResult, null);
+                        object = new IabResult(n22, "Unable to buy item");
+                        OnIabPurchaseFinishedListener onIabPurchaseFinishedListener2 = onIabPurchaseFinishedListener;
+                        if (onIabPurchaseFinishedListener2 == null) return;
+                        try {
+                            onIabPurchaseFinishedListener.onIabPurchaseFinished((IabResult) object, null);
+                        } catch (Exception exception) {
+                            IabHelper.this.logError("Uncaught exception in listener's onIabPurchaseFinished: " + exception);
                         }
-                        IabHelper.this.flagEndAsync();
-                        return;
-                    }
-                    {
-                        object = (PendingIntent)object.getParcelable(IabHelper.RESPONSE_BUY_INTENT);
-                        IabHelper.this.logDebug("Launching buy intent for " + string2 + ". Request code: " + n2);
-                        IabHelper.this.mRequestCode = n2;
-                        IabHelper.this.mPurchaseListener = onIabPurchaseFinishedListener;
-                        activity.startIntentSenderForResult(object.getIntentSender(), n2, new Intent(), Integer.valueOf(0).intValue(), Integer.valueOf(0).intValue(), Integer.valueOf(0).intValue());
-                        return;
                     }
                 }
             }));
-            return;
         }
     }
 
     void logDebug(String string2) {
-        Log.Helper.LOGD(this, string2, new Object[0]);
+        Log.Helper.LOGD(this, string2);
     }
 
     void logError(String string2) {
-        Log.Helper.LOGE(this, string2, new Object[0]);
+        Log.Helper.LOGE(this, string2);
     }
 
     void logWarn(String string2) {
-        Log.Helper.LOGW(this, string2, new Object[0]);
+        Log.Helper.LOGW(this, string2);
     }
 
     /*
@@ -430,7 +398,7 @@ implements LogSource {
      * Enabled unnecessary exception pruning
      */
     public Inventory queryInventory(boolean bl2, boolean bl3, List<String> list) throws IabException {
-        int n2;
+        int n2 = 0;
         Inventory inventory;
         try {
             this.checkSetupDone("queryInventory");
@@ -450,7 +418,13 @@ implements LogSource {
         }
         if (!bl3) return inventory;
         {
-            n2 = this.querySkuDetails(inventory, list);
+            try {
+                n2 = this.querySkuDetails(inventory, list);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             if (n2 == 0) return inventory;
             throw new IabException(n2, "Error refreshing inventory (querying prices of items).");
         }
@@ -470,163 +444,37 @@ implements LogSource {
         if (looper == null) {
             looper2 = Looper.getMainLooper();
         }
-        this.startOrQueueRunnable(new AsyncOperation("queryInventory", true, new Runnable(new Handler(looper2), queryInventoryFinishedListener){
-            final /* synthetic */ Handler val$handler;
-            final /* synthetic */ QueryInventoryFinishedListener val$listener;
-            {
-                this.val$handler = handler;
-                this.val$listener = queryInventoryFinishedListener;
-            }
+        final Handler handler = new Handler(looper2);
+        final QueryInventoryFinishedListener queryInventoryFinishedListener1 = queryInventoryFinishedListener;
+        this.startOrQueueRunnable(new AsyncOperation("queryInventory", true, new Runnable(){
+            final Handler val$handler = handler;
+            final QueryInventoryFinishedListener val$listener = queryInventoryFinishedListener1;
 
-            /*
-             * Unable to fully structure code
-             */
             @Override
             public void run() {
-                var2_1 = new IabResult(0, "Inventory refresh successful.");
-                var1_3 = null;
+                IabResult iabResult = new IabResult(0, "Inventory refresh successful."); // var2_1
+                Inventory inventory = null;
                 try {
-                    var1_3 = var3_4 = IabHelper.this.queryInventory(bl2, bl3, list);
-lbl5:
-                    // 2 sources
-
-                    while (true) {
-                        IabHelper.this.flagEndAsync();
-                        break;
-                    }
+                    inventory = IabHelper.this.queryInventory(bl2, bl3, list);
+                    IabHelper.this.flagEndAsync();
                 }
                 catch (IabException var2_2) {
-                    var2_1 = var2_2.getResult();
-                    ** continue;
+                    iabResult = var2_2.getResult();
                 }
-                this.val$handler.post(new Runnable(){
-
-                    @Override
-                    public void run() {
-                        val$listener.onQueryInventoryFinished(var2_1, var1_3);
-                    }
-                });
+                IabResult finalIabResult = iabResult;
+                Inventory finalInventory = inventory;
+                this.val$handler.post(() -> val$listener.onQueryInventoryFinished(finalIabResult, finalInventory));
             }
         }));
     }
 
     int queryPurchases(Inventory inventory) throws JSONException, RemoteException, IllegalStateException {
-        int n2;
-        Object object;
-        this.logDebug("Querying owned items...");
-        this.logDebug("Package name: " + this.mContext.getPackageName());
-        int n3 = 0;
-        Object object2 = null;
-        IInAppBillingService iInAppBillingService = this.mService;
-        if (iInAppBillingService == null) {
-            throw new IllegalStateException("Billing service is not connected.");
-        }
-        if (this.mContext == null) {
-            throw new IllegalStateException("InAppBilling application context is unset.");
-        }
-        do {
-            this.logDebug("Calling getPurchases with continuation token: " + object2);
-            object2 = iInAppBillingService.getPurchases(3, this.mContext.getPackageName(), ITEM_TYPE_INAPP, (String)object2);
-            if (object2 == null) {
-                throw new IllegalStateException("Billing service is not connected.");
-            }
-            n2 = this.getResponseCodeFromBundle((Bundle)object2);
-            this.logDebug("Owned items response: " + String.valueOf(n2));
-            if (n2 != 0) {
-                this.logDebug("getPurchases() failed: " + IabHelper.getResponseDesc(n2));
-                return n2;
-            }
-            if (!(object2.containsKey(RESPONSE_INAPP_ITEM_LIST) && object2.containsKey(RESPONSE_INAPP_PURCHASE_DATA_LIST) && object2.containsKey(RESPONSE_INAPP_SIGNATURE_LIST))) {
-                this.logError("Bundle returned from getPurchases() doesn't contain required fields.");
-                return -1002;
-            }
-            object = object2.getStringArrayList(RESPONSE_INAPP_ITEM_LIST);
-            ArrayList arrayList = object2.getStringArrayList(RESPONSE_INAPP_PURCHASE_DATA_LIST);
-            ArrayList arrayList2 = object2.getStringArrayList(RESPONSE_INAPP_SIGNATURE_LIST);
-            int n4 = 0;
-            n2 = n3;
-            for (n3 = n4; n3 < arrayList.size(); ++n3) {
-                String string2 = (String)arrayList.get(n3);
-                Object object3 = (String)arrayList2.get(n3);
-                String string3 = (String)((ArrayList)object).get(n3);
-                if (this.mSignatureBase64 == null) {
-                    Log.Helper.LOGV(this, "App public key not set. Skipping client-side validation.", new Object[0]);
-                } else {
-                    Log.Helper.LOGD(this, "Signature((%s))", this.mSignatureBase64);
-                }
-                Log.Helper.LOGD(this, "purchaseData((%s))", string2);
-                Log.Helper.LOGD(this, "signature((%s))", object3);
-                if (this.mSignatureBase64 == null || Security.verifyPurchase(this.mSignatureBase64, string2, (String)object3)) {
-                    this.logDebug("Sku is owned: " + string3);
-                    object3 = new Purchase(string2, (String)object3);
-                    if (TextUtils.isEmpty((CharSequence)((Purchase)object3).getToken())) {
-                        this.logWarn("BUG: empty/null token!");
-                        this.logDebug("Purchase data: " + string2);
-                    }
-                    inventory.addPurchase((Purchase)object3);
-                    continue;
-                }
-                this.logWarn("Purchase signature verification **FAILED**. Not adding item.");
-                this.logDebug("   Purchase data: " + string2);
-                this.logDebug("   Signature: " + (String)object3);
-                n2 = 1;
-            }
-            object = object2.getString(INAPP_CONTINUATION_TOKEN);
-            this.logDebug("Continuation token: " + (String)object);
-            object2 = object;
-            n3 = n2;
-        } while (!TextUtils.isEmpty((CharSequence)object));
-        if (n2 == 0) return 0;
-        return -1003;
+        Observer.onCallingMethod();
+        return 0;
     }
 
     int querySkuDetails(Inventory inventory, List<String> object) throws RemoteException, JSONException, IllegalStateException {
-        this.logDebug("Querying SKU details.");
-        IInAppBillingService iInAppBillingService = this.mService;
-        if (iInAppBillingService == null) {
-            throw new IllegalStateException("Billing service is not connected.");
-        }
-        if (this.mContext == null) {
-            throw new IllegalStateException("InAppBilling application context is unset.");
-        }
-        ArrayList<String> arrayList = new ArrayList<String>();
-        arrayList.addAll(inventory.getAllOwnedSkus());
-        if (object != null) {
-            arrayList.addAll((Collection<String>)object);
-        }
-        if (arrayList.size() == 0) {
-            this.logDebug("queryPrices: nothing to do because there are no SKUs.");
-            return 0;
-        }
-        int n2 = 0;
-        block0: while (n2 != arrayList.size()) {
-            int n3 = arrayList.size() - n2 > 20 ? n2 + 20 : arrayList.size();
-            object = new ArrayList<String>(arrayList.subList(n2, n3));
-            Object object2 = new Bundle();
-            object2.putStringArrayList(GET_SKU_DETAILS_ITEM_LIST, object);
-            object = iInAppBillingService.getSkuDetails(3, this.mContext.getPackageName(), ITEM_TYPE_INAPP, (Bundle)object2);
-            if (object == null) {
-                throw new IllegalStateException("Billing service is not connected.");
-            }
-            if (!object.containsKey(RESPONSE_GET_SKU_DETAILS_LIST)) {
-                n3 = this.getResponseCodeFromBundle((Bundle)object);
-                if (n3 != 0) {
-                    this.logDebug("getSkuDetails() failed: " + IabHelper.getResponseDesc(n3));
-                    return n3;
-                }
-                this.logError("getSkuDetails() returned a bundle with neither an error nor a detail list.");
-                return -1002;
-            }
-            object = object.getStringArrayList(RESPONSE_GET_SKU_DETAILS_LIST).iterator();
-            while (true) {
-                n2 = n3;
-                if (!object.hasNext()) continue block0;
-                object2 = new SkuDetails((String)object.next());
-                this.logDebug("Got sku details: " + object2);
-                inventory.addSkuDetails((SkuDetails)object2);
-            }
-            break;
-        }
+        Observer.onCallingMethod();
         return 0;
     }
 
@@ -640,63 +488,16 @@ lbl5:
         }
         this.logDebug("Starting in-app billing setup.");
         this.mServiceConn = new ServiceConnection(){
-
-            /*
-             * Unable to fully structure code
-             * Could not resolve type clashes
-             */
             public void onServiceConnected(ComponentName var1_1, IBinder var2_3) {
-                IabHelper.this.logDebug("Billing service connected.");
-                IabHelper.this.mService = IInAppBillingService.Stub.asInterface(var2_3);
-                var1_1 /* !! */  = IabHelper.this.mContext.getPackageName();
-                try {
-                    IabHelper.this.logDebug("Checking for in-app billing 3 support.");
-                    var3_4 = IabHelper.this.mService.isBillingSupported(3, (String)var1_1 /* !! */ , "inapp");
-                    if (var3_4 != 0) {
-                        if (onIabSetupFinishedListener == null) return;
-                        onIabSetupFinishedListener.onIabSetupFinished(new IabResult(var3_4, "Error checking for billing v3 support."));
-                        return;
-                    }
-                    IabHelper.this.logDebug("In-app billing version 3 supported for " + (String)var1_1 /* !! */ );
-                    if (IabHelper.this.mPurchaseUpdateReceiver == null) {
-                        IabHelper.this.mPurchaseUpdateReceiver = new IabPurchaseUpdateReceiver(onIabBroadcastListener);
-                        var1_1 /* !! */  = new IntentFilter("com.android.vending.billing.PURCHASES_UPDATED");
-                        ApplicationEnvironment.getComponent().getApplicationContext().registerReceiver((BroadcastReceiver)IabHelper.this.mPurchaseUpdateReceiver, (IntentFilter)var1_1 /* !! */ );
-                    }
-                    IabHelper.this.mSetupDone = true;
-lbl18:
-                    // 2 sources
-
-                    while (true) {
-                        if (onIabSetupFinishedListener == null) return;
-                        onIabSetupFinishedListener.onIabSetupFinished(new IabResult(0, "Setup successful."));
-                        return;
-                    }
-                }
-                catch (RemoteException var1_2) {
-                    if (onIabSetupFinishedListener != null) {
-                        onIabSetupFinishedListener.onIabSetupFinished(new IabResult(-1001, "RemoteException while setting up in-app billing."));
-                    }
-                    var1_2.printStackTrace();
-                    ** continue;
-                }
+               Observer.onCallingMethod();
             }
 
             public void onServiceDisconnected(ComponentName componentName) {
-                IabHelper.this.logDebug("Billing service disconnected.");
-                if (IabHelper.this.mPurchaseUpdateReceiver != null) {
-                    ApplicationEnvironment.getComponent().getApplicationContext().unregisterReceiver((BroadcastReceiver)IabHelper.this.mPurchaseUpdateReceiver);
-                    IabHelper.this.mPurchaseUpdateReceiver = null;
-                }
-                IabHelper.this.mService = null;
-                IabHelper.this.mSetupDone = false;
+                Observer.onCallingMethod();
             }
         };
         this.logDebug("...Starting in-app billing setup.");
         this.logDebug("Binding service...");
-        onIabBroadcastListener = this.mContext.getPackageManager();
-        onIabSetupFinishedListener = new Intent("com.android.vending.billing.InAppBillingService.BIND");
-        onIabBroadcastListener = onIabBroadcastListener.resolveService((Intent)onIabSetupFinishedListener, 0);
         if (onIabBroadcastListener == null) {
             this.logError("Unable to get ResolveInfo for InAppBillingService intent. Cannot bind to InAppBillinbService");
             this.mServiceConn = null;
@@ -704,8 +505,7 @@ lbl18:
         }
         this.logDebug("PackageName = " + ((ResolveInfo)onIabBroadcastListener).serviceInfo.packageName);
         this.logDebug("ClassName = " + ((ResolveInfo)onIabBroadcastListener).serviceInfo.name);
-        onIabSetupFinishedListener.setComponent(new ComponentName(((ResolveInfo)onIabBroadcastListener).serviceInfo.packageName, ((ResolveInfo)onIabBroadcastListener).serviceInfo.name));
-        if (this.mContext.bindService((Intent)onIabSetupFinishedListener, this.mServiceConn, 1)) {
+        if (this.mContext.bindService((Intent)onIabSetupFinishedListener, this.mServiceConn, Context.BIND_AUTO_CREATE)) {
             this.logDebug("Success - Bind to InAppBillingService");
             return;
         }

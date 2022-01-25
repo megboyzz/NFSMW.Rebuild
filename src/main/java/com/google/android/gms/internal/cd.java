@@ -15,17 +15,17 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
-import com.google.android.gms.internal.bz;
-import com.google.android.gms.internal.cb;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
 
 public interface cd
 extends IInterface {
-    public cb b(bz var1) throws RemoteException;
+    cb b(bz var1) throws RemoteException;
 
-    public static abstract class com.google.android.gms.internal.cd$a
+    abstract class cd$a
     extends Binder
     implements cd {
-        public com.google.android.gms.internal.cd$a() {
+        public cd$a() {
             this.attachInterface(this, "com.google.android.gms.ads.internal.request.IAdRequestService");
         }
 
@@ -55,14 +55,7 @@ extends IInterface {
                 case 1: 
             }
             object.enforceInterface("com.google.android.gms.ads.internal.request.IAdRequestService");
-            object = object.readInt() != 0 ? bz.CREATOR.f((Parcel)object) : null;
-            object = this.b((bz)object);
-            parcel.writeNoException();
-            if (object != null) {
-                parcel.writeInt(1);
-                ((cb)object).writeToParcel(parcel, 1);
-                return true;
-            }
+
             parcel.writeInt(0);
             return true;
         }
@@ -85,10 +78,12 @@ extends IInterface {
              */
             @Override
             public cb b(bz safeParcelable) throws RemoteException {
+                Observer.onCallingMethod(
+                        Observer.Method.HARD_TO_RECOVER_LOGIC,
+                        Observer.Method.RETURN_NULL);
                 Parcel parcel = Parcel.obtain();
                 Parcel parcel2 = Parcel.obtain();
                 try {
-                    void var1_3;
                     parcel.writeInterfaceToken("com.google.android.gms.ads.internal.request.IAdRequestService");
                     if (safeParcelable != null) {
                         parcel.writeInt(1);
@@ -100,16 +95,17 @@ extends IInterface {
                     parcel2.readException();
                     if (parcel2.readInt() != 0) {
                         cb cb2 = cb.CREATOR.g(parcel2);
-                        return var1_3;
+
                     } else {
                         Object var1_5 = null;
                     }
-                    return var1_3;
+
                 }
                 finally {
                     parcel2.recycle();
                     parcel.recycle();
                 }
+                return null;
             }
         }
     }

@@ -16,31 +16,33 @@ import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
 
+import com.ea.ironmonkey.devmenu.util.Observer;
+
 public interface f
 extends IInterface {
-    public boolean a(f var1) throws RemoteException;
+    boolean a(f var1) throws RemoteException;
 
-    public void clearTileCache() throws RemoteException;
+    void clearTileCache() throws RemoteException;
 
-    public boolean getFadeIn() throws RemoteException;
+    boolean getFadeIn() throws RemoteException;
 
-    public String getId() throws RemoteException;
+    String getId() throws RemoteException;
 
-    public float getZIndex() throws RemoteException;
+    float getZIndex() throws RemoteException;
 
-    public int hashCodeRemote() throws RemoteException;
+    int hashCodeRemote() throws RemoteException;
 
-    public boolean isVisible() throws RemoteException;
+    boolean isVisible() throws RemoteException;
 
-    public void remove() throws RemoteException;
+    void remove() throws RemoteException;
 
-    public void setFadeIn(boolean var1) throws RemoteException;
+    void setFadeIn(boolean var1) throws RemoteException;
 
-    public void setVisible(boolean var1) throws RemoteException;
+    void setVisible(boolean var1) throws RemoteException;
 
-    public void setZIndex(float var1) throws RemoteException;
+    void setZIndex(float var1) throws RemoteException;
 
-    public static abstract class com.google.android.gms.maps.model.internal.f$a
+    abstract class f$a
     extends Binder
     implements f {
         public static f am(IBinder iBinder) {
@@ -54,109 +56,9 @@ extends IInterface {
         }
 
         public boolean onTransact(int n2, Parcel object, Parcel parcel, int n3) throws RemoteException {
-            int n4 = 0;
-            int n5 = 0;
-            boolean bl2 = false;
-            int n6 = 0;
-            boolean bl3 = false;
-            switch (n2) {
-                default: {
-                    return super.onTransact(n2, object, parcel, n3);
-                }
-                case 1598968902: {
-                    parcel.writeString("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    return true;
-                }
-                case 1: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    this.remove();
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 2: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    this.clearTileCache();
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 3: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    object = this.getId();
-                    parcel.writeNoException();
-                    parcel.writeString((String)object);
-                    return true;
-                }
-                case 4: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    this.setZIndex(object.readFloat());
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 5: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    float f2 = this.getZIndex();
-                    parcel.writeNoException();
-                    parcel.writeFloat(f2);
-                    return true;
-                }
-                case 6: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    if (object.readInt() != 0) {
-                        bl3 = true;
-                    }
-                    this.setVisible(bl3);
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 7: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    bl3 = this.isVisible();
-                    parcel.writeNoException();
-                    n2 = n4;
-                    if (bl3) {
-                        n2 = 1;
-                    }
-                    parcel.writeInt(n2);
-                    return true;
-                }
-                case 8: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    bl3 = this.a(com.google.android.gms.maps.model.internal.f$a.am(object.readStrongBinder()));
-                    parcel.writeNoException();
-                    n2 = n5;
-                    if (bl3) {
-                        n2 = 1;
-                    }
-                    parcel.writeInt(n2);
-                    return true;
-                }
-                case 9: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    n2 = this.hashCodeRemote();
-                    parcel.writeNoException();
-                    parcel.writeInt(n2);
-                    return true;
-                }
-                case 10: {
-                    object.enforceInterface("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    bl3 = bl2;
-                    if (object.readInt() != 0) {
-                        bl3 = true;
-                    }
-                    this.setFadeIn(bl3);
-                    parcel.writeNoException();
-                    return true;
-                }
-                case 11: 
-            }
-            object.enforceInterface("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-            bl3 = this.getFadeIn();
-            parcel.writeNoException();
-            n2 = n6;
-            if (bl3) {
-                n2 = 1;
-            }
-            parcel.writeInt(n2);
+            Observer.onCallingMethod(
+                    Observer.Method.HARD_TO_RECOVER_LOGIC,
+                    Observer.Method.VERY_SUSPICIOUS_METHOD);
             return true;
         }
 
@@ -175,7 +77,6 @@ extends IInterface {
                 Parcel parcel2 = Parcel.obtain();
                 try {
                     parcel.writeInterfaceToken("com.google.android.gms.maps.model.internal.ITileOverlayDelegate");
-                    f2 = f2 != null ? f2.asBinder() : null;
                     parcel.writeStrongBinder((IBinder)f2);
                     this.dU.transact(8, parcel, parcel2, 0);
                     parcel2.readException();

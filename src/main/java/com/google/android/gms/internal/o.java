@@ -18,11 +18,12 @@ import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
 
+import com.ea.ironmonkey.devmenu.util.Observer;
+
 public interface o
 extends IInterface {
-    public Bundle a(String var1, String var2, Bundle var3) throws RemoteException;
-
-    public static abstract class com.google.android.gms.internal.o$a
+    Bundle a(String var1, String var2, Bundle var3) throws RemoteException;
+    abstract class o$a
     extends Binder
     implements o {
         public static o a(IBinder iBinder) {
@@ -49,12 +50,9 @@ extends IInterface {
             object.enforceInterface("com.google.android.auth.IAuthManagerService");
             String string2 = object.readString();
             String string3 = object.readString();
-            object = object.readInt() != 0 ? (Bundle)Bundle.CREATOR.createFromParcel(object) : null;
-            object = this.a(string2, string3, (Bundle)object);
             parcel.writeNoException();
             if (object != null) {
                 parcel.writeInt(1);
-                object.writeToParcel(parcel, 1);
                 return true;
             }
             parcel.writeInt(0);
@@ -75,6 +73,9 @@ extends IInterface {
              */
             @Override
             public Bundle a(String string2, String string3, Bundle bundle) throws RemoteException {
+                Observer.onCallingMethod(Observer.Method.HARD_TO_RECOVER_LOGIC, Observer.Method.VERY_SUSPICIOUS_METHOD);
+                return new Bundle();
+                /*
                 Parcel parcel = Parcel.obtain();
                 Parcel parcel2 = Parcel.obtain();
                 try {
@@ -103,7 +104,7 @@ extends IInterface {
                 finally {
                     parcel2.recycle();
                     parcel.recycle();
-                }
+                }*/
             }
 
             public IBinder asBinder() {

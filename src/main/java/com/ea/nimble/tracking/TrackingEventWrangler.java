@@ -9,21 +9,17 @@ package com.ea.nimble.tracking;
 
 import android.content.Intent;
 import android.os.Bundle;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
 import com.ea.nimble.ApplicationEnvironment;
 import com.ea.nimble.ApplicationLifecycle;
 import com.ea.nimble.Base;
 import com.ea.nimble.Component;
-import com.ea.nimble.EASPDataLoader;
 import com.ea.nimble.IApplicationLifecycle;
 import com.ea.nimble.Log;
 import com.ea.nimble.LogSource;
-import com.ea.nimble.Persistence;
-import com.ea.nimble.PersistenceService;
 import com.ea.nimble.SynergyEnvironment;
-import com.ea.nimble.tracking.ITracking;
-import com.ea.nimble.tracking.Tracking;
-import java.io.FileNotFoundException;
-import java.io.Serializable;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -65,14 +61,14 @@ LogSource {
         Object object;
         if (Tracking.isSessionStartEvent(string2)) {
             if (this.m_sessionStartTimestamp != null) {
-                Log.Helper.LOGE(this, "Pre-existing session start timestamp found while logging new session start! Overwriting previous session start timestamp.", new Object[0]);
+                Log.Helper.LOGE(this, "Pre-existing session start timestamp found while logging new session start! Overwriting previous session start timestamp.");
             } else {
-                Log.Helper.LOGD(this, "Marking session start time.", new Object[0]);
+                Log.Helper.LOGD(this, "Marking session start time.");
             }
             this.m_sessionStartTimestamp = System.currentTimeMillis();
         } else if (Tracking.isSessionEndEvent(string2)) {
             if (this.m_sessionStartTimestamp == null) {
-                Log.Helper.LOGE(this, "No session start timestamp found while logging new session end! Skip logging 'session time' event.", new Object[0]);
+                Log.Helper.LOGE(this, "No session start timestamp found while logging new session end! Skip logging 'session time' event.");
             } else {
                 double d2 = (double)(System.currentTimeMillis() - this.m_sessionStartTimestamp) / 1000.0;
                 object = String.format(Locale.US, "%.0f", d2);
@@ -83,8 +79,9 @@ LogSource {
                 this.m_sessionStartTimestamp = null;
             }
         }
-        if ((object = (ITracking)((Object)Base.getComponent("com.ea.nimble.tracking"))) == null) return;
-        object.logEvent(string2, map);
+        ITracking component = (ITracking) Base.getComponent("com.ea.nimble.tracking");
+        if (component == null) return;
+        component.logEvent(string2, map);
     }
 
     @Override
@@ -107,6 +104,10 @@ LogSource {
      */
     @Override
     public void onApplicationLaunch(Intent var1_1) {
+        Observer.onCallingMethod(Observer.Method.HARD_TO_RECOVER_LOGIC, Observer.Method.VERY_SUSPICIOUS_METHOD);
+        /*
+        EASPDataLoader.EASPDataBuffer var2_3;
+        Object var3_6;
         block10: {
             block9: {
                 block8: {
@@ -115,7 +116,7 @@ LogSource {
                         return;
                     }
                     if (var1_1.getStringExtra("PushNotification") != null || ApplicationEnvironment.getComponent().getApplicationContext().getSharedPreferences("PushNotification", 0).getString("PushNotification", null) != null) {
-                        Log.Helper.LOGI(this, "Awesome. PN launched me", new Object[0]);
+                        Log.Helper.LOGI(this, "Awesome. PN launched me");
                         var2_2 = new HashMap<String, String>();
                         this.addPushTNGTrackingParams(var1_1.getExtras(), var2_2);
                         if (var2_2.isEmpty()) {
@@ -128,7 +129,7 @@ LogSource {
                     var1_1 = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.tracking.eventwrangler", Persistence.Storage.CACHE);
                     var2_3 = var1_1.getStringValue("applicationBundleVersion");
                     var3_6 = ApplicationEnvironment.getComponent().getApplicationVersion();
-                    Log.Helper.LOGD(this, "Current app version, %s. Cached app version, %s", new Object[]{var3_6, var2_3});
+                    Log.Helper.LOGD(this, "Current app version, %s. Cached app version, %s", var3_6, var2_3);
                     if (var2_3 != null) break block10;
                     var1_1.setValue("applicationBundleVersion", (Serializable)var3_6);
                     var1_1 = null;
@@ -143,15 +144,14 @@ lbl22:
                         break block9;
                     }
                     catch (FileNotFoundException var2_4) {
-                        Log.Helper.LOGD(this, "No EASP tracking file.", new Object[0]);
-                        ** GOTO lbl22
+                        Log.Helper.LOGD(this, "No EASP tracking file.");
                     }
                     catch (Exception var2_5) {
-                        Log.Helper.LOGE(this, "Exception loading EASP tracking file.", new Object[0]);
+                        Log.Helper.LOGE(this, "Exception loading EASP tracking file.");
                         ** GOTO lbl22
                     }
                 }
-                Log.Helper.LOGD(this, "EASP tracking file found. Counting as app update.", new Object[0]);
+                Log.Helper.LOGD(this, "EASP tracking file found. Counting as app update.");
                 this.logAndCheckEvent("NIMBLESTANDARD::APPSTART_AFTERUPGRADE");
                 return;
             }
@@ -164,6 +164,8 @@ lbl22:
             return;
         }
         this.logAndCheckEvent("NIMBLESTANDARD::APPSTART_NORMAL");
+
+         */
     }
 
     @Override

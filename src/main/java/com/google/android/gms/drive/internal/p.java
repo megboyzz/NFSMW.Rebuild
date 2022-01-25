@@ -15,34 +15,30 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
+
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.common.internal.safeparcel.SafeParcelable;
-import com.google.android.gms.drive.internal.OnContentsResponse;
-import com.google.android.gms.drive.internal.OnDownloadProgressResponse;
-import com.google.android.gms.drive.internal.OnDriveIdResponse;
-import com.google.android.gms.drive.internal.OnListEntriesResponse;
-import com.google.android.gms.drive.internal.OnMetadataResponse;
 
 public interface p
 extends IInterface {
-    public void a(OnContentsResponse var1) throws RemoteException;
+    void a(OnContentsResponse var1) throws RemoteException;
 
-    public void a(OnDownloadProgressResponse var1) throws RemoteException;
+    void a(OnDownloadProgressResponse var1) throws RemoteException;
 
-    public void a(OnDriveIdResponse var1) throws RemoteException;
+    void a(OnDriveIdResponse var1) throws RemoteException;
 
-    public void a(OnListEntriesResponse var1) throws RemoteException;
+    void a(OnListEntriesResponse var1) throws RemoteException;
 
-    public void a(OnMetadataResponse var1) throws RemoteException;
+    void a(OnMetadataResponse var1) throws RemoteException;
 
-    public void d(Status var1) throws RemoteException;
+    void d(Status var1) throws RemoteException;
 
-    public void onSuccess() throws RemoteException;
+    void onSuccess() throws RemoteException;
 
-    public static abstract class com.google.android.gms.drive.internal.p$a
+    abstract class p$a
     extends Binder
     implements p {
-        public com.google.android.gms.drive.internal.p$a() {
+        public p$a() {
             this.attachInterface(this, "com.google.android.gms.drive.internal.IDriveServiceCallbacks");
         }
 

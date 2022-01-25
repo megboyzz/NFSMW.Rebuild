@@ -3,8 +3,8 @@
  */
 package com.eamobile.licensing;
 
-import com.eamobile.licensing.LicenseServerActivity;
-import com.eamobile.licensing.z;
+import com.ea.ironmonkey.devmenu.util.Observer;
+
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.FileNotFoundException;
@@ -29,8 +29,13 @@ public class g {
     }
 
     public static char a(DataInput dataInput) {
-        if (j != 2) return (char)dataInput.readUnsignedByte();
-        int n2 = dataInput.readUnsignedShort();
+        int n2 = 1;
+        try {
+            if (j != 2) return (char) dataInput.readUnsignedByte();
+            n2 = dataInput.readUnsignedShort();
+        }catch (IOException e){
+            Observer.onCallingMethod(Observer.Method.ON_CATCHING_EXCEPTION);
+        }
         return (char)((n2 & 0xFF) << 8 | n2 >> 8);
     }
 
@@ -70,15 +75,15 @@ public class g {
 
     public static String a(DataInput object, char c2, boolean bl2) {
         StringBuffer stringBuffer = new StringBuffer();
-        char c3 = com.eamobile.licensing.g.a((DataInput)object);
+        char c3 = com.eamobile.licensing.g.a(object);
         while (true) {
             if (c3 == c2) {
-                object = stringBuffer.toString();
+                String s = stringBuffer.toString();
                 if (object == null) return null;
-                return ((String)object).trim();
+                return s.trim();
             }
             stringBuffer.append(c3);
-            c3 = com.eamobile.licensing.g.a((DataInput)object);
+            c3 = com.eamobile.licensing.g.a(object);
         }
     }
 
@@ -86,6 +91,9 @@ public class g {
      * Unable to fully structure code
      */
     public static int b(String var0) {
+        Observer.onCallingMethod(Observer.Method.HARD_TO_RECOVER_LOGIC, Observer.Method.HAZARD_METHOD);
+        return 0;
+        /*
         block14: {
             var1_5 = 1;
             var3_6 = null;
@@ -137,6 +145,8 @@ lbl-1000:
                 throw var0;
             }
         }
+
+         */
     }
 
     public String a() {
@@ -186,6 +196,8 @@ lbl-1000:
         catch (FileNotFoundException fileNotFoundException) {
             z.a("File not found: " + string3);
             return false;
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
         }
         this.i = string2;
         return true;

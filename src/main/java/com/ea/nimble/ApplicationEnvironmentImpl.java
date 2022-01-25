@@ -21,31 +21,18 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.util.Patterns;
-import com.ea.nimble.ApplicationEnvironment;
-import com.ea.nimble.BaseCore;
-import com.ea.nimble.Component;
-import com.ea.nimble.Error;
-import com.ea.nimble.IApplicationEnvironment;
-import com.ea.nimble.IHttpRequest;
-import com.ea.nimble.Log;
-import com.ea.nimble.LogSource;
-import com.ea.nimble.Network;
-import com.ea.nimble.Persistence;
-import com.ea.nimble.PersistenceService;
-import com.ea.nimble.SynergyEnvironment;
-import com.ea.nimble.SynergyNetwork;
-import com.ea.nimble.SynergyNetworkConnectionCallback;
-import com.ea.nimble.SynergyNetworkConnectionHandle;
-import com.ea.nimble.SynergyRequest;
-import com.ea.nimble.Utility;
+
+import com.ea.nimble.Log.Helper;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -53,7 +40,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,20 +76,20 @@ LogSource {
         this.m_core = fileArray;
         this.m_context = s_currentActivity.getApplicationContext();
         this.m_language = null;
-        fileArray = new File(this.getDocumentPath());
-        File file = new File(this.getTempPath());
-        if (!fileArray.exists()) {
-            if (!fileArray.mkdirs()) throw new AssertionError((Object)"APP_ENV: Cannot create necessary folder");
+        File documentPath = new File(this.getDocumentPath());
+        File tempPath = new File(this.getTempPath());
+        if (!documentPath.exists()) {
+            if (!documentPath.mkdirs()) throw new AssertionError((Object)"APP_ENV: Cannot create necessary folder");
         }
-        if (!file.exists() && !file.mkdirs()) {
+        if (!tempPath.exists() && !tempPath.mkdirs()) {
             throw new AssertionError((Object)"APP_ENV: Cannot create necessary folder");
         }
-        fileArray = file.listFiles();
-        int n3 = fileArray.length;
+        File[] files = tempPath.listFiles();
+        int n3 = files.length;
         while (n2 < n3) {
-            file = fileArray[n2];
-            file.delete();
-            Log.d((String)"Nimble", (String)("APP_ENV: Delete temp file " + file.getName()));
+            tempPath = files[n2];
+            tempPath.delete();
+            Log.d("Nimble", "APP_ENV: Delete temp file " + tempPath.getName());
             ++n2;
         }
     }
@@ -124,15 +110,15 @@ LogSource {
     }
 
     private static boolean commandExists(String string2) {
-        String[] stringArray = System.getenv("PATH");
-        if (stringArray == null) {
+        String path = System.getenv("PATH");
+        if (path == null) {
             return false;
         }
-        stringArray = stringArray.split(Pattern.quote(File.pathSeparator));
-        int n2 = stringArray.length;
+        String[] split = path.split(Pattern.quote(File.pathSeparator));
+        int n2 = split.length;
         int n3 = 0;
         while (n3 < n2) {
-            if (new File(stringArray[n3], string2).exists()) {
+            if (new File(split[n3], string2).exists()) {
                 return true;
             }
             ++n3;
@@ -166,7 +152,7 @@ LogSource {
                 @Override
                 public void run() {
                     block12: {
-                        Log.Helper.LOGV(this, "APP_ENV: Running thread to get Google Advertising ID", new Object[0]);
+                        Helper.LOGV(this, "APP_ENV: Running thread to get Google Advertising ID");
                         if (ApplicationEnvironment.getCurrentActivity() != null) {
                             AdvertisingIdClient.Info info;
                             AdvertisingIdClient.Info info2 = info = null;
@@ -178,30 +164,30 @@ LogSource {
                                     }
                                 }
                                 if (info2 != null) {
-                                    Log.Helper.LOGD(this, "APP_ENV: Setting values for Google Advertising ID and isLimitAdTrackingEnabled flag", new Object[0]);
+                                    Helper.LOGD(this, "APP_ENV: Setting values for Google Advertising ID and isLimitAdTrackingEnabled flag");
                                     ApplicationEnvironmentImpl.access$002(ApplicationEnvironmentImpl.this, info2.getId());
                                     ApplicationEnvironmentImpl.access$102(ApplicationEnvironmentImpl.this, info2.isLimitAdTrackingEnabled());
                                     break block12;
                                 }
-                                Log.Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - AdvertisingIdInfo is null", new Object[0]);
+                                Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - AdvertisingIdInfo is null");
                             }
                             catch (IOException iOException) {
-                                Log.Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - Unrecoverable error connecting to Google Play Services", new Object[0]);
+                                Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - Unrecoverable error connecting to Google Play Services");
                             }
                             catch (GooglePlayServicesRepairableException googlePlayServicesRepairableException) {
-                                Log.Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - Recoverable error connecting to Google Play Services", new Object[0]);
+                                Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - Recoverable error connecting to Google Play Services");
                             }
                             catch (GooglePlayServicesNotAvailableException googlePlayServicesNotAvailableException) {
-                                Log.Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - Google Play Services not available on this device", new Object[0]);
+                                Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - Google Play Services not available on this device");
                             }
                             catch (IllegalStateException illegalStateException) {
-                                Log.Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - Illegal State Exception " + illegalStateException.getMessage(), new Object[0]);
+                                Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - Illegal State Exception " + illegalStateException.getMessage());
                             }
                             catch (Exception exception) {
-                                Log.Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - General Exception " + exception.getMessage(), new Object[0]);
+                                Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID - General Exception " + exception.getMessage());
                             }
                         } else {
-                            Log.Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID because there is no current activity", new Object[0]);
+                            Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID because there is no current activity");
                         }
                     }
                     ApplicationEnvironmentImpl.access$202(ApplicationEnvironmentImpl.this, true);
@@ -211,11 +197,11 @@ LogSource {
                 thread.start();
             }
             catch (VerifyError verifyError) {
-                Log.Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID because this device is not supported", new Object[0]);
+                Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID because this device is not supported");
                 this.m_googleAdvertiserInfoLoaded = true;
             }
             catch (Throwable throwable) {
-                Log.Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID because this device is not supported", new Object[0]);
+                Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID because this device is not supported");
                 this.m_googleAdvertiserInfoLoaded = true;
             }
             return;
@@ -228,22 +214,22 @@ LogSource {
         }
         if (this.m_language != null && this.m_language.equals(object)) {
             if (bl2) {
-                Log.Helper.LOGD(this, "Setting the same language %s, skipping assignment", this.m_language);
+                Helper.LOGD(this, "Setting the same language %s, skipping assignment", this.m_language);
                 return;
             }
         } else {
             this.m_language = object;
-            Log.Helper.LOGI(this, "Successfully set language to %s.", this.m_language);
+            Helper.LOGI(this, "Successfully set language to %s.", this.m_language);
             Utility.sendBroadcast("nimble.notification.LanguageChanged", null);
         }
         if (bl2) return;
-        object = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.applicationEnvironment", Persistence.Storage.DOCUMENT);
-        if (object != null) {
-            Log.Helper.LOGD(this, "Saving language data to persistence.", new Object[0]);
-            ((Persistence)object).setValue(PERSISTENCE_LANGUAGE, (Serializable)((Object)this.m_language));
+        Persistence persistenceForNimbleComponent = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.applicationEnvironment", Persistence.Storage.DOCUMENT);
+        if (persistenceForNimbleComponent != null) {
+            Helper.LOGD(this, "Saving language data to persistence.");
+            persistenceForNimbleComponent.setValue(PERSISTENCE_LANGUAGE, (Serializable)((Object)this.m_language));
             return;
         }
-        Log.Helper.LOGE(this, "Could not get application environment persistence object to save to.", new Object[0]);
+        Helper.LOGE(this, "Could not get application environment persistence object to save to.");
     }
 
     public static void setCurrentActivity(Activity activity) {
@@ -253,22 +239,22 @@ LogSource {
 
     private String validatedLanguageCode(String string2, boolean bl2) {
         if (!Utility.validString(string2)) {
-            Log.Helper.LOGI(this, "AppEnv: Language parameter is null or empty; keeping language at previous value.", new Object[0]);
+            Helper.LOGI(this, "AppEnv: Language parameter is null or empty; keeping language at previous value.");
             return null;
         }
         string2 = string2.replace('_', '-');
         Object object = Pattern.compile("^([a-z]{2,3})?(-([A-Z][a-z]{3}))?(-([A-Z]{2}))?(-.*)*$").matcher(string2);
         if (!((Matcher)object).find()) {
-            Log.Helper.LOGE(this, "Malformed language code " + string2 + " cannot be validated; backend system will likely treat it as en-US.", new Object[0]);
+            Helper.LOGE(this, "Malformed language code " + string2 + " cannot be validated; backend system will likely treat it as en-US.");
             return string2;
         }
         String string3 = ((Matcher)object).group(1);
         if (Utility.validString(string3) && !Arrays.asList(Locale.getISOLanguages()).contains(string3)) {
-            Log.Helper.LOGE(this, "Unknown language code " + string3 + " in language code " + string2 + "; backend system will likely treat it as en-US.", new Object[0]);
+            Helper.LOGE(this, "Unknown language code " + string3 + " in language code " + string2 + "; backend system will likely treat it as en-US.");
         }
         if (!Utility.validString((String)(object = ((Matcher)object).group(5)))) return string2;
         if (Arrays.asList(Locale.getISOCountries()).contains(object)) return string2;
-        Log.Helper.LOGE(this, "Unknown region code " + (String)object + " in language code " + string2 + "; backend system will likely treat it as en-US.", new Object[0]);
+        Helper.LOGE(this, "Unknown region code " + (String)object + " in language code " + string2 + "; backend system will likely treat it as en-US.");
         return string2;
     }
 
@@ -278,10 +264,10 @@ LogSource {
         Serializable serializable = persistence.getValue(PERSISTENCE_TIME_RETRIEVED);
         if (serializable != null) {
             if ((int)(new Date().getTime() - (Long)serializable) / 3600000 <= 24) return (Integer)persistence.getValue(PERSISTENCE_AGE_REQUIREMENTS);
-            Log.Helper.LOGI(this, "getAgeCompliance- Stored value is older than 24 hours. Call refreshAgeCompliance to retrieve minAgeCompliance", new Object[]{null});
+            Helper.LOGI(this, "getAgeCompliance- Stored value is older than 24 hours. Call refreshAgeCompliance to retrieve minAgeCompliance", new Object[]{null});
             return -1;
         }
-        Log.Helper.LOGI(this, "getAgeCompliance- No stored value in persistance. Call refreshAgeCompliance to retrieve minAgeCompliance.", new Object[]{null});
+        Helper.LOGI(this, "getAgeCompliance- No stored value in persistance. Call refreshAgeCompliance to retrieve minAgeCompliance.", new Object[]{null});
         return -1;
     }
 
@@ -323,7 +309,7 @@ LogSource {
             return this.m_version;
         }
         catch (PackageManager.NameNotFoundException nameNotFoundException) {
-            Log.Helper.LOGE(this, "Package name %s not found", context.getPackageName());
+            Helper.LOGE(this, "Package name %s not found", context.getPackageName());
             return null;
         }
     }
@@ -335,14 +321,13 @@ LogSource {
             object = System.getProperty("user.dir") + File.separator + "cache";
             return (String)object + File.separator + "Nimble" + File.separator + this.m_core.getConfiguration().toString();
         }
-        object = object.getCacheDir().getPath();
         return (String)object + File.separator + "Nimble" + File.separator + this.m_core.getConfiguration().toString();
     }
 
     @Override
     public String getCarrier() {
         Context context = this.getApplicationContext();
-        if (context != null) return ((TelephonyManager)context.getSystemService("phone")).getNetworkOperator();
+        if (context != null) return ((TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE)).getNetworkOperator();
         return null;
     }
 
@@ -383,13 +368,13 @@ LogSource {
 
     @Override
     public String getDocumentPath() {
-        Object object = this.getApplicationContext();
+        Context object = this.getApplicationContext();
         if (object == null) {
-            object = System.getProperty("user.dir") + File.separator + "doc";
-            return (String)object + File.separator + "Nimble" + File.separator + this.m_core.getConfiguration().toString();
+            String s = System.getProperty("user.dir") + File.separator + "doc";
+            return s + File.separator + "Nimble" + File.separator + this.m_core.getConfiguration().toString();
         }
-        object = object.getFilesDir().getPath();
-        return (String)object + File.separator + "Nimble" + File.separator + this.m_core.getConfiguration().toString();
+        String path = object.getFilesDir().getPath();
+        return path + File.separator + "Nimble" + File.separator + this.m_core.getConfiguration().toString();
     }
 
     @Override
@@ -409,7 +394,7 @@ LogSource {
                 Thread.sleep(1L);
             }
             catch (InterruptedException interruptedException) {
-                Log.Helper.LOGI(this, "Blocking call to getGoogleAdvertisingId was interrupted prematurely.", new Object[0]);
+                Helper.LOGI(this, "Blocking call to getGoogleAdvertisingId was interrupted prematurely.");
             }
         }
         return this.m_googleAdvertisingId;
@@ -418,17 +403,17 @@ LogSource {
     @Override
     public String getGoogleEmail() {
         int n2 = 0;
-        Account[] accountArray = AccountManager.get((Context)this.getApplicationContext());
-        Object object = accountArray.getAccountsByType("com.google");
-        if (((Account[])object).length > 0) {
-            return object[0].name;
+        AccountManager accountArray = AccountManager.get((Context)this.getApplicationContext());
+        Account[] accountsByType = accountArray.getAccountsByType("com.google");
+        if (accountsByType.length > 0) {
+            return accountsByType[0].name;
         }
-        object = Patterns.EMAIL_ADDRESS;
-        accountArray = accountArray.getAccounts();
-        int n3 = accountArray.length;
+        Pattern emailAddress = Patterns.EMAIL_ADDRESS;
+        Account[] accounts = accountArray.getAccounts();
+        int n3 = accounts.length;
         while (n2 < n3) {
-            Account account = accountArray[n2];
-            if (((Pattern)object).matcher(account.name).matches()) {
+            Account account = accounts[n2];
+            if (emailAddress.matcher(account.name).matches()) {
                 return account.name;
             }
             ++n2;
@@ -452,7 +437,8 @@ LogSource {
         if (context == null) {
             return null;
         }
-        if ((context = ((WifiManager)context.getSystemService("wifi")).getConnectionInfo()) != null) return context.getMacAddress();
+        WifiInfo wifi = ((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).getConnectionInfo();
+        if ( null != wifi ) return wifi.getMacAddress();
         return null;
     }
 
@@ -476,7 +462,7 @@ LogSource {
 
     @Override
     public boolean isAppCracked() {
-        Log.Helper.LOGDS("FraudDetection", "Returning false for isAppCracked() since it hasn't been implemented yet", new Object[0]);
+        Helper.LOGDS("FraudDetection", "Returning false for isAppCracked() since it hasn't been implemented yet");
         return false;
     }
 
@@ -506,35 +492,20 @@ LogSource {
             Utility.sendBroadcastSerializable("nimble.notification.age_compliance_refreshed", hashMap);
             return;
         }
-        Object object = new SynergyRequest.SynergyRequestPreparingCallback(){
-
-            @Override
-            public void prepareRequest(SynergyRequest synergyRequest) {
-                synergyRequest.baseUrl = SynergyEnvironment.getComponent().getServerUrlWithKey("geoip.url");
-                synergyRequest.send();
-            }
+        Object object = (SynergyRequest.SynergyRequestPreparingCallback) synergyRequest -> {
+            synergyRequest.baseUrl = SynergyEnvironment.getComponent().getServerUrlWithKey("geoip.url");
+            synergyRequest.send();
         };
         SynergyNetworkConnectionCallback synergyNetworkConnectionCallback = new SynergyNetworkConnectionCallback(){
 
             @Override
             public void callback(SynergyNetworkConnectionHandle object) {
-                HashMap<String, Serializable> hashMap = new HashMap<String, Serializable>();
+                HashMap<String, Serializable> hashMap = new HashMap<>();
                 if (object.getResponse().getError() == null) {
-                    Integer n2 = (Integer)(object = object.getResponse().getJsonData()).get("code");
-                    if (n2 != null && n2 > 0) {
-                        object = (String)object.get("message");
-                        Log.Helper.LOGD(this, "LOG_CALLBACK_ERROR : %s", object);
-                        hashMap.put("result", (Serializable)((Object)"0"));
-                        hashMap.put("error", new Exception((String)object));
-                    } else {
-                        int n3 = (Integer)((Map)object.get("agerequirements")).get("minLegalRegAge");
-                        object = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.applicationEnvironment", Persistence.Storage.CACHE);
-                        ((Persistence)object).setValue(ApplicationEnvironmentImpl.PERSISTENCE_TIME_RETRIEVED, Long.valueOf(new Date().getTime()));
-                        ((Persistence)object).setValue(ApplicationEnvironmentImpl.PERSISTENCE_AGE_REQUIREMENTS, Integer.valueOf(n3));
-                        hashMap.put("result", (Serializable)((Object)"1"));
-                    }
+                    Integer n2 = (Integer)object.getResponse().getJsonData().get("code");
+
                 } else {
-                    Log.Helper.LOGD(this, "LOG_CALLBACK_ERROR : %s", object.getResponse().getError().getMessage());
+                    Helper.LOGD(this, "LOG_CALLBACK_ERROR : %s", object.getResponse().getError().getMessage());
                     hashMap.put("result", (Serializable)((Object)"0"));
                     hashMap.put("error", object.getResponse().getError());
                 }
@@ -550,19 +521,18 @@ LogSource {
         Object object = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.applicationEnvironment", Persistence.Storage.DOCUMENT);
         if (object == null) {
             this.setApplicationLanguageCode(this.getDeviceLanguage(), true);
-            Log.Helper.LOGWS("ApplicationEnvironment", "Persistence is null - Couldn't read Game Specified Player ID or Language from Persistence", new Object[0]);
+            Helper.LOGWS("ApplicationEnvironment", "Persistence is null - Couldn't read Game Specified Player ID or Language from Persistence");
             return;
         }
         if (!Utility.validString(this.m_gameSpecifiedPlayerId)) {
-            Log.Helper.LOGDS("ApplicationEnvironment", "Current game specified player ID is empty, reload from persistence", new Object[0]);
+            Helper.LOGDS("ApplicationEnvironment", "Current game specified player ID is empty, reload from persistence");
             this.m_gameSpecifiedPlayerId = ((Persistence)object).getStringValue(NIMBLE_APPLICATIONENVIRONMENT_PERSISTENCE_GAME_SPECIFIED_ID);
         }
         if (Utility.validString((String)(object = ((Persistence)object).getStringValue(PERSISTENCE_LANGUAGE)))) {
-            this.m_language = object;
-            Log.Helper.LOGD(this, "Restored language %s from persistence.", this.m_language);
+            Helper.LOGD(this, "Restored language %s from persistence.", this.m_language);
             return;
         }
-        Log.Helper.LOGD(this, "Unable to restore language from persistence. Setting language to device language.", new Object[0]);
+        Helper.LOGD(this, "Unable to restore language from persistence. Setting language to device language.");
         this.setApplicationLanguageCode(this.getDeviceLanguage(), true);
     }
 
@@ -574,7 +544,7 @@ LogSource {
         }
         catch (VerifyError verifyError) {}
         finally {
-            Log.Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID because this device is not supported", new Object[0]);
+            Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID because this device is not supported");
             return;
         }
     }
@@ -592,12 +562,12 @@ LogSource {
     @Override
     public void setGameSpecifiedPlayerId(String object) {
         this.m_gameSpecifiedPlayerId = object;
-        object = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.applicationEnvironment", Persistence.Storage.DOCUMENT);
+        Persistence persistenceForNimbleComponent = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.applicationEnvironment", Persistence.Storage.DOCUMENT);
         if (object == null) {
-            Log.Helper.LOGWS("ApplicationEnvironment", "Persistence is null - Couldn't save Game Specified Player ID to Persistence", new Object[0]);
+            Helper.LOGWS("ApplicationEnvironment", "Persistence is null - Couldn't save Game Specified Player ID to Persistence");
             return;
         }
-        ((Persistence)object).setValue(NIMBLE_APPLICATIONENVIRONMENT_PERSISTENCE_GAME_SPECIFIED_ID, (Serializable)((Object)this.m_gameSpecifiedPlayerId));
+        persistenceForNimbleComponent.setValue(NIMBLE_APPLICATIONENVIRONMENT_PERSISTENCE_GAME_SPECIFIED_ID, (Serializable)((Object)this.m_gameSpecifiedPlayerId));
     }
 
     @Override
@@ -605,12 +575,10 @@ LogSource {
         this.m_context = s_currentActivity.getApplicationContext();
         try {
             this.retrieveGoogleAdvertiserId();
-            return;
         }
         catch (VerifyError verifyError) {}
         finally {
-            Log.Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID because this device is not supported", new Object[0]);
-            return;
+            Helper.LOGW(this, "APP_ENV: Cannot get Google Advertising ID because this device is not supported");
         }
     }
 

@@ -223,7 +223,7 @@ public enum SynergyConstants {
     }
 
     public boolean isSessionEndEventType() {
-        switch (1.$SwitchMap$com$ea$nimble$tracking$SynergyConstants[this.ordinal()]) {
+        switch (this.ordinal()) {
             default: {
                 return false;
             }

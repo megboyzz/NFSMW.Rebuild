@@ -1,28 +1,11 @@
-/*
- * Decompiled with CFR 0.152.
- * 
- * Could not load the following classes:
- *  android.text.TextUtils
- */
 package com.ea.nimble;
 
 import android.text.TextUtils;
-import com.ea.nimble.ApplicationEnvironment;
-import com.ea.nimble.BaseCore;
-import com.ea.nimble.ByteBufferIOStream;
-import com.ea.nimble.Error;
-import com.ea.nimble.HttpError;
-import com.ea.nimble.HttpRequest;
-import com.ea.nimble.HttpResponse;
-import com.ea.nimble.IHttpRequest;
-import com.ea.nimble.IOperationalTelemetryDispatch;
-import com.ea.nimble.Log;
-import com.ea.nimble.LogSource;
-import com.ea.nimble.NetworkConnectionCallback;
-import com.ea.nimble.NetworkConnectionHandle;
-import com.ea.nimble.NetworkImpl;
-import com.ea.nimble.OperationalTelemetryDispatch;
-import com.ea.nimble.Utility;
+
+import com.ea.ironmonkey.devmenu.util.Observer;
+import com.google.ads.AdSize;
+import com.google.android.gms.common.api.Status;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -34,9 +17,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.URLConnection;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.nio.channels.FileChannel;
-import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -44,11 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-class NetworkConnection
-implements LogSource,
-NetworkConnectionHandle,
-Runnable {
-    private static int MAXIMUM_RAW_DATA_LENGTH = 0x100000;
+/* JADX INFO: Access modifiers changed from: package-private */
+/* loaded from: stdlib.jar:com/ea/nimble/NetworkConnection.class */
+public class NetworkConnection implements LogSource, NetworkConnectionHandle, Runnable {
+    private static int MAXIMUM_RAW_DATA_LENGTH = 1048576;
     static int s_loggingIdCount = 100;
     private NetworkConnectionCallback m_completionCallback;
     private Date m_connectionStartTimestamp;
@@ -78,851 +60,839 @@ Runnable {
         this.m_connectionStartTimestamp = null;
         this.m_otDispatch = iOperationalTelemetryDispatch;
         this.m_loggingId = String.valueOf(s_loggingIdCount);
-        int n2 = s_loggingIdCount;
-        s_loggingIdCount = n2 + 1;
-        if (n2 < 1000) return;
-        s_loggingIdCount = 100;
-    }
-
-    /*
-     * Handled duff style switch with additional control
-     */
-    private String beautifyJSONString(String string2) {
-        if (string2 == null) return string2;
-        if (string2.length() <= 0) {
-            return string2;
-        }
-        String string3 = System.getProperty("line.separator");
-        StringBuilder stringBuilder = new StringBuilder(string2.length() + 2048);
-        Stack<Character> stack = new Stack<Character>();
-        int n2 = 0;
-        char c2 = '\u0000';
-        boolean bl2 = true;
-        int n3 = 0;
-        while (true) {
-            if (n3 >= string2.length()) {
-                if (stack.isEmpty()) return stringBuilder.toString();
-                Log.Helper.LOGE(this, "JSONString did not close it's brackets, invalid json", new Object[0]);
-                return string2;
-            }
-            int n4 = string2.charAt(n3);
-            boolean bl3 = bl2;
-            int n5 = n2;
-            char c3 = c2;
-            int n6 = 0;
-            block8: do {
-                switch (n6 == 0 ? n4 : n6) {
-                    default: {
-                        stringBuilder.append((char)n4);
-                        c3 = '\u0000';
-                        bl3 = false;
-                        n5 = n2;
-                        break;
-                    }
-                    case 9: 
-                    case 32: {
-                        bl3 = bl2;
-                        n5 = n2;
-                        c3 = c2;
-                        n6 = 10;
-                        if (c2 != '\u0000') continue block8;
-                        stringBuilder.append((char)n4);
-                        bl3 = bl2;
-                        n5 = n2;
-                        c3 = c2;
-                        break;
-                    }
-                    case 91: 
-                    case 123: {
-                        if (!bl2) {
-                            stringBuilder.append(string3).append(this.multiplyStringNTimes("\t", n2));
-                        }
-                        n5 = n2 + 1;
-                        stack.push(Character.valueOf((char)n4));
-                        stringBuilder.append((char)n4).append(string3).append(this.multiplyStringNTimes("\t", n5));
-                        c3 = '\u0001';
-                        bl3 = true;
-                        break;
-                    }
-                    case 44: {
-                        stringBuilder.append((char)n4).append(string3).append(this.multiplyStringNTimes("\t", n2));
-                        c3 = '\u0001';
-                        bl3 = true;
-                        n5 = n2;
-                    }
-                    case 10: 
-                    case 13: {
-                        break;
-                    }
-                    case 93: 
-                    case 125: {
-                        n5 = n2 - 1;
-                        c3 = ((Character)stack.pop()).charValue();
-                        if (n4 == 125 && c3 != '{' || n4 == 93 && c3 != '[') {
-                            Log.Helper.LOGE(this, "JSONString expect valid closing brackets but found none", new Object[0]);
-                            return string2;
-                        }
-                        stringBuilder.append(string3).append(this.multiplyStringNTimes("\t", n5)).append((char)n4);
-                        c3 = '\u0001';
-                        bl3 = bl2;
-                    }
-                }
-                break;
-            } while (true);
-            ++n3;
-            bl2 = bl3;
-            n2 = n5;
-            c2 = c3;
+        int i = s_loggingIdCount;
+        s_loggingIdCount = i + 1;
+        if (i >= 1000) {
+            s_loggingIdCount = 100;
         }
     }
 
-    /*
-     * Loose catch block
-     * Enabled unnecessary exception pruning
-     */
-    private void downloadToBuffer(HttpURLConnection object) throws IOException {
-        int n2 = 0;
-        this.prepareResponseLog();
-        object = ((URLConnection)object).getInputStream();
-        while (true) {
-            int n3;
-            byte[] byArray;
-            block9: {
-                int n4;
-                if (n2 < 0) {
-                    ((InputStream)object).close();
-                    return;
-                }
-                byArray = this.m_response.data.prepareSegment();
-                n2 = 0;
-                do {
-                    n3 = ((InputStream)object).read(byArray, n2, byArray.length - n2);
-                    if (Thread.interrupted()) {
-                        throw new InterruptedIOException();
-                    }
-                    if (n3 < 0) break block9;
-                    if (n3 == 0) {
-                        Thread.yield();
-                        n4 = n2;
+    private String beautifyJSONString(String str) {
+        if (str == null || str.length() <= 0) {
+            return str;
+        }
+        String property = System.getProperty("line.separator");
+        StringBuilder sb = new StringBuilder(str.length() + 2048);
+        Stack stack = new Stack();
+        int i = 0;
+        boolean z = false;
+        boolean z2 = true;
+        for (int i2 = 0; i2 < str.length(); i2++) {
+            char charAt = str.charAt(i2);
+            z2 = z2;
+            i = i;
+            z = z;
+            switch (charAt) {
+                case '\t':
+                case AdSize.LANDSCAPE_AD_HEIGHT /* 32 */:
+                    z2 = z2;
+                    i = i;
+                    z = z;
+                    if (!z) {
+                        sb.append(charAt);
+                        z2 = z2;
+                        i = i;
+                        z = z;
+                        break;
                     } else {
-                        this.prepareResponseLog(byArray, n2, n3);
-                        n4 = n2 + n3;
-                        HttpResponse httpResponse = this.m_response;
-                        httpResponse.downloadedContentLength += (long)n3;
+                        break;
                     }
-                    n2 = n4;
-                } while (n4 < byArray.length);
-                n2 = n4;
+                case '\n':
+                case Status.ERROR /* 13 */:
+                    break;
+                case ',':
+                    sb.append(charAt).append(property).append(multiplyStringNTimes("\t", i));
+                    z = true;
+                    z2 = true;
+                    i = i;
+                    break;
+                case '[':
+                case '{':
+                    if (!z2) {
+                        sb.append(property).append(multiplyStringNTimes("\t", i));
+                    }
+                    i++;
+                    stack.push(Character.valueOf(charAt));
+                    sb.append(charAt).append(property).append(multiplyStringNTimes("\t", i));
+                    z = true;
+                    z2 = true;
+                    break;
+                case ']':
+                case '}':
+                    i--;
+                    char charValue = ((Character) stack.pop()).charValue();
+                    if ((charAt != '}' || charValue == '{') && (charAt != ']' || charValue == '[')) {
+                        sb.append(property).append(multiplyStringNTimes("\t", i)).append(charAt);
+                        z = true;
+                        z2 = z2;
+                        break;
+                    } else {
+                        Log.Helper.LOGE(this, "JSONString expect valid closing brackets but found none");
+                        return str;
+                    }
+                default:
+                    sb.append(charAt);
+                    z = false;
+                    z2 = false;
+                    i = i;
+                    break;
             }
-            this.m_response.data.appendSegmentToBuffer(byArray, n2);
-            n2 = n3;
-            if (this.m_progressCallback == null) continue;
-            this.m_progressCallback.callback(this);
-            n2 = n3;
-            continue;
-            break;
         }
-        catch (Throwable throwable) {
-            ((InputStream)object).close();
-            throw throwable;
+        if (stack.isEmpty()) {
+            return sb.toString();
         }
+        Log.Helper.LOGE(this, "JSONString did not close it's brackets, invalid json");
+        return str;
     }
 
-    /*
-     * Exception decompiling
-     */
-    private void downloadToBufferWithError(HttpURLConnection var1_1) throws IOException {
-        /*
-         * This method has failed to decompile.  When submitting a bug report, please provide this stack trace, and (if you hold appropriate legal rights) the relevant class file.
-         * 
-         * org.benf.cfr.reader.util.ConfusedCFRException: Back jump on a try block [egrp 1[TRYBLOCK] [4 : 117->173)] java.lang.Throwable
-         *     at org.benf.cfr.reader.bytecode.analysis.opgraph.Op02WithProcessedDataAndRefs.insertExceptionBlocks(Op02WithProcessedDataAndRefs.java:2283)
-         *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysisInner(CodeAnalyser.java:415)
-         *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysisOrWrapFail(CodeAnalyser.java:278)
-         *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysis(CodeAnalyser.java:201)
-         *     at org.benf.cfr.reader.entities.attributes.AttributeCode.analyse(AttributeCode.java:94)
-         *     at org.benf.cfr.reader.entities.Method.analyse(Method.java:531)
-         *     at org.benf.cfr.reader.entities.ClassFile.analyseMid(ClassFile.java:1055)
-         *     at org.benf.cfr.reader.entities.ClassFile.analyseTop(ClassFile.java:942)
-         *     at org.benf.cfr.reader.Driver.doJarVersionTypes(Driver.java:257)
-         *     at org.benf.cfr.reader.Driver.doJar(Driver.java:139)
-         *     at org.benf.cfr.reader.CfrDriverImpl.analyse(CfrDriverImpl.java:76)
-         *     at org.benf.cfr.reader.Main.main(Main.java:54)
-         *     at the.bytecode.club.bytecodeviewer.decompilers.impl.CFRDecompiler.decompileToZip(CFRDecompiler.java:306)
-         *     at the.bytecode.club.bytecodeviewer.resources.ResourceDecompiling.lambda$null$1(ResourceDecompiling.java:114)
-         *     at the.bytecode.club.bytecodeviewer.resources.ResourceDecompiling$$Lambda$144/691390785.run(Unknown Source)
-         *     at java.lang.Thread.run(Unknown Source)
-         */
-        throw new IllegalStateException("Decompilation failed");
+    
+    private void downloadToBuffer(java.net.HttpURLConnection r7) throws java.io.IOException {
+        Observer.onCallingMethod();
+    }
+    
+    private void downloadToBufferWithError(java.net.HttpURLConnection r7) {
+        Observer.onCallingMethod();
     }
 
-    /*
-     * Enabled unnecessary exception pruning
-     */
-    private void downloadToFile(HttpURLConnection object) throws IOException {
-        FileChannel fileChannel;
-        File file;
-        block18: {
-            FileChannel fileChannel2;
-            Object object2;
-            if (this.skipDownloadForOverwritePolicy((HttpURLConnection)object)) {
-                return;
-            }
-            File file2 = new File(this.m_request.targetFilePath);
-            Object object3 = ApplicationEnvironment.getComponent().getCachePath();
-            file = new File((String)object3 + File.separator + file2.getName());
-            boolean bl2 = file.exists() && this.m_request.overwritePolicy.contains((Object)IHttpRequest.OverwritePolicy.RESUME_DOWNLOAD);
-            object = ((URLConnection)object).getInputStream();
-            object3 = new FileOutputStream(file, bl2);
-            Object object4 = new byte[65536];
-            Log.Helper.LOGI(this, "Started File Download for " + file2.toString(), new Object[0]);
-            try {
-                int n2;
-                while ((n2 = ((InputStream)object).read((byte[])object4)) >= 0) {
-                    if (n2 == 0) {
+    /* JADX WARN: Finally extract failed */
+    private void downloadToFile(HttpURLConnection httpURLConnection) throws IOException {
+        if (!skipDownloadForOverwritePolicy(httpURLConnection)) {
+            File file = new File(this.m_request.targetFilePath);
+            File file2 = new File(ApplicationEnvironment.getComponent().getCachePath() + File.separator + file.getName());
+            boolean z = file2.exists() && this.m_request.overwritePolicy.contains(IHttpRequest.OverwritePolicy.RESUME_DOWNLOAD);
+            InputStream inputStream = httpURLConnection.getInputStream();
+            FileOutputStream fileOutputStream = new FileOutputStream(file2, z);
+            byte[] bArr = new byte[65536];
+            Log.Helper.LOGI(this, "Started File Download for " + file.toString());
+            while (true) {
+                try {
+                    int read = inputStream.read(bArr);
+                    if (read < 0) {
+                        break;
+                    } else if (read == 0) {
                         Thread.yield();
-                        continue;
+                    } else {
+                        fileOutputStream.write(bArr, 0, read);
+                        this.m_response.downloadedContentLength += (long) read;
+                        if (this.m_progressCallback != null) {
+                            this.m_progressCallback.callback(this);
+                        }
                     }
-                    ((FileOutputStream)object3).write((byte[])object4, 0, n2);
-                    object2 = this.m_response;
-                    ((HttpResponse)object2).downloadedContentLength += (long)n2;
-                    if (this.m_progressCallback == null) continue;
-                    this.m_progressCallback.callback(this);
+                } catch (Throwable th) {
+                    inputStream.close();
+                    fileOutputStream.close();
+                    throw th;
                 }
             }
-            finally {
-                ((InputStream)object).close();
-                ((FileOutputStream)object3).close();
+            inputStream.close();
+            fileOutputStream.close();
+            if (file.exists() && !file.delete()) {
+                Log.Helper.LOGE(this, "Failed to delete existed target file " + file);
             }
-            if (file2.exists() && !file2.delete()) {
-                Log.Helper.LOGE(this, "Failed to delete existed target file " + file2, new Object[0]);
-            }
-            if (file.renameTo(file2)) return;
-            Log.Helper.LOGI(this, "Failed to move temp file " + file + " to target file " + file2, new Object[0]);
-            Log.Helper.LOGI(this, "Using fallback, and copying file instead " + file + "to target file " + file2, new Object[0]);
-            if (!file2.exists()) {
-                file2.createNewFile();
-            }
-            object2 = null;
-            object4 = null;
-            Object var9_11 = null;
-            fileChannel = null;
-            object = fileChannel;
-            object3 = var9_11;
-            try {
-                fileChannel2 = new FileInputStream(file).getChannel();
-                object = fileChannel;
-                object4 = fileChannel2;
-                object3 = var9_11;
-                object2 = fileChannel2;
-                fileChannel = new FileOutputStream(file2).getChannel();
-                object = fileChannel;
-                object4 = fileChannel2;
-                object3 = fileChannel;
-                object2 = fileChannel2;
-                fileChannel.transferFrom(fileChannel2, 0L, fileChannel2.size());
-                if (fileChannel2 == null) break block18;
-            }
-            catch (Exception exception) {
-                block19: {
-                    object3 = object;
-                    object2 = object4;
+            if (!file2.renameTo(file)) {
+                Log.Helper.LOGI(this, "Failed to move temp file " + file2 + " to target file " + file);
+                Log.Helper.LOGI(this, "Using fallback, and copying file instead " + file2 + "to target file " + file);
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+                FileChannel fileChannel = null;
+                FileChannel fileChannel2 = null;
+                FileChannel fileChannel3 = null;
+                FileChannel fileChannel4 = null;
+                try {
                     try {
-                        Log.Helper.LOGE(this, "ERROR while copying file, " + exception, new Object[0]);
-                        if (object4 == null) break block19;
-                    }
-                    catch (Throwable throwable) {
-                        if (object2 != null) {
-                            ((AbstractInterruptibleChannel)object2).close();
+                        FileChannel channel = new FileInputStream(file2).getChannel();
+                        FileChannel channel2 = new FileOutputStream(file).getChannel();
+                        fileChannel4 = channel2;
+                        fileChannel2 = channel;
+                        fileChannel3 = channel2;
+                        fileChannel = channel;
+                        channel2.transferFrom(channel, 0, channel.size());
+                        if (channel != null) {
+                            channel.close();
                         }
-                        if (object3 != null) {
-                            ((AbstractInterruptibleChannel)object3).close();
+                        if (channel2 != null) {
+                            channel2.close();
                         }
-                        if (!file.exists()) throw throwable;
-                        file.delete();
-                        throw throwable;
+                        if (file2.exists()) {
+                            file2.delete();
+                        }
+                    } catch (Exception e) {
+                        fileChannel3 = fileChannel4;
+                        fileChannel = fileChannel2;
+                        Log.Helper.LOGE(this, "ERROR while copying file, " + e);
+                        if (fileChannel2 != null) {
+                            fileChannel2.close();
+                        }
+                        if (fileChannel4 != null) {
+                            fileChannel4.close();
+                        }
+                        if (file2.exists()) {
+                            file2.delete();
+                        }
                     }
-                    ((AbstractInterruptibleChannel)object4).close();
+                } catch (Throwable th2) {
+                    if (fileChannel != null) {
+                        fileChannel.close();
+                    }
+                    if (fileChannel3 != null) {
+                        fileChannel3.close();
+                    }
+                    if (file2.exists()) {
+                        file2.delete();
+                    }
+                    throw th2;
                 }
-                if (object != null) {
-                    ((AbstractInterruptibleChannel)object).close();
-                }
-                if (!file.exists()) return;
-                file.delete();
-                return;
             }
-            fileChannel2.close();
         }
-        if (fileChannel != null) {
-            fileChannel.close();
-        }
-        if (!file.exists()) return;
-        file.delete();
-        return;
     }
 
-    /*
-     * Enabled unnecessary exception pruning
-     */
     private void finish() {
         this.m_response.isCompleted = true;
-        this.logOperationalTelemetryResponse();
+        logOperationalTelemetryResponse();
         if (this.m_completionCallback != null) {
             this.m_completionCallback.callback(this);
         }
         synchronized (this) {
-            this.notifyAll();
+            notifyAll();
         }
         this.m_manager.removeConnection(this);
     }
 
-    /*
-     * Unable to fully structure code
-     * Enabled unnecessary exception pruning
-     */
-    private void httpRecv(HttpURLConnection var1_1) throws IOException, Error {
-        block16: {
-            block19: {
-                block18: {
-                    try {
-                        var4_4 = var1_1.getInputStream();
-                    }
-                    catch (Exception var4_5) {
-                        try {
-                            var4_4 = var1_1.getErrorStream();
-                        }
-                        catch (Exception var1_3) {
-                            throw new Error(Error.Code.NETWORK_CONNECTION_ERROR, "Exception when getting error stream from HTTP connection.", var1_3);
-                        }
-                    }
-                    this.m_response.url = var1_1.getURL();
-                    try {}
-                    catch (Throwable var1_2) {
-                        if (var4_4 != null) {
-                            var4_4.close();
-                        }
-                        this.logCommunication();
-                        throw var1_2;
-                    }
-                    this.m_response.statusCode = var1_1.getResponseCode();
-                    this.m_response.expectedContentLength = var1_1.getContentLength();
-                    this.m_response.lastModified = var1_1.getLastModified();
-                    for (Map.Entry<String, List<String>> var6_7 : var1_1.getHeaderFields().entrySet()) {
-                        this.m_response.headers.put(var6_7.getKey(), TextUtils.join((CharSequence)", ", (Iterable)var6_7.getValue()));
-                    }
-                    var2_8 = this.m_response.expectedContentLength > (long)NetworkConnection.MAXIMUM_RAW_DATA_LENGTH;
-                    var3_9 = Utility.validString(this.m_request.targetFilePath);
-                    if (var2_8 && !var3_9) {
-                        throw new Error(Error.Code.NETWORK_OVERSIZE_DATA, "Request " + this + " is oversize, please provide a local file path to download it as file.");
-                    }
-                    this.m_response.downloadedContentLength = 0L;
-                    if (this.m_headerCallback != null) {
-                        this.m_headerCallback.callback(this);
-                    }
-                    if (!var3_9 || var4_4 == null) break block18;
-                    this.downloadToFile(var1_1);
-lbl34:
-                    // 4 sources
-
-                    while (this.m_response.statusCode != 200) {
-                        if (var3_9 == false) throw new HttpError(this.m_response.statusCode, "Request " + this + " failed for HTTP error");
-                        if (this.m_response.statusCode != 206) {
-                            throw new HttpError(this.m_response.statusCode, "Request " + this + " failed for HTTP error");
-                        }
-                        break block16;
-                    }
-                    break block16;
-                }
-                if (this.m_response.expectedContentLength == 0L) ** GOTO lbl34
-                if (this.m_response.data == null) {
-                    this.m_response.data = new ByteBufferIOStream((int)this.m_response.expectedContentLength);
-                } else {
-                    this.m_response.data.clear();
-                }
-                if (this.m_response.statusCode != 200) break block19;
-                this.downloadToBuffer(var1_1);
-                ** GOTO lbl34
+    private void httpRecv(HttpURLConnection httpURLConnection) throws IOException, Error {
+        InputStream errorStream;
+        try {
+            errorStream = httpURLConnection.getInputStream();
+        } catch (Exception e) {
+            try {
+                errorStream = httpURLConnection.getErrorStream();
+            } catch (Exception e2) {
+                throw new Error(Error.Code.NETWORK_CONNECTION_ERROR, "Exception when getting error stream from HTTP connection.", e2);
             }
-            this.downloadToBufferWithError(var1_1);
-            ** GOTO lbl34
         }
-        if (var4_4 != null) {
-            var4_4.close();
+        this.m_response.url = httpURLConnection.getURL();
+        try {
+            this.m_response.statusCode = httpURLConnection.getResponseCode();
+            this.m_response.expectedContentLength = (long) httpURLConnection.getContentLength();
+            this.m_response.lastModified = httpURLConnection.getLastModified();
+            for (Map.Entry<String, List<String>> entry : httpURLConnection.getHeaderFields().entrySet()) {
+                this.m_response.headers.put(entry.getKey(), TextUtils.join(", ", entry.getValue()));
+            }
+            boolean z = this.m_response.expectedContentLength > ((long) MAXIMUM_RAW_DATA_LENGTH);
+            boolean validString = Utility.validString(this.m_request.targetFilePath);
+            if (!z || validString) {
+                this.m_response.downloadedContentLength = 0;
+                if (this.m_headerCallback != null) {
+                    this.m_headerCallback.callback(this);
+                }
+                if (validString && errorStream != null) {
+                    downloadToFile(httpURLConnection);
+                } else if (this.m_response.expectedContentLength != 0) {
+                    if (this.m_response.data == null) {
+                        this.m_response.data = new ByteBufferIOStream((int) this.m_response.expectedContentLength);
+                    } else {
+                        this.m_response.data.clear();
+                    }
+                    if (this.m_response.statusCode == 200) {
+                        downloadToBuffer(httpURLConnection);
+                    } else {
+                        downloadToBufferWithError(httpURLConnection);
+                    }
+                }
+                if (!(this.m_response.statusCode == 200 || (validString && this.m_response.statusCode == 206))) {
+                    throw new HttpError(this.m_response.statusCode, "Request " + this + " failed for HTTP error");
+                }
+                return;
+            }
+            throw new Error(Error.Code.NETWORK_OVERSIZE_DATA, "Request " + this + " is oversize, please provide a local file path to download it as file.");
+        } finally {
+            if (errorStream != null) {
+                errorStream.close();
+            }
+            logCommunication();
         }
-        this.logCommunication();
     }
 
-    /*
-     * WARNING - void declaration
-     * Enabled unnecessary exception pruning
-     */
-    private void httpSend(HttpURLConnection object) throws IOException {
+    /* JADX WARN: Multi-variable type inference failed */
+    /* JADX WARN: Type inference failed for: r6v0, types: [java.net.HttpURLConnection] */
+    /* JADX WARN: Type inference failed for: r8v1, types: [java.io.OutputStream] */
+    /* JADX WARN: Type inference failed for: r8v10, types: [java.lang.Object, java.lang.String] */
+    /* JADX WARN: Type inference failed for: r8v11 */
+    /* JADX WARN: Type inference failed for: r8v2 */
+    /* JADX WARN: Type inference failed for: r8v3 */
+    /* JADX WARN: Type inference failed for: r8v7 */
+    /* JADX WARN: Type inference failed for: r8v8 */
+    private void httpSend(HttpURLConnection httpURLConnection) throws IOException {
+        String str;
         this.m_connectionStartTimestamp = new Date();
         if (this.m_request.headers != null) {
-            for (String string2 : this.m_request.headers.keySet()) {
-                ((URLConnection)object).setRequestProperty(string2, this.m_request.headers.get(string2));
+            Iterator<String> it = this.m_request.headers.keySet().iterator();
+            while (it.hasNext()) {
+                str = it.next();
+                httpURLConnection.setRequestProperty(str, this.m_request.headers.get(str));
             }
         }
-        if (this.m_request.getMethod() != IHttpRequest.Method.POST && this.m_request.getMethod() != IHttpRequest.Method.PUT) {
-            this.logRequest();
-            return;
-        }
-        byte[] byArray = this.m_request.data.toByteArray();
-        if (byArray == null || byArray.length <= 0) {
-            this.logRequest();
-            return;
-        }
-        this.prepareRequestLog(byArray);
-        this.logRequest();
-        ((URLConnection)object).setDoOutput(true);
-        ((HttpURLConnection)object).setFixedLengthStreamingMode(byArray.length);
-        Object var3_7 = null;
-        Object object2 = null;
-        try {
-            object2 = object = ((URLConnection)object).getOutputStream();
-            Object object3 = object;
-            ((OutputStream)object).write(byArray);
-            if (object == null) return;
-        }
-        catch (Exception exception) {
-            Iterator<String> iterator = object2;
+        if (this.m_request.getMethod() == IHttpRequest.Method.POST || this.m_request.getMethod() == IHttpRequest.Method.PUT) {
+            byte[] byteArray = this.m_request.data.toByteArray();
+            if (byteArray == null || byteArray.length <= 0) {
+                logRequest();
+                return;
+            }
             try {
-                StringWriter stringWriter = new StringWriter();
-                Object object4 = object2;
-                exception.printStackTrace(new PrintWriter(stringWriter));
-                Object object5 = object2;
-                String string3 = stringWriter.toString();
-                Object object6 = object2;
-                Log.Helper.LOGE(this, "Exception in network connection:" + string3, new Object[0]);
-                if (object2 == null) return;
+                prepareRequestLog(byteArray);
+                logRequest();
+                httpURLConnection.setDoOutput(true);
+                httpURLConnection.setFixedLengthStreamingMode(byteArray.length);
+                OutputStream outputStream = null;
+                try {
+                    OutputStream outputStream2 = httpURLConnection.getOutputStream();
+                    outputStream = outputStream2;
+                    outputStream2.write(byteArray);
+                    if (outputStream2 != null) {
+                        outputStream2.close();
+                    }
+                } catch (Exception e) {
+                    StringWriter stringWriter = new StringWriter();
+                    e.printStackTrace(new PrintWriter(stringWriter));
+                    Log.Helper.LOGE(this, "Exception in network connection:" + stringWriter.toString());
+                    if (outputStream != null) {
+                        outputStream.close();
+                    }
+                }
+            } catch (Throwable th) {
             }
-            catch (Throwable throwable) {
-                void var3_13;
-                if (var3_13 == null) throw throwable;
-                var3_13.close();
-                throw throwable;
-            }
-            ((OutputStream)object2).close();
-            return;
+        } else {
+            logRequest();
         }
-        ((OutputStream)object).close();
-        return;
     }
 
-    /*
-     * Unable to fully structure code
-     */
     private void logCommunication() {
-        if (Log.getComponent().getThresholdLevel() > 100) {
-            return;
-        }
-        var1_1 = 4096;
-        if (this.m_requestDataForLog != null) {
-            var1_1 = 4096 + this.m_requestDataForLog.length();
-        }
-        var2_2 = var1_1;
-        if (this.m_responseDataForLog != null) {
-            var2_2 = var1_1 + this.m_responseDataForLog.length();
-        }
-        var6_3 = new StringBuilder(var2_2);
-        var6_3.append(String.format("\n>>>> CONNECTION ID %s FINISHED >>>>>>>>>>>>>>\n", new Object[]{this.m_loggingId}));
-        var6_3.append("\n>>>> REQUEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-        var6_3.append("REQUEST: ").append(this.m_request.method.toString());
-        var6_3.append(' ').append(this.m_request.url.toString()).append('\n');
-        var3_4 = 0;
-        var1_1 = 0;
-        var2_2 = var3_4;
-        if (this.m_request.headers != null) {
-            var2_2 = var3_4;
-            if (this.m_request.headers.size() > 0) {
-                var4_5 = this.m_request.headers.keySet().iterator();
-                while (true) {
-                    var2_2 = var1_1;
-                    if (!var4_5.hasNext()) break;
-                    var5_7 = (String)var4_5.next();
-                    if (var5_7 == null) continue;
-                    var6_3.append("REQ HEADER: ").append((String)var5_7);
-                    var7_8 = Utility.safeString(this.m_request.headers.get(var5_7));
-                    var6_3.append(" VALUE: ").append(var7_8).append('\n');
-                    if (!var5_7.equals("Content-Type") || !var7_8.contains("application/json") && !var7_8.contains("text/json")) continue;
-                    var1_1 = 1;
-                }
+        if (Log.getComponent().getThresholdLevel() <= 100) {
+            int i = 4096;
+            if (this.m_requestDataForLog != null) {
+                i = 4096 + this.m_requestDataForLog.length();
             }
-        }
-        if (this.m_requestDataForLog != null && this.m_requestDataForLog.length() > 0) {
-            var6_3.append("REQ BODY:\n");
-            var4_5 = var5_7 = this.m_requestDataForLog.toString();
-            if (var2_2 != 0) {
-                var4_5 = this.beautifyJSONString((String)var5_7);
-            }
-            var6_3.append((String)var4_5).append('\n');
-        }
-        var6_3.append("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
-        var6_3.append(">>>> RESPONSE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-        var6_3.append("RESP URL: ").append(this.m_response.url.toString()).append('\n');
-        var6_3.append("RESP STATUS: ").append(this.m_response.statusCode).append('\n');
-        var3_4 = 0;
-        var1_1 = 0;
-        var2_2 = var3_4;
-        if (this.m_response.headers != null) {
-            var2_2 = var3_4;
-            if (this.m_response.headers.size() > 0) {
-                var4_5 = this.m_response.headers.keySet().iterator();
-                while (true) {
-                    var2_2 = var1_1;
-                    if (!var4_5.hasNext()) break;
-                    var5_7 = (String)var4_5.next();
-                    if (var5_7 == null) continue;
-                    var6_3.append("RESP HEADER: ").append((String)var5_7);
-                    var7_8 = Utility.safeString(this.m_response.headers.get(var5_7));
-                    var6_3.append(" VALUE: ").append(var7_8).append('\n');
-                    if (!var5_7.equals("Content-Type") || !var7_8.contains("application/json") && !var7_8.contains("text/json")) continue;
-                    var1_1 = 1;
-                }
-            }
-        }
-        var6_3.append("RESP BODY:\n");
-        var4_5 = var5_7 = "<Empty>: there is no response body for this call";
-        try {
+            int i2 = i;
             if (this.m_responseDataForLog != null) {
-                var4_5 = this.m_responseDataForLog.toString();
+                i2 = i + this.m_responseDataForLog.length();
             }
-lbl80:
-            // 7 sources
-
-            while (true) {
-                var5_7 = var4_5;
-                if (var2_2 != 0) {
-                    var5_7 = this.beautifyJSONString((String)var4_5);
+            StringBuilder sb = new StringBuilder(i2);
+            sb.append(String.format("\n>>>> CONNECTION ID %s FINISHED >>>>>>>>>>>>>>\n", this.m_loggingId));
+            sb.append("\n>>>> REQUEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+            sb.append("REQUEST: ").append(this.m_request.method.toString());
+            sb.append(' ').append(this.m_request.url.toString()).append('\n');
+            boolean z = false;
+            boolean z2 = false;
+            if (this.m_request.headers != null) {
+                z2 = false;
+                if (this.m_request.headers.size() > 0) {
+                    Iterator<String> it = this.m_request.headers.keySet().iterator();
+                    while (true) {
+                        z2 = z;
+                        if (!it.hasNext()) {
+                            break;
+                        }
+                        String next = it.next();
+                        if (next != null) {
+                            sb.append("REQ HEADER: ").append(next);
+                            String safeString = Utility.safeString(this.m_request.headers.get(next));
+                            sb.append(" VALUE: ").append(safeString).append('\n');
+                            if (next.equals("Content-Type") && (safeString.contains("application/json") || safeString.contains("text/json"))) {
+                                z = true;
+                            }
+                        }
+                    }
                 }
-                var6_3.append((String)var5_7).append('\n');
-                break;
             }
+            if (this.m_requestDataForLog != null && this.m_requestDataForLog.length() > 0) {
+                sb.append("REQ BODY:\n");
+                String str = this.m_requestDataForLog.toString();
+                String str2 = str;
+                if (z2) {
+                    str2 = beautifyJSONString(str);
+                }
+                sb.append(str2).append('\n');
+            }
+            sb.append("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+            sb.append(">>>> RESPONSE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+            sb.append("RESP URL: ").append(this.m_response.url.toString()).append('\n');
+            sb.append("RESP STATUS: ").append(this.m_response.statusCode).append('\n');
+            boolean z3 = false;
+            boolean z4 = false;
+            if (this.m_response.headers != null) {
+                z4 = false;
+                if (this.m_response.headers.size() > 0) {
+                    Iterator<String> it2 = this.m_response.headers.keySet().iterator();
+                    while (true) {
+                        z4 = z3;
+                        if (!it2.hasNext()) {
+                            break;
+                        }
+                        String next2 = it2.next();
+                        if (next2 != null) {
+                            sb.append("RESP HEADER: ").append(next2);
+                            String safeString2 = Utility.safeString(this.m_response.headers.get(next2));
+                            sb.append(" VALUE: ").append(safeString2).append('\n');
+                            if (next2.equals("Content-Type") && (safeString2.contains("application/json") || safeString2.contains("text/json"))) {
+                                z3 = true;
+                            }
+                        }
+                    }
+                }
+            }
+            sb.append("RESP BODY:\n");
+            String str3 = "<Empty>: there is no response body for this call";
+            try {
+                if (this.m_responseDataForLog != null) {
+                    str3 = this.m_responseDataForLog.toString();
+                }
+            } catch (Exception e) {
+                Log.Helper.LOGE(this, "Attempting to process the response body failed.");
+                str3 = "<Empty>: there is no response body for this call";
+                if (this.m_response != null) {
+                    str3 = "<Empty>: there is no response body for this call";
+                    if (this.m_response.getError() != null) {
+                        str3 = "<Empty>: there is no response body for this call";
+                        if (this.m_response.getError().getMessage() != null) {
+                            str3 = this.m_response.getError().getMessage();
+                        }
+                    }
+                }
+            }
+            String str4 = str3;
+            if (z4) {
+                str4 = beautifyJSONString(str3);
+            }
+            sb.append(str4).append('\n');
+            sb.append("<<<< CONNECTION FINISHED <<<<<<<<<<<<<<<<<<<<<");
+            Log.Helper.LOGV(this, sb.toString());
         }
-        catch (Exception var4_6) {
-            Log.Helper.LOGE(this, "Attempting to process the response body failed.", new Object[0]);
-            var4_5 = var5_7;
-            if (this.m_response == null) ** GOTO lbl80
-            var4_5 = var5_7;
-            if (this.m_response.getError() == null) ** GOTO lbl80
-            var4_5 = var5_7;
-            if (this.m_response.getError().getMessage() == null) ** GOTO lbl80
-            var4_5 = this.m_response.getError().getMessage();
-            ** continue;
-        }
-        var6_3.append("<<<< CONNECTION FINISHED <<<<<<<<<<<<<<<<<<<<<");
-        Log.Helper.LOGV(this, var6_3.toString(), new Object[0]);
     }
 
     private void logRequest() {
-        String string2;
-        Object object;
-        if (Log.getComponent().getThresholdLevel() > 100) {
-            return;
-        }
-        int n2 = 2048;
-        if (this.m_requestDataForLog != null) {
-            n2 = 2048 + this.m_requestDataForLog.length();
-        }
-        StringBuilder stringBuilder = new StringBuilder(n2);
-        stringBuilder.append(String.format("\n>>>> CONNECTION ID %s BEGIN >>>>>>>>>>>>>>>>>\n", this.m_loggingId));
-        stringBuilder.append("REQUEST: ").append(this.m_request.method.toString());
-        stringBuilder.append(' ').append(this.m_request.url.toString()).append('\n');
-        int n3 = 0;
-        n2 = 0;
-        int n4 = n3;
-        if (this.m_request.headers != null) {
-            n4 = n3;
-            if (this.m_request.headers.size() > 0) {
-                object = this.m_request.headers.keySet().iterator();
-                while (true) {
-                    n4 = n2;
-                    if (!object.hasNext()) break;
-                    string2 = (String)object.next();
-                    stringBuilder.append("REQ HEADER: ").append(string2);
-                    String string3 = this.m_request.headers.get(string2);
-                    stringBuilder.append(" VALUE: ").append(string3).append('\n');
-                    if (!string2.equals("Content-Type") || !string3.contains("application/json") && !string3.contains("text/json")) continue;
-                    n2 = 1;
+        if (Log.getComponent().getThresholdLevel() <= 100) {
+            int i = 2048;
+            if (this.m_requestDataForLog != null) {
+                i = 2048 + this.m_requestDataForLog.length();
+            }
+            StringBuilder sb = new StringBuilder(i);
+            sb.append(String.format("\n>>>> CONNECTION ID %s BEGIN >>>>>>>>>>>>>>>>>\n", this.m_loggingId));
+            sb.append("REQUEST: ").append(this.m_request.method.toString());
+            sb.append(' ').append(this.m_request.url.toString()).append('\n');
+            boolean z = false;
+            boolean z2 = false;
+            if (this.m_request.headers != null) {
+                z2 = false;
+                if (this.m_request.headers.size() > 0) {
+                    Iterator<String> it = this.m_request.headers.keySet().iterator();
+                    while (true) {
+                        z2 = z;
+                        if (!it.hasNext()) {
+                            break;
+                        }
+                        String next = it.next();
+                        sb.append("REQ HEADER: ").append(next);
+                        String str = this.m_request.headers.get(next);
+                        sb.append(" VALUE: ").append(str).append('\n');
+                        if (next.equals("Content-Type") && (str.contains("application/json") || str.contains("text/json"))) {
+                            z = true;
+                        }
+                    }
                 }
             }
-        }
-        if (this.m_requestDataForLog != null && this.m_requestDataForLog.length() > 0) {
-            stringBuilder.append("REQ BODY:\n");
-            string2 = this.m_requestDataForLog.toString();
-            object = string2;
-            if (n4 != 0) {
-                object = this.beautifyJSONString(string2);
+            if (this.m_requestDataForLog != null && this.m_requestDataForLog.length() > 0) {
+                sb.append("REQ BODY:\n");
+                String str2 = this.m_requestDataForLog.toString();
+                String str3 = str2;
+                if (z2) {
+                    str3 = beautifyJSONString(str2);
+                }
+                sb.append(str3).append('\n');
             }
-            stringBuilder.append((String)object).append('\n');
+            sb.append("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            Log.Helper.LOGV(this, sb.toString());
         }
-        stringBuilder.append("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-        Log.Helper.LOGV(this, stringBuilder.toString(), new Object[0]);
     }
 
-    private String multiplyStringNTimes(String string2, int n2) {
-        StringBuilder stringBuilder = new StringBuilder(string2.length() * n2);
-        int n3 = 0;
-        while (n3 < n2) {
-            stringBuilder.append(string2);
-            ++n3;
+    private String multiplyStringNTimes(String str, int i) {
+        StringBuilder sb = new StringBuilder(str.length() * i);
+        for (int i2 = 0; i2 < i; i2++) {
+            sb.append(str);
         }
-        return stringBuilder.toString();
+        return sb.toString();
     }
 
-    private void prepareRequestLog(byte[] byArray) {
-        if (Log.getComponent().getThresholdLevel() > 100) {
-            return;
-        }
-        try {
-            this.m_requestDataForLog = new String(byArray, "UTF-8");
-            return;
-        }
-        catch (UnsupportedEncodingException unsupportedEncodingException) {
-            this.m_requestDataForLog = null;
-            return;
+    private void prepareRequestLog(byte[] bArr) {
+        if (Log.getComponent().getThresholdLevel() <= 100) {
+            try {
+                this.m_requestDataForLog = new String(bArr, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                this.m_requestDataForLog = null;
+            }
         }
     }
 
     private void prepareResponseLog() {
-        if (Log.getComponent().getThresholdLevel() > 100) {
-            return;
-        }
-        int n2 = this.m_response.expectedContentLength > 0L ? (int)this.m_response.expectedContentLength : 4096;
-        this.m_responseDataForLog = new StringBuilder(n2);
-    }
-
-    private void prepareResponseLog(byte[] object, int n2, int n3) {
-        if (Log.getComponent().getThresholdLevel() > 100) return;
-        if (this.m_responseDataForLog == null) {
-            return;
-        }
-        try {
-            object = new String((byte[])object, n2, n3, "UTF-8");
-            this.m_responseDataForLog.append((String)object);
-            return;
-        }
-        catch (UnsupportedEncodingException unsupportedEncodingException) {
-            this.m_responseDataForLog = null;
-            return;
+        if (Log.getComponent().getThresholdLevel() <= 100) {
+            this.m_responseDataForLog = new StringBuilder(this.m_response.expectedContentLength > 0 ? (int) this.m_response.expectedContentLength : 4096);
         }
     }
 
-    private boolean skipDownloadForOverwritePolicy(HttpURLConnection object) {
-        boolean bl2;
-        boolean bl3 = true;
-        object = new File(this.m_request.targetFilePath);
-        if (!((File)object).exists()) {
-            return false;
+    private void prepareResponseLog(byte[] bArr, int i, int i2) {
+        if (Log.getComponent().getThresholdLevel() <= 100 && this.m_responseDataForLog != null) {
+            try {
+                this.m_responseDataForLog.append(new String(bArr, i, i2, "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                this.m_responseDataForLog = null;
+            }
         }
-        if (((File)object).length() != this.m_response.expectedContentLength) {
-            bl2 = bl3;
-            if (this.m_request.overwritePolicy.contains((Object)IHttpRequest.OverwritePolicy.LENGTH_CHECK)) return bl2;
-        }
-        bl2 = bl3;
-        if (((File)object).lastModified() < this.m_response.lastModified) return bl2;
-        bl2 = bl3;
-        if (!this.m_request.overwritePolicy.contains((Object)IHttpRequest.OverwritePolicy.DATE_CHECK)) return bl2;
-        return true;
     }
 
-    @Override
+    /* JADX WARN: Code restructure failed: missing block: B:10:0x003a, code lost:
+        if (r5.m_request.overwritePolicy.contains(com.ea.nimble.IHttpRequest.OverwritePolicy.LENGTH_CHECK) == false) goto L_0x003d;
+     */
+    /*
+        Code decompiled incorrectly, please refer to instructions dump.
+        To view partially-correct code enable 'Show inconsistent code' option in preferences
+    */
+    private boolean skipDownloadForOverwritePolicy(java.net.HttpURLConnection r6) {
+        /*
+            r5 = this;
+            r0 = 1
+            r8 = r0
+            java.io.File r0 = new java.io.File
+            r1 = r0
+            r2 = r5
+            com.ea.nimble.HttpRequest r2 = r2.m_request
+            java.lang.String r2 = r2.targetFilePath
+            r1.<init>(r2)
+            r6 = r0
+            r0 = r6
+            boolean r0 = r0.exists()
+            if (r0 != 0) goto L_0x001c
+            r0 = 0
+            r7 = r0
+        L_0x001a:
+            r0 = r7
+            return r0
+        L_0x001c:
+            r0 = r6
+            long r0 = r0.length()
+            r1 = r5
+            com.ea.nimble.HttpResponse r1 = r1.m_response
+            long r1 = r1.expectedContentLength
+            int r0 = (r0 > r1 ? 1 : (r0 == r1 ? 0 : -1))
+            if (r0 == 0) goto L_0x003d
+            r0 = r8
+            r7 = r0
+            r0 = r5
+            com.ea.nimble.HttpRequest r0 = r0.m_request
+            java.util.EnumSet<com.ea.nimble.IHttpRequest$OverwritePolicy> r0 = r0.overwritePolicy
+            com.ea.nimble.IHttpRequest$OverwritePolicy r1 = com.ea.nimble.IHttpRequest.OverwritePolicy.LENGTH_CHECK
+            boolean r0 = r0.contains(r1)
+            if (r0 != 0) goto L_0x001a
+        L_0x003d:
+            r0 = r8
+            r7 = r0
+            r0 = r6
+            long r0 = r0.lastModified()
+            r1 = r5
+            com.ea.nimble.HttpResponse r1 = r1.m_response
+            long r1 = r1.lastModified
+            int r0 = (r0 > r1 ? 1 : (r0 == r1 ? 0 : -1))
+            if (r0 < 0) goto L_0x001a
+            r0 = r8
+            r7 = r0
+            r0 = r5
+            com.ea.nimble.HttpRequest r0 = r0.m_request
+            java.util.EnumSet<com.ea.nimble.IHttpRequest$OverwritePolicy> r0 = r0.overwritePolicy
+            com.ea.nimble.IHttpRequest$OverwritePolicy r1 = com.ea.nimble.IHttpRequest.OverwritePolicy.DATE_CHECK
+            boolean r0 = r0.contains(r1)
+            if (r0 == 0) goto L_0x001a
+            r0 = 1
+            return r0
+        */
+        throw new UnsupportedOperationException("Method not decompiled: com.ea.nimble.NetworkConnection.skipDownloadForOverwritePolicy(java.net.HttpURLConnection):boolean");
+    }
+
+    @Override // com.ea.nimble.NetworkConnectionHandle
     public void cancel() {
         synchronized (this) {
             if (this.m_thread != null) {
                 this.m_thread.interrupt();
             } else {
-                this.finishWithError(new Error(Error.Code.NETWORK_OPERATION_CANCELLED, "Network connection " + this.toString() + " is cancelled"));
+                finishWithError(new Error(Error.Code.NETWORK_OPERATION_CANCELLED, "Network connection " + toString() + " is cancelled"));
             }
-            return;
         }
     }
 
-    void cancelForAppSuspend() {
-        this.cancel();
+    /* JADX INFO: Access modifiers changed from: package-private */
+    public void cancelForAppSuspend() {
+        cancel();
     }
 
-    void finishWithError(Exception exception) {
+    /* JADX INFO: Access modifiers changed from: package-private */
+    public void finishWithError(Exception exc) {
         if (this.m_response.isCompleted) {
-            Log.Helper.LOGI(this, "Finished connection %s skipped an error %s", this.toString(), exception.toString());
+            Log.Helper.LOGI(this, "Finished connection %s skipped an error %s", toString(), exc.toString());
             return;
         }
-        Log.Helper.LOGW(this, "Running connection number %s with name %s failed for error %s", this.m_loggingId, this.toString(), exception.toString());
-        this.m_response.error = exception;
-        this.finish();
+        Log.Helper.LOGW(this, "Running connection number %s with name %s failed for error %s", this.m_loggingId, toString(), exc.toString());
+        this.m_response.error = exc;
+        finish();
     }
 
-    @Override
+    @Override // com.ea.nimble.NetworkConnectionHandle
     public NetworkConnectionCallback getCompletionCallback() {
         return this.m_completionCallback;
     }
 
-    @Override
+    @Override // com.ea.nimble.NetworkConnectionHandle
     public NetworkConnectionCallback getHeaderCallback() {
         return this.m_headerCallback;
     }
 
-    @Override
+    @Override // com.ea.nimble.LogSource
     public String getLogSourceTitle() {
         return "Network";
     }
 
-    @Override
+    @Override // com.ea.nimble.NetworkConnectionHandle
     public NetworkConnectionCallback getProgressCallback() {
         return this.m_progressCallback;
     }
 
-    @Override
+    @Override // com.ea.nimble.NetworkConnectionHandle
     public HttpRequest getRequest() {
         return this.m_request;
     }
 
-    @Override
+    @Override // com.ea.nimble.NetworkConnectionHandle
     public HttpResponse getResponse() {
         return this.m_response;
     }
 
-    /*
-     * Enabled unnecessary exception pruning
-     */
     void logOperationalTelemetryResponse() {
-        Object object;
-        Object object2;
-        String string2;
-        int n2;
-        String string3;
-        String string4;
-        String string5;
-        String string6;
-        HashMap<String, String> hashMap;
-        block11: {
-            if (this.m_request == null || this.m_request.url == null) {
-                Log.Helper.LOGE(this, "Empty request object and/or request URL for OT logging.", new Object[0]);
-                return;
-            }
-            if (this.m_response == null) {
-                Log.Helper.LOGE(this, "Empty response object for OT logging.", new Object[0]);
-                return;
-            }
-            if (!BaseCore.getInstance().isActive()) {
-                Log.Helper.LOGV(this, "BaseCore not active for operational telemetry logging.", new Object[0]);
-                return;
-            }
+        if (this.m_request == null || this.m_request.url == null) {
+            Log.Helper.LOGE(this, "Empty request object and/or request URL for OT logging.");
+        } else if (this.m_response == null) {
+            Log.Helper.LOGE(this, "Empty response object for OT logging.");
+        } else if (!BaseCore.getInstance().isActive()) {
+            Log.Helper.LOGV(this, "BaseCore not active for operational telemetry logging.");
+        } else {
             if (this.m_otDispatch == null) {
                 this.m_otDispatch = OperationalTelemetryDispatch.getComponent();
                 if (this.m_otDispatch == null) {
-                    Log.Helper.LOGV(this, "OperationalTelemetry Component not active for operational telemetry logging.", new Object[0]);
+                    Log.Helper.LOGV(this, "OperationalTelemetry Component not active for operational telemetry logging.");
                     return;
                 }
             }
-            hashMap = new HashMap<String, String>();
-            string6 = this.m_request.url.getProtocol();
-            string5 = this.m_request.url.getPath();
-            string4 = this.m_request.url.getQuery();
-            string3 = this.m_request.url.getHost();
-            n2 = this.m_response.statusCode;
-            string2 = this.m_request.url.toString();
-            object = object2 = "0";
+            HashMap hashMap = new HashMap();
+            String protocol = this.m_request.url.getProtocol();
+            String path = this.m_request.url.getPath();
+            String query = this.m_request.url.getQuery();
+            String host = this.m_request.url.getHost();
+            int i = this.m_response.statusCode;
+            String url = this.m_request.url.toString();
+            String str = Global.NOTIFICATION_DICTIONARY_RESULT_FAIL;
             if (this.m_connectionStartTimestamp != null) {
-                long l2;
-                long l3;
                 try {
                     Date date = new Date();
-                    object = object2;
-                    if (date == null) break block11;
-                    l3 = date.getTime();
-                    l2 = this.m_connectionStartTimestamp.getTime();
+                    str = Global.NOTIFICATION_DICTIONARY_RESULT_FAIL;
+                    if (date != null) {
+                        str = String.valueOf(date.getTime() - this.m_connectionStartTimestamp.getTime());
+                    }
+                } catch (Exception e) {
+                    Log.Helper.LOGE(this, "Unable to allocate new Date object to calculate response time.");
+                    str = Global.NOTIFICATION_DICTIONARY_RESULT_FAIL;
                 }
-                catch (Exception exception) {
-                    Log.Helper.LOGE(this, "Unable to allocate new Date object to calculate response time.", new Object[0]);
-                    object = object2;
+            }
+            Exception error = this.m_response.getError();
+            boolean z = false;
+            if (error != null) {
+                if (error instanceof Error) {
+                    Error error2 = (Error) error;
+                    int code = error2.getCode();
+                    hashMap.put("NIMBLE_ERROR_DOMAIN", error2.getDomain());
+                    hashMap.put("NIMBLE_ERROR_CODE", String.valueOf(code));
+                    z = error2.getDomain().equals(Error.ERROR_DOMAIN) && code == Error.Code.NETWORK_TIMEOUT.intValue();
+                } else {
+                    hashMap.put("NIMBLE_ERROR_DOMAIN", error.getClass().getName());
+                    z = false;
                 }
-                object = String.valueOf(l3 - l2);
             }
+            hashMap.put("CONNECTIONID", this.m_loggingId);
+            hashMap.put("URL_ABSOLUTE", url);
+            hashMap.put("URL_PROTOCOL", protocol);
+            hashMap.put("URL_PATH", path);
+            hashMap.put("URL_QUERY", query);
+            hashMap.put("URL_HOST", host);
+            hashMap.put("RESPONSE_TIME_MS", str);
+            hashMap.put("HTTP_STATUS_CODE", String.valueOf(i));
+            hashMap.put("REQUEST_TIMED_OUT", String.valueOf(z));
+            this.m_otDispatch.logEvent("com.ea.nimble.network", hashMap);
         }
-        boolean bl2 = false;
-        object2 = this.m_response.getError();
-        boolean bl3 = bl2;
-        if (object2 != null) {
-            if (object2 instanceof Error) {
-                object2 = (Error)object2;
-                int n3 = ((Error)object2).getCode();
-                hashMap.put("NIMBLE_ERROR_DOMAIN", ((Error)object2).getDomain());
-                hashMap.put("NIMBLE_ERROR_CODE", String.valueOf(n3));
-                bl3 = ((Error)object2).getDomain().equals("NimbleError") && n3 == Error.Code.NETWORK_TIMEOUT.intValue();
-            } else {
-                hashMap.put("NIMBLE_ERROR_DOMAIN", object2.getClass().getName());
-                bl3 = bl2;
-            }
-        }
-        hashMap.put("CONNECTIONID", this.m_loggingId);
-        hashMap.put("URL_ABSOLUTE", string2);
-        hashMap.put("URL_PROTOCOL", string6);
-        hashMap.put("URL_PATH", string5);
-        hashMap.put("URL_QUERY", string4);
-        hashMap.put("URL_HOST", string3);
-        hashMap.put("RESPONSE_TIME_MS", (String)object);
-        hashMap.put("HTTP_STATUS_CODE", String.valueOf(n2));
-        hashMap.put("REQUEST_TIMED_OUT", String.valueOf(bl3));
-        this.m_otDispatch.logEvent("com.ea.nimble.network", hashMap);
     }
 
-    /*
-     * Exception decompiling
-     */
-    @Override
+    @Override // java.lang.Runnable
     public void run() {
-        /*
-         * This method has failed to decompile.  When submitting a bug report, please provide this stack trace, and (if you hold appropriate legal rights) the relevant class file.
-         * 
-         * org.benf.cfr.reader.util.ConfusedCFRException: Back jump on a try block [egrp 5[TRYBLOCK] [21, 22, 23, 24, 28, 25, 26, 27 : 114->116)] java.lang.ClassCastException
-         *     at org.benf.cfr.reader.bytecode.analysis.opgraph.Op02WithProcessedDataAndRefs.insertExceptionBlocks(Op02WithProcessedDataAndRefs.java:2283)
-         *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysisInner(CodeAnalyser.java:415)
-         *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysisOrWrapFail(CodeAnalyser.java:278)
-         *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysis(CodeAnalyser.java:201)
-         *     at org.benf.cfr.reader.entities.attributes.AttributeCode.analyse(AttributeCode.java:94)
-         *     at org.benf.cfr.reader.entities.Method.analyse(Method.java:531)
-         *     at org.benf.cfr.reader.entities.ClassFile.analyseMid(ClassFile.java:1055)
-         *     at org.benf.cfr.reader.entities.ClassFile.analyseTop(ClassFile.java:942)
-         *     at org.benf.cfr.reader.Driver.doJarVersionTypes(Driver.java:257)
-         *     at org.benf.cfr.reader.Driver.doJar(Driver.java:139)
-         *     at org.benf.cfr.reader.CfrDriverImpl.analyse(CfrDriverImpl.java:76)
-         *     at org.benf.cfr.reader.Main.main(Main.java:54)
-         *     at the.bytecode.club.bytecodeviewer.decompilers.impl.CFRDecompiler.decompileToZip(CFRDecompiler.java:306)
-         *     at the.bytecode.club.bytecodeviewer.resources.ResourceDecompiling.lambda$null$1(ResourceDecompiling.java:114)
-         *     at the.bytecode.club.bytecodeviewer.resources.ResourceDecompiling$$Lambda$144/691390785.run(Unknown Source)
-         *     at java.lang.Thread.run(Unknown Source)
-         */
-        throw new IllegalStateException("Decompilation failed");
+        try {
+            try {
+                try {
+                    try {
+                        try {
+                            try {
+                                try {
+                                    if (this.m_response.isCompleted) {
+                                        synchronized (this) {
+                                            try {
+                                                this.m_thread = null;
+                                            } catch (Throwable th) {
+                                                throw th;
+                                            }
+                                        }
+                                    } else if (Thread.interrupted()) {
+                                        throw new InterruptedIOException();
+                                    } else {
+                                        synchronized (this) {
+                                            try {
+                                                this.m_thread = Thread.currentThread();
+                                            } catch (Throwable th2) {
+                                                throw th2;
+                                            }
+                                        }
+                                        HttpURLConnection httpURLConnection = (HttpURLConnection) this.m_request.getUrl().openConnection();
+                                        httpURLConnection.setRequestMethod(this.m_request.method.toString());
+                                        httpURLConnection.setConnectTimeout((int) (this.m_request.timeout * 1000.0d));
+                                        httpURLConnection.setReadTimeout((int) (this.m_request.timeout * 1000.0d));
+                                        httpURLConnection.setRequestProperty("Connection", "close");
+                                        if (Thread.interrupted()) {
+                                            throw new InterruptedIOException();
+                                        }
+                                        httpSend(httpURLConnection);
+                                        if (Thread.interrupted()) {
+                                            throw new InterruptedIOException();
+                                        }
+                                        httpRecv(httpURLConnection);
+                                        finish();
+                                        synchronized (this) {
+                                            try {
+                                                this.m_thread = null;
+                                            } catch (Throwable th3) {
+                                                throw th3;
+                                            }
+                                        }
+                                    }
+                                } catch (Throwable th4) {
+                                    synchronized (this) {
+                                        try {
+                                            this.m_thread = null;
+                                            throw th4;
+                                        } catch (Throwable th5) {
+                                            throw th5;
+                                        }
+                                    }
+                                }
+                            } catch (InterruptedIOException e) {
+                                finishWithError(new Error(Error.Code.NETWORK_OPERATION_CANCELLED, "Connection " + toString() + " is cancelled", e));
+                                synchronized (this) {
+                                    try {
+                                        this.m_thread = null;
+                                    } catch (Throwable th6) {
+                                        throw th6;
+                                    }
+                                }
+                            }
+                        } catch (Error e2) {
+                            finishWithError(e2);
+                            synchronized (this) {
+                                try {
+                                    this.m_thread = null;
+                                } catch (Throwable th7) {
+                                    throw th7;
+                                }
+                            }
+                        }
+                    } catch (SocketTimeoutException e3) {
+                        finishWithError(new Error(Error.Code.NETWORK_TIMEOUT, "Connection " + toString() + " timed out", e3));
+                        synchronized (this) {
+                            try {
+                                this.m_thread = null;
+                            } catch (Throwable th8) {
+                                throw th8;
+                            }
+                        }
+                    }
+                } catch (ClassCastException e4) {
+                    finishWithError(new Error(Error.Code.NETWORK_UNSUPPORTED_CONNECTION_TYPE, "Request " + toString() + " failed for unsupported connection type" + this.m_request.getUrl().getProtocol(), e4));
+                    synchronized (this) {
+                        try {
+                            this.m_thread = null;
+                        } catch (Throwable th9) {
+                            throw th9;
+                        }
+                    }
+                }
+            } catch (UnknownHostException e5) {
+                Network.Status status = this.m_manager.getStatus();
+                if (status != Network.Status.OK) {
+                    finishWithError(new Error(Error.Code.NETWORK_NO_CONNECTION, "No network connection, network status " + status.toString(), e5));
+                } else {
+                    finishWithError(new Error(Error.Code.NETWORK_UNREACHABLE, "Request " + toString() + " failed for unreachable host", e5));
+                }
+                synchronized (this) {
+                    try {
+                        this.m_thread = null;
+                    } catch (Throwable th10) {
+                        throw th10;
+                    }
+                }
+            }
+        } catch (IOException e6) {
+            finishWithError(new Error(Error.Code.NETWORK_CONNECTION_ERROR, "Connection " + toString() + " failed with I/O exception", e6));
+            synchronized (this) {
+                try {
+                    this.m_thread = null;
+                } catch (Throwable th11) {
+                    throw th11;
+                }
+            }
+        } catch (Exception e7) {
+            finishWithError(new Error(Error.Code.SYSTEM_UNEXPECTED, "Unexpected error.", e7));
+            synchronized (this) {
+                try {
+                    this.m_thread = null;
+                } catch (Throwable th12) {
+                    throw th12;
+                }
+            }
+        }
     }
 
-    @Override
+    @Override // com.ea.nimble.NetworkConnectionHandle
     public void setCompletionCallback(NetworkConnectionCallback networkConnectionCallback) {
         this.m_completionCallback = networkConnectionCallback;
     }
 
-    @Override
+    @Override // com.ea.nimble.NetworkConnectionHandle
     public void setHeaderCallback(NetworkConnectionCallback networkConnectionCallback) {
         this.m_headerCallback = networkConnectionCallback;
     }
 
-    @Override
+    @Override // com.ea.nimble.NetworkConnectionHandle
     public void setProgressCallback(NetworkConnectionCallback networkConnectionCallback) {
         this.m_progressCallback = networkConnectionCallback;
     }
 
-    @Override
+    @Override // com.ea.nimble.NetworkConnectionHandle
     public void waitOn() {
         synchronized (this) {
-            boolean bl2;
-            while (!(bl2 = this.m_response.isCompleted)) {
+            while (!this.m_response.isCompleted) {
                 try {
-                    this.wait();
+                    wait();
+                } catch (InterruptedException e) {
                 }
-                catch (InterruptedException interruptedException) {}
             }
-            return;
         }
     }
 }
-

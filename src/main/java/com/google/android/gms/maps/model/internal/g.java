@@ -19,12 +19,12 @@ import com.google.android.gms.maps.model.Tile;
 
 public interface g
 extends IInterface {
-    public Tile getTile(int var1, int var2, int var3) throws RemoteException;
+    Tile getTile(int var1, int var2, int var3) throws RemoteException;
 
-    public static abstract class com.google.android.gms.maps.model.internal.g$a
+    abstract class g$a
     extends Binder
     implements g {
-        public com.google.android.gms.maps.model.internal.g$a() {
+        public g$a() {
             this.attachInterface(this, "com.google.android.gms.maps.model.internal.ITileProviderDelegate");
         }
 
@@ -54,14 +54,9 @@ extends IInterface {
                 case 1: 
             }
             object.enforceInterface("com.google.android.gms.maps.model.internal.ITileProviderDelegate");
-            object = this.getTile(object.readInt(), object.readInt(), object.readInt());
             parcel.writeNoException();
-            if (object != null) {
-                parcel.writeInt(1);
-                ((Tile)object).writeToParcel(parcel, 1);
-                return true;
-            }
-            parcel.writeInt(0);
+            parcel.writeInt(1);
+
             return true;
         }
 
