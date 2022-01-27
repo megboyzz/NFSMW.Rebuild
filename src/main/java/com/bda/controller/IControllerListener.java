@@ -15,19 +15,16 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
-import com.bda.controller.KeyEvent;
-import com.bda.controller.MotionEvent;
-import com.bda.controller.StateEvent;
 
 public interface IControllerListener
 extends IInterface {
-    public void onKeyEvent(KeyEvent var1) throws RemoteException;
+    void onKeyEvent(KeyEvent var1) throws RemoteException;
 
-    public void onMotionEvent(MotionEvent var1) throws RemoteException;
+    void onMotionEvent(MotionEvent var1) throws RemoteException;
 
-    public void onStateEvent(StateEvent var1) throws RemoteException;
+    void onStateEvent(StateEvent var1) throws RemoteException;
 
-    public static abstract class Stub
+    abstract class Stub
     extends Binder
     implements IControllerListener {
         private static final String DESCRIPTOR = "com.bda.controller.IControllerListener";
@@ -62,25 +59,21 @@ extends IInterface {
                     parcel.writeString(DESCRIPTOR);
                     return true;
                 }
-                case 1: {
-                    object.enforceInterface(DESCRIPTOR);
-                    object = object.readInt() != 0 ? (KeyEvent)KeyEvent.CREATOR.createFromParcel(object) : null;
-                    this.onKeyEvent((KeyEvent)object);
-                    parcel.writeNoException();
-                    return true;
-                }
+                case 1:
                 case 2: {
                     object.enforceInterface(DESCRIPTOR);
-                    object = object.readInt() != 0 ? (MotionEvent)MotionEvent.CREATOR.createFromParcel(object) : null;
-                    this.onMotionEvent((MotionEvent)object);
+                    KeyEvent keyEvent = object.readInt() != 0 ? KeyEvent.CREATOR.createFromParcel(object) : null;
+                    this.onKeyEvent(keyEvent);
                     parcel.writeNoException();
                     return true;
                 }
                 case 3: 
             }
             object.enforceInterface(DESCRIPTOR);
-            object = object.readInt() != 0 ? (StateEvent)StateEvent.CREATOR.createFromParcel(object) : null;
-            this.onStateEvent((StateEvent)object);
+            StateEvent fromParcel = new StateEvent(object);
+            if (object.readInt() != 0)
+            fromParcel = StateEvent.CREATOR.createFromParcel(object);
+            this.onStateEvent(fromParcel);
             parcel.writeNoException();
             return true;
         }

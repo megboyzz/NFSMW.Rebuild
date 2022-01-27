@@ -1,51 +1,45 @@
 package com.ea.easp.mtx.market.amazon;
 
 import android.app.Activity;
-import com.amazon.inapp.purchasing.BasePurchasingObserver;
-import com.amazon.inapp.purchasing.ItemDataResponse;
-import com.amazon.inapp.purchasing.PurchaseResponse;
-import com.amazon.inapp.purchasing.PurchaseUpdatesResponse;
 
 /* access modifiers changed from: package-private */
-public class AmazonPurchasingObserver extends BasePurchasingObserver {
+public class AmazonPurchasingObserver {
     private AmazonPurchasingEventHandler mEventHandler = null;
 
     /* access modifiers changed from: package-private */
     public interface AmazonPurchasingEventHandler {
-        void onItemDataResponse(ItemDataResponse itemDataResponse);
+        void onItemDataResponse(Object itemDataResponse);
 
-        void onPurchaseResponse(PurchaseResponse purchaseResponse);
+        void onPurchaseResponse(Object purchaseResponse);
 
-        void onPurchaseUpdatesResponse(PurchaseUpdatesResponse purchaseUpdatesResponse);
+        void onPurchaseUpdatesResponse(Object purchaseUpdatesResponse);
     }
 
     public AmazonPurchasingObserver(Activity activity, AmazonPurchasingEventHandler amazonPurchasingEventHandler) {
-        super(activity);
         this.mEventHandler = amazonPurchasingEventHandler;
     }
 
-    @Override // com.amazon.inapp.purchasing.PurchasingObserver, com.amazon.inapp.purchasing.BasePurchasingObserver
-    public void onItemDataResponse(ItemDataResponse itemDataResponse) {
+    public void onItemDataResponse(Object itemDataResponse) {
         if (this.mEventHandler != null) {
             this.mEventHandler.onItemDataResponse(itemDataResponse);
         }
     }
 
-    @Override // com.amazon.inapp.purchasing.PurchasingObserver, com.amazon.inapp.purchasing.BasePurchasingObserver
-    public void onPurchaseResponse(PurchaseResponse purchaseResponse) {
+     // com.amazon.inapp.purchasing.PurchasingObserver, com.amazon.inapp.purchasing.BasePurchasingObserver
+    public void onPurchaseResponse(Object purchaseResponse) {
         if (this.mEventHandler != null) {
             this.mEventHandler.onPurchaseResponse(purchaseResponse);
         }
     }
 
-    @Override // com.amazon.inapp.purchasing.PurchasingObserver, com.amazon.inapp.purchasing.BasePurchasingObserver
-    public void onPurchaseUpdatesResponse(PurchaseUpdatesResponse purchaseUpdatesResponse) {
+    // com.amazon.inapp.purchasing.PurchasingObserver, com.amazon.inapp.purchasing.BasePurchasingObserver
+    public void onPurchaseUpdatesResponse(Object purchaseUpdatesResponse) {
         if (this.mEventHandler != null) {
             this.mEventHandler.onPurchaseUpdatesResponse(purchaseUpdatesResponse);
         }
     }
 
-    @Override // com.amazon.inapp.purchasing.PurchasingObserver, com.amazon.inapp.purchasing.BasePurchasingObserver
+    // com.amazon.inapp.purchasing.PurchasingObserver, com.amazon.inapp.purchasing.BasePurchasingObserver
     public void onSdkAvailable(boolean z) {
         System.out.println((z ? "sandbox" : "production") + " mode");
     }

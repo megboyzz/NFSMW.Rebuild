@@ -87,6 +87,13 @@ public class Observer {
             public void call() {
 
             }
+        },
+
+        SOME_PACKAGE_IS_DELETED("Some package is deleted"){
+            @Override
+            public void call() {
+
+            }
         };
 
         private String title;

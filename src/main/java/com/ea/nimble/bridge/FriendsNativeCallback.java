@@ -4,13 +4,13 @@
 package com.ea.nimble.bridge;
 
 import com.ea.nimble.Error;
-import com.ea.nimble.bridge.BaseNativeCallback;
 import com.ea.nimble.friends.INimbleOriginFriendsService;
 import com.ea.nimble.friends.NimbleFriendsList;
 import com.ea.nimble.friends.NimbleFriendsRefreshCallback;
 import com.ea.nimble.friends.NimbleFriendsRefreshResult;
 import com.ea.nimble.friends.NimbleFriendsRefreshScope;
 import com.ea.nimble.friends.NimbleUser;
+
 import java.util.ArrayList;
 
 public class FriendsNativeCallback

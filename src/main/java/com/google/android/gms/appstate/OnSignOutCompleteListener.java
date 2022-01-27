@@ -1,9 +1,0 @@
-/*
- * Decompiled with CFR 0.152.
- */
-package com.google.android.gms.appstate;
-
-public interface OnSignOutCompleteListener {
-    public void onSignOutComplete();
-}
-

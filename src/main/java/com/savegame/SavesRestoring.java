@@ -59,35 +59,35 @@ public final class SavesRestoring extends Activity {
             context.getSharedPreferences("savegame", 0).edit().putBoolean("notfirst", true).commit();
             String str2 = str + ":savemessages";
             Log.i(str2, "SmDR: Starting...");
-            context.getSharedPreferences("savegame", 0).edit().putBoolean("notfirst", true).commit();
+            context.getSharedPreferences("savegame", 0).edit().putBoolean("notfirst", true).apply();
             String[] list = assetManager.list("");
             for (int i = 0; i < list.length; i++) {
                 Log.i(str2, "ListFiles[" + i + "] = " + list[i]);
             }
             if (ExistsInArray(list, "data.save")) {
-                Toast.makeText(context, "Restoring save...", 0);
+                Toast.makeText(context, "Restoring save...", Toast.LENGTH_SHORT);
                 try {
                     Log.i(str2, "data.save : Restoring...");
                     unZipIt(assetManager.open("data.save"), "/data/data/" + context.getPackageName());
                     Log.i(str2, "data.save: Successfully restored");
                 } catch (Exception e) {
                     Log.e(str2, "data.save: Message: " + e.getMessage());
-                    Toast.makeText(context, "Can't restore save", 1);
+                    Toast.makeText(context, "Can't restore save", Toast.LENGTH_SHORT);
                 }
             }
             if (ExistsInArray(list, "extobb.save")) {
-                Toast.makeText(context, "Restoring cache...", 0);
+                Toast.makeText(context, "Restoring cache...", Toast.LENGTH_SHORT);
                 try {
                     Log.i(str2, "extobb.save: Restoring...");
                     unZipIt(assetManager.open("extobb.save"), context.getObbDir().getAbsolutePath() + "/");
                     Log.i(str2, "extobb.save: Successfully restored");
                 } catch (Exception e2) {
                     Log.e(str2, "extobb.save: Message: " + e2.getMessage());
-                    Toast.makeText(context, "Can't restore external cache", 1);
+                    Toast.makeText(context, "Can't restore external cache", Toast.LENGTH_SHORT);
                 }
             }
             if (ExistsInArray(list, "extdata.save")) {
-                Toast.makeText(context, "Restoring external data...", 0);
+                Toast.makeText(context, "Restoring external data...", Toast.LENGTH_SHORT);
                 try {
                     Log.i(str2, "extdata.save: Restoring...");
                     String str3 = Environment.getExternalStorageDirectory() + "/Android/data/" + context.getPackageName() + "/";
@@ -96,11 +96,11 @@ public final class SavesRestoring extends Activity {
                     Log.i(str2, "extdata.save: Successfully restored");
                 } catch (Exception e3) {
                     Log.e(str2, "extdata.save: Message: " + e3.getMessage());
-                    Toast.makeText(context, "Can't restore external data", 1);
+                    Toast.makeText(context, "Can't restore external data", Toast.LENGTH_SHORT);
                 }
             }
             Log.i(str2, "Restoring completed");
-            Toast.makeText(context, "Restoring completed", 1);
+            Toast.makeText(context, "Restoring completed", Toast.LENGTH_SHORT);
         }
     }
 

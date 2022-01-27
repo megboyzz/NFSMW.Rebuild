@@ -3,14 +3,15 @@ package com.ea.easp.facebook;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+
 import com.ea.easp.Debug;
 import com.ea.easp.TaskLauncher;
 import com.facebook.android.AsyncFacebookRunner;
-import com.facebook.android.BaseRequestListener;
 import com.facebook.android.DialogError;
 import com.facebook.android.Facebook;
 import com.facebook.android.FacebookError;
 import com.facebook.android.SessionEvents;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -29,48 +30,32 @@ public class FacebookAgentJNI {
 
         @Override
         public void onCancel() {
-            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(new Runnable() {
-                @Override
-                public void run() {
-                    FacebookAgentJNI.this.onDialogCancel();
-                }
-            });
+            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(FacebookAgentJNI.this::onDialogCancel);
         }
 
         @Override
         public void onComplete(final Bundle parameters) {
-            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(new Runnable() {
-                @Override
-                public void run() {
-                    String[] strArr = new String[parameters.size()];
-                    String[] strArr2 = new String[parameters.size()];
-                    FacebookAgentJNI.convertBundlesStringKeyValueArray(parameters, strArr, strArr2);
-                    FacebookAgentJNI.this.onDialogComplete(strArr, strArr2);
-                }
+            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(() -> {
+                String[] strArr = new String[parameters.size()];
+                String[] strArr2 = new String[parameters.size()];
+                FacebookAgentJNI.convertBundlesStringKeyValueArray(parameters, strArr, strArr2);
+                FacebookAgentJNI.this.onDialogComplete(strArr, strArr2);
             });
         }
 
+
         @Override
         public void onError(final DialogError dialogError) {
-            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(new Runnable() {
-                @Override
-                public void run() {
-                    FacebookAgentJNI.this.onDialogError(dialogError.getErrorCode(), dialogError.getFailingUrl(), dialogError.getMessage());
-                }
-            });
+            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(() -> FacebookAgentJNI.this.onDialogError(dialogError.getErrorCode(), dialogError.getFailingUrl(), dialogError.getMessage()));
         }
 
         @Override // com.facebook.android.Facebook.DialogListener
         public void onFacebookError(final FacebookError facebookError) {
-            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(new Runnable() {
-                public void run() {
-                    FacebookAgentJNI.this.onDialogFacebookError(facebookError.getErrorCode(), facebookError.getErrorType(), facebookError.getMessage());
-                }
-            });
+            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(() -> FacebookAgentJNI.this.onDialogFacebookError(facebookError.getErrorCode(), facebookError.getErrorType(), facebookError.getMessage()));
         }
     }
 
-    private final class ExtendAccessTokenListener implements Facebook.ServiceListener {
+    private final class ExtendAccessTokenListener implements Facebook.ServiceListener, com.ea.easp.facebook.ExtendAccessTokenListener {
         private ExtendAccessTokenListener() {
         }
 
@@ -124,49 +109,46 @@ public class FacebookAgentJNI {
         }
     }
 
-    private class LogoutRequestListener extends BaseRequestListener {
+    private class LogoutRequestListener implements AsyncFacebookRunner.RequestListener {
         private LogoutRequestListener() {
         }
 
         private final void onLogoutFinish() {
-            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(new Runnable() {
-                /* class com.ea.easp.facebook.FacebookAgentJNI.LogoutRequestListener.AnonymousClass1 */
-
-                public void run() {
-                    SessionEvents.onLogoutFinish();
-                }
-            });
+            /* class com.ea.easp.facebook.FacebookAgentJNI.LogoutRequestListener.AnonymousClass1 */
+            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(SessionEvents::onLogoutFinish);
         }
 
         @Override // com.facebook.android.AsyncFacebookRunner.RequestListener
-        public void onComplete(String str, Object obj) {
+        public void onComplete(String str, Object state) {
             Debug.Log.i(FacebookAgentJNI.kMODULE_TAG, "LogoutRequestListener::onComplete()");
             onLogoutFinish();
         }
 
         @Override // com.facebook.android.BaseRequestListener, com.facebook.android.AsyncFacebookRunner.RequestListener
-        public void onFacebookError(FacebookError facebookError, Object obj) {
+        public void onFacebookError(FacebookError facebookError, Object state) {
             Debug.Log.e(FacebookAgentJNI.kMODULE_TAG, "LogoutRequestListener::onFacebookError" + facebookError.getMessage());
             onLogoutFinish();
         }
 
         @Override // com.facebook.android.BaseRequestListener, com.facebook.android.AsyncFacebookRunner.RequestListener
-        public void onFileNotFoundException(FileNotFoundException fileNotFoundException, Object obj) {
+        public void onFileNotFoundException(FileNotFoundException fileNotFoundException, Object state) {
             Debug.Log.e(FacebookAgentJNI.kMODULE_TAG, "LogoutRequestListener::onFileNotFoundException" + fileNotFoundException.getMessage());
             onLogoutFinish();
         }
 
         @Override // com.facebook.android.BaseRequestListener, com.facebook.android.AsyncFacebookRunner.RequestListener
-        public void onIOException(IOException iOException, Object obj) {
+        public void onIOException(IOException iOException, Object state) {
             Debug.Log.e(FacebookAgentJNI.kMODULE_TAG, "LogoutRequestListener::onIOException" + iOException.getMessage());
             onLogoutFinish();
         }
 
         @Override // com.facebook.android.BaseRequestListener, com.facebook.android.AsyncFacebookRunner.RequestListener
-        public void onMalformedURLException(MalformedURLException malformedURLException, Object obj) {
+        public void onMalformedURLException(MalformedURLException malformedURLException, Object state) {
             Debug.Log.e(FacebookAgentJNI.kMODULE_TAG, "LogoutRequestListener::onMalformedURLException" + malformedURLException.getMessage());
             onLogoutFinish();
         }
+
+
     }
 
     public class SampleAuthListener implements SessionEvents.AuthListener {
@@ -175,12 +157,7 @@ public class FacebookAgentJNI {
 
         @Override // com.facebook.android.SessionEvents.AuthListener
         public void onAuthFail(final String mError) {
-            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(new Runnable() {
-                @Override
-                public void run() {
-                    FacebookAgentJNI.this.onAuthFailJNI(mError);
-                }
-            });
+            FacebookAgentJNI.this.mTaskLauncher.runInGLThread(() -> FacebookAgentJNI.this.onAuthFailJNI(mError));
         }
 
         @Override // com.facebook.android.SessionEvents.AuthListener

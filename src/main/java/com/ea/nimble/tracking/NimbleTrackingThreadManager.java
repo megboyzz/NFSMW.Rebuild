@@ -3,9 +3,6 @@
  */
 package com.ea.nimble.tracking;
 
-import com.ea.nimble.Log;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -17,39 +14,7 @@ class NimbleTrackingThreadManager {
     private ScheduledExecutorService m_executor = new ScheduledThreadPoolExecutor(1){
 
         @Override
-        protected void afterExecute(Runnable object, Throwable throwable) {
-            super.afterExecute((Runnable)object, throwable);
-            Throwable throwable2 = throwable;
-            if (throwable == null) {
-                throwable2 = throwable;
-                if (object instanceof Future) {
-                    object = (Future)object;
-                    throwable2 = throwable;
-                    if (!object.isCancelled()) {
-                        try {
-                            object.get();
-                            throwable2 = throwable;
-                        }
-                        catch (ExecutionException executionException) {
-                            throwable2 = executionException.getCause();
-                        }
-                        catch (InterruptedException interruptedException) {
-                            Thread.currentThread().interrupt();
-                            throwable2 = throwable;
-                        }
-                    }
-                }
-            }
-            if (throwable2 == null) return;
-            if (throwable2 instanceof Error) {
-                throw (Error)throwable2;
-            }
-            if (throwable2 instanceof RuntimeException) {
-                throw (RuntimeException)throwable2;
-            }
-            Log.Helper.LOGES("TrackingThreadManager", "Checked exception thrown from Tracking thread:", new Object[0]);
-            throwable2.printStackTrace();
-        }
+        protected void afterExecute(Runnable object, Throwable throwable) {}
     };
 
     NimbleTrackingThreadManager() {
@@ -81,23 +46,6 @@ class NimbleTrackingThreadManager {
         this.runInWorkerThread(false, runnable);
     }
 
-    void runInWorkerThread(boolean bl2, Runnable object) {
-        if (!bl2) {
-            this.m_executor.execute((Runnable)object);
-            return;
-        }
-        object = this.m_executor.submit((Runnable)object);
-        try {
-            object.get();
-            return;
-        }
-        catch (InterruptedException interruptedException) {
-            Thread.currentThread().interrupt();
-            return;
-        }
-        catch (ExecutionException executionException) {
-            return;
-        }
-    }
+    void runInWorkerThread(boolean bl2, Runnable object) {}
 }
 

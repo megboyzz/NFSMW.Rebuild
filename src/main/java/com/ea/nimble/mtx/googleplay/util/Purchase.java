@@ -13,6 +13,8 @@ import com.ea.nimble.mtx.googleplay.GooglePlayTransaction;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Map;
+
 public class Purchase {
     String mDeveloperPayload;
     String mNimbleMTXTransactionId;
@@ -26,7 +28,7 @@ public class Purchase {
     String mToken;
 
     public Purchase(GooglePlayTransaction googlePlayTransaction) throws IllegalArgumentException {
-        Object object = googlePlayTransaction.getAdditionalInfo();
+        Map<String, Object> object = googlePlayTransaction.getAdditionalInfo();
         if (object == null) {
             throw new IllegalArgumentException("Can't construct Purchase from GooglePlayTransaction without additional info bundle");
         }
@@ -36,13 +38,12 @@ public class Purchase {
         long l2 = (Long)object.get(GooglePlay.GOOGLEPLAY_ADDITIONALINFO_KEY_PURCHASETIME);
         int n2 = (Integer)object.get(GooglePlay.GOOGLEPLAY_ADDITIONALINFO_KEY_PURCHASESTATE);
         String string5 = googlePlayTransaction.getNonce();
-        object = (String)object.get(GooglePlay.GOOGLEPLAY_ADDITIONALINFO_KEY_TOKEN);
+        Object o = object.get(GooglePlay.GOOGLEPLAY_ADDITIONALINFO_KEY_TOKEN);
         String string6 = googlePlayTransaction.getReceipt();
         if (string2 == null) throw new IllegalArgumentException("Missing data to construct a Purchase object.");
         if (string3 == null) throw new IllegalArgumentException("Missing data to construct a Purchase object.");
         if (string4 == null) throw new IllegalArgumentException("Missing data to construct a Purchase object.");
         if (string5 == null) throw new IllegalArgumentException("Missing data to construct a Purchase object.");
-        if (object == null) throw new IllegalArgumentException("Missing data to construct a Purchase object.");
         if (string6 == null) {
             throw new IllegalArgumentException("Missing data to construct a Purchase object.");
         }
@@ -52,7 +53,7 @@ public class Purchase {
         this.mPurchaseTime = l2;
         this.mPurchaseState = n2;
         this.mDeveloperPayload = string5;
-        this.mToken = object;
+        this.mToken = (String)o;
         this.mSignature = string6;
         this.mOriginalJson = "{\"constructedFromTransaction\":1}";
         this.mNimbleMTXTransactionId = googlePlayTransaction.getTransactionId();
@@ -60,14 +61,14 @@ public class Purchase {
 
     public Purchase(String string2, String string3) throws JSONException {
         this.mOriginalJson = string2;
-        string2 = new JSONObject(this.mOriginalJson);
-        this.mOrderId = string2.optString("orderId");
-        this.mPackageName = string2.optString("packageName");
-        this.mSku = string2.optString("productId");
-        this.mPurchaseTime = string2.optLong("purchaseTime");
-        this.mPurchaseState = string2.optInt("purchaseState");
-        this.mDeveloperPayload = string2.optString("developerPayload");
-        this.mToken = string2.optString("token", string2.optString("purchaseToken"));
+        JSONObject jsonObject = new JSONObject(this.mOriginalJson);
+        this.mOrderId = jsonObject.optString("orderId");
+        this.mPackageName = jsonObject.optString("packageName");
+        this.mSku = jsonObject.optString("productId");
+        this.mPurchaseTime = jsonObject.optLong("purchaseTime");
+        this.mPurchaseState = jsonObject.optInt("purchaseState");
+        this.mDeveloperPayload = jsonObject.optString("developerPayload");
+        this.mToken = jsonObject.optString("token", jsonObject.optString("purchaseToken"));
         this.mSignature = string3;
     }
 

@@ -13,28 +13,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
-import com.android.vending.licensing.as;
-import com.android.vending.licensing.bd;
-import com.eamobile.licensing.ILicenseServerActivityCallback;
-import com.eamobile.licensing.a;
-import com.eamobile.licensing.b;
-import com.eamobile.licensing.d;
-import com.eamobile.licensing.g;
-import com.eamobile.licensing.h;
-import com.eamobile.licensing.i;
-import com.eamobile.licensing.j;
-import com.eamobile.licensing.k;
-import com.eamobile.licensing.l;
-import com.eamobile.licensing.m;
-import com.eamobile.licensing.n;
-import com.eamobile.licensing.o;
-import com.eamobile.licensing.q;
-import com.eamobile.licensing.r;
-import com.eamobile.licensing.z;
 import java.util.ArrayList;
 
 public class LicenseServerActivity {
-    private static boolean G = false;
+    private static boolean G;
     private static Activity H;
     private static int M = 0;
     private static int N = 0;
@@ -50,21 +32,21 @@ public class LicenseServerActivity {
     static final int s = 20;
     static final int t = 21;
     protected static final String u = "licenseserver/";
-    protected static g v;
+    protected static Object v;
     private static LicenseServerActivity y;
-    private as A;
+    private Object A;
     private String B;
     private Context C;
     private String D;
     private Handler E = null;
     private boolean F = false;
-    private b I;
-    private d J;
-    private a K;
+    private Object I;
+    private Object J;
+    private Object K;
     private String L;
     private String O = "en";
-    public q b;
-    public bd c;
+    public Object b;
+    public Object c;
     byte[] d;
     String e;
     public Handler f = null;
@@ -74,7 +56,7 @@ public class LicenseServerActivity {
     public String j;
     ILicenseServerActivityCallback w = null;
     ArrayList x = new ArrayList();
-    private r z;
+    private Object z;
 
     static {
         y = null;
@@ -90,7 +72,7 @@ public class LicenseServerActivity {
         return licenseServerActivity.E;
     }
 
-    static /* synthetic */ as a(LicenseServerActivity licenseServerActivity, as as2) {
+    static /* synthetic */ Object a(LicenseServerActivity licenseServerActivity, Object as2) {
         licenseServerActivity.A = as2;
         return as2;
     }
@@ -108,8 +90,8 @@ public class LicenseServerActivity {
         return licenseServerActivity.L;
     }
 
-    static /* synthetic */ r c(LicenseServerActivity licenseServerActivity) {
-        return licenseServerActivity.z;
+    static /* synthetic */ Object c(LicenseServerActivity licenseServerActivity) {
+        return new Object();
     }
 
     static /* synthetic */ String d(LicenseServerActivity licenseServerActivity) {
@@ -124,13 +106,12 @@ public class LicenseServerActivity {
         return licenseServerActivity.B;
     }
 
-    static /* synthetic */ as g(LicenseServerActivity licenseServerActivity) {
+    static /* synthetic */ Object g(LicenseServerActivity licenseServerActivity) {
         return licenseServerActivity.A;
     }
 
     private void g() {
         if (this.A != null) {
-            this.A.a();
             this.A = null;
         }
         H = null;
@@ -144,56 +125,25 @@ public class LicenseServerActivity {
     }
 
     private void h() {
-        if (this.K != null) {
-            this.K.b();
-        }
         if (this.J == null) return;
-        this.J.b();
     }
 
     public boolean LastCheckPointCheck() {
-        if (!this.c.a().a().equals(this.L)) return false;
         return true;
     }
 
     public void a() {
-        this.f.post((Runnable)new n(this));
+
     }
 
     /*
      * Exception decompiling
      */
     public void a(int var1_1) {
-        /*
-         * This method has failed to decompile.  When submitting a bug report, please provide this stack trace, and (if you hold appropriate legal rights) the relevant class file.
-         * 
-         * org.benf.cfr.reader.util.ConfusedCFRException: Back jump on a try block [egrp 1[TRYBLOCK] [4 : 119->153)] java.lang.Exception
-         *     at org.benf.cfr.reader.bytecode.analysis.opgraph.Op02WithProcessedDataAndRefs.insertExceptionBlocks(Op02WithProcessedDataAndRefs.java:2283)
-         *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysisInner(CodeAnalyser.java:415)
-         *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysisOrWrapFail(CodeAnalyser.java:278)
-         *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysis(CodeAnalyser.java:201)
-         *     at org.benf.cfr.reader.entities.attributes.AttributeCode.analyse(AttributeCode.java:94)
-         *     at org.benf.cfr.reader.entities.Method.analyse(Method.java:531)
-         *     at org.benf.cfr.reader.entities.ClassFile.analyseMid(ClassFile.java:1055)
-         *     at org.benf.cfr.reader.entities.ClassFile.analyseTop(ClassFile.java:942)
-         *     at org.benf.cfr.reader.Driver.doJarVersionTypes(Driver.java:257)
-         *     at org.benf.cfr.reader.Driver.doJar(Driver.java:139)
-         *     at org.benf.cfr.reader.CfrDriverImpl.analyse(CfrDriverImpl.java:76)
-         *     at org.benf.cfr.reader.Main.main(Main.java:54)
-         *     at the.bytecode.club.bytecodeviewer.decompilers.impl.CFRDecompiler.decompileToZip(CFRDecompiler.java:306)
-         *     at the.bytecode.club.bytecodeviewer.resources.ResourceDecompiling.lambda$null$1(ResourceDecompiling.java:114)
-         *     at the.bytecode.club.bytecodeviewer.resources.ResourceDecompiling$$Lambda$144/691390785.run(Unknown Source)
-         *     at java.lang.Thread.run(Unknown Source)
-         */
-        throw new IllegalStateException("Decompilation failed");
+
     }
 
     protected void a(Context context) {
-        if (this.K == null) {
-            this.K = new a(context);
-        }
-        if (this.J != null) return;
-        this.J = new d(context);
     }
 
     public void c() {
@@ -230,36 +180,19 @@ public class LicenseServerActivity {
         if (this.L == null) {
             this.L = "001";
         }
-        this.g = new h(this);
         this.B = string3;
         this.C = context;
         this.d = object2;
         this.e = string2;
-        this.E = new i(this);
-        this.h = new j(this);
-        this.i = new k(this);
-        object2 = new HandlerThread("waitting thread");
-        object2.start();
-        this.f = new Handler(object2.getLooper());
-        this.b = new q(this, null);
-        this.z = new r(this, null);
-        this.x.add(new l(this));
-        this.x.add(new m(this));
-        this.f.post((Runnable)new o(this));
+        HandlerThread waitting_thread = new HandlerThread("waitting thread");
+        waitting_thread.start();
+        this.f = new Handler(waitting_thread.getLooper());
         if (H == null) {
             H = object;
             this.w = iLicenseServerActivityCallback;
         }
         if (v == null) {
-            v = new g();
             this.O = context.getResources().getConfiguration().locale.toString();
-            object = context.getResources().getConfiguration().locale.getLanguage();
-            com.eamobile.licensing.z.a("Locale>>>>>:" + this.O);
-            com.eamobile.licensing.z.a("Language>>>>>:" + (String)object);
-            if (!v.a(this.O) && !v.a((String)object)) {
-                this.O = "en";
-                v.a("en");
-            }
         }
         this.a(context);
         if (G) return;

@@ -9,8 +9,7 @@ package com.ea.nimble.mtx.googleplay.util;
 
 import android.text.TextUtils;
 import android.util.Log;
-import com.ea.nimble.mtx.googleplay.util.Base64;
-import com.ea.nimble.mtx.googleplay.util.Base64DecoderException;
+
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -27,8 +26,8 @@ public class Security {
 
     public static PublicKey generatePublicKey(String object) {
         try {
-            object = Base64.decode((String)object);
-            return KeyFactory.getInstance(KEY_FACTORY_ALGORITHM).generatePublic(new X509EncodedKeySpec((byte[])object));
+            byte[] decode = Base64.decode(object);
+            return KeyFactory.getInstance(KEY_FACTORY_ALGORITHM).generatePublic(new X509EncodedKeySpec(decode));
         }
         catch (NoSuchAlgorithmException noSuchAlgorithmException) {
             throw new RuntimeException(noSuchAlgorithmException);

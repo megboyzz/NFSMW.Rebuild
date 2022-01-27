@@ -13,7 +13,7 @@ import java.util.ListIterator;
 public class ByteBufferIOStream {
     protected static final int SEGMENT_SIZE = 4096;
     protected int m_availableSegment = 0;
-    protected LinkedList<byte[]> m_buffer = new LinkedList();
+    protected LinkedList<byte[]> m_buffer = new LinkedList<>();
     protected boolean m_closed = false;
     protected ByteBufferInputStream m_input = new ByteBufferInputStream();
     protected ByteBufferOutputStream m_output = new ByteBufferOutputStream();
@@ -162,8 +162,8 @@ public class ByteBufferIOStream {
             }
             if (n5 < (n3 = 4096 - ByteBufferIOStream.this.m_readPosition)) {
                 System.arraycopy(ByteBufferIOStream.this.m_buffer.getFirst(), ByteBufferIOStream.this.m_readPosition, object, n2, n5);
-                object = ByteBufferIOStream.this;
-                object.m_readPosition += n5;
+                ByteBufferIOStream byteBufferIOStream = ByteBufferIOStream.this;
+                byteBufferIOStream.m_readPosition += n5;
                 return n5;
             }
             System.arraycopy(ByteBufferIOStream.this.m_buffer.getFirst(), ByteBufferIOStream.this.m_readPosition, object, n2, n3);
@@ -176,8 +176,8 @@ public class ByteBufferIOStream {
                 if (n3 >= n6) {
                     System.arraycopy(ByteBufferIOStream.this.m_buffer.getFirst(), 0, object, n2, n4);
                     ByteBufferIOStream.this.m_readPosition = n4;
-                    object = ByteBufferIOStream.this;
-                    object.m_availableSegment -= n6 + 1;
+                    ByteBufferIOStream byteBufferIOStream = ByteBufferIOStream.this;
+                    byteBufferIOStream.m_availableSegment -= n6 + 1;
                     return n5;
                 }
                 System.arraycopy(ByteBufferIOStream.this.m_buffer.getFirst(), 0, object, n2, 4096);
@@ -269,8 +269,8 @@ public class ByteBufferIOStream {
             }
             if (n3 < n5) {
                 System.arraycopy(object, n2, iterator.next(), ByteBufferIOStream.this.m_writePosition, n3);
-                object = ByteBufferIOStream.this;
-                object.m_writePosition += n3;
+                ByteBufferIOStream byteBufferIOStream = ByteBufferIOStream.this;
+                byteBufferIOStream.m_writePosition += n3;
                 return;
             }
             System.arraycopy(object, n2, iterator.next(), ByteBufferIOStream.this.m_writePosition, n5);

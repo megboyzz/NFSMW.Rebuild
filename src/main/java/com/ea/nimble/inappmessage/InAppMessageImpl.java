@@ -20,10 +20,11 @@ import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.Settings;
+
 import com.ea.nimble.ApplicationEnvironment;
 import com.ea.nimble.Component;
 import com.ea.nimble.IApplicationEnvironment;
@@ -39,16 +40,16 @@ import com.ea.nimble.SynergyNetwork;
 import com.ea.nimble.SynergyNetworkConnectionCallback;
 import com.ea.nimble.SynergyNetworkConnectionHandle;
 import com.ea.nimble.Utility;
-import com.ea.nimble.inappmessage.IInAppMessage;
-import com.ea.nimble.inappmessage.Message;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Locale;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class InAppMessageImpl
 extends Component
@@ -77,7 +78,7 @@ IInAppMessage {
                     n3 = (Integer)serializable;
                 }
                 catch (ClassCastException classCastException) {
-                    Log.Helper.LOGES("IAM", "Invalid persistence value for excludeID, expected Integer", new Object[0]);
+                    Log.Helper.LOGES("IAM", "Invalid persistence value for excludeID, expected Integer");
                     n3 = n2;
                 }
             }
@@ -96,7 +97,7 @@ IInAppMessage {
     }
 
     private void refreshInAppMessage() {
-        Log.Helper.LOGD(this, "refresh in app message cache", new Object[0]);
+        Log.Helper.LOGD(this, "refresh in app message cache");
         IApplicationEnvironment iApplicationEnvironment = ApplicationEnvironment.getComponent();
         ISynergyEnvironment iSynergyEnvironment = SynergyEnvironment.getComponent();
         ISynergyIdManager iSynergyIdManager = SynergyIdManager.getComponent();
@@ -119,65 +120,25 @@ IInAppMessage {
              */
             @Override
             public void callback(SynergyNetworkConnectionHandle object) {
-                Log.Helper.LOGD(this, "IAM callback done is status code: " + object.getResponse().getHttpResponse().getStatusCode(), new Object[0]);
+                Log.Helper.LOGD(this, "IAM callback done is status code: " + object.getResponse().getHttpResponse().getStatusCode());
                 InAppMessageImpl.access$102(InAppMessageImpl.this, null);
                 if (object.getResponse().getError() != null) return;
                 try {
-                    object = new JSONObject(object.getResponse().getJsonData());
-                    String string2 = object.getString("resultCode");
-                    Log.Helper.LOGD(this, "getMessage result code " + string2 + "~", new Object[0]);
+                    JSONObject jsonObject = new JSONObject(object.getResponse().getJsonData());
+                    String string2 = jsonObject.getString("resultCode");
+                    Log.Helper.LOGD(this, "getMessage result code " + string2 + "~");
                     if (string2.compareTo("-50005") == 0) {
                         return;
                     }
                     if (string2.compareTo("1") != 0) return;
-                    Log.Helper.LOGD(this, "getMessage BODY: " + object, new Object[0]);
-                    String string3 = object.getString("message");
-                    String string4 = object.getString("title");
-                    Object object2 = object.getString("url");
-                    int n2 = object.getInt("messageId");
+                    Log.Helper.LOGD(this, "getMessage BODY: " + object);
+                    String string3 = jsonObject.getString("message");
+                    String string4 = jsonObject.getString("title");
+                    Object object2 = jsonObject.getString("url");
+                    int n2 = jsonObject.getInt("messageId");
                     string2 = "";
-                    object = ApplicationEnvironment.getComponent().getShortApplicationLanguageCode();
-                    if (!Utility.validString((String)object2)) {
-                        object = ((String)object).compareTo("fr") == 0 ? "ANNULER" : (((String)object).compareTo("it") == 0 ? "ANNULLA" : (((String)object).compareTo("de") == 0 ? "ABBRECHEN" : (((String)object).compareTo("es") == 0 ? "CANCELAR" : (((String)object).compareTo("ja") == 0 ? "\u30ad\u30e3\u30f3\u30bb\u30eb" : (((String)object).compareTo("zh") == 0 ? "\u53d6\u6d88" : (((String)object).compareTo("ko") == 0 ? "\ucde8\uc18c" : (((String)object).compareTo("nl") == 0 ? "Annuleren" : (((String)object).compareTo("ru") == 0 ? "\u041e\u0442\u043c\u0435\u043d\u0430" : (((String)object).compareTo("pt") == 0 ? "Cancelar" : "Cancel")))))))));
-                    }
-                    if (((String)object).compareTo("fr") == 0) {
-                        object = "Non, merci";
-                        string2 = "Oui";
-                    } else if (((String)object).compareTo("it") == 0) {
-                        object = "No, grazie";
-                        string2 = "S\u00ec";
-                    } else if (((String)object).compareTo("de") == 0) {
-                        object = "Nein, danke";
-                        string2 = "Ja";
-                    } else if (((String)object).compareTo("es") == 0) {
-                        object = "No, gracias";
-                        string2 = "S\u00ed";
-                    } else if (((String)object).compareTo("ko") == 0) {
-                        object = "\uc544\ub2c8\uc694";
-                        string2 = "\uc608";
-                    } else if (((String)object).compareTo("zh") == 0) {
-                        object = "\u5426,\u8c22\u8c22";
-                        string2 = "\u662f";
-                    } else if (((String)object).compareTo("ja") == 0) {
-                        object = "\u3044\u3044\u3048";
-                        string2 = "\u306f\u3044";
-                    } else if (((String)object).compareTo("nl") == 0) {
-                        object = "Nee, bedankt";
-                        string2 = "Ja";
-                    } else if (((String)object).compareTo("ru") == 0) {
-                        object = "\u041d\u0435\u0442, \u0441\u043f\u0430\u0441\u0438\u0431\u043e";
-                        string2 = "\u0414\u0430";
-                    } else if (((String)object).compareTo("pt") == 0) {
-                        object = "N\u00e3o, obrigado";
-                        string2 = "Sim";
-                    } else {
-                        object = "No, Thanks";
-                        string2 = "YES";
-                    }
-                    if (object2 == null || ((String)object2).length() <= 0 || !((String)object2).contains("smarturl.it")) {
-                        InAppMessageImpl.addMessageToCache(new Message(n2, string4, string3, (String)object2, string2, (String)object, null));
-                        return;
-                    }
+                    String shortApplicationLanguageCode = ApplicationEnvironment.getComponent().getShortApplicationLanguageCode();
+
                     try {
                         object2 = (HttpURLConnection)new URL((String)object2).openConnection();
                         ((URLConnection)object2).setConnectTimeout(15000);
@@ -195,7 +156,7 @@ IInAppMessage {
                                 object2 = string5 + "&google_aid=" + string6;
                             }
                         }
-                        InAppMessageImpl.addMessageToCache(new Message(n2, string4, string3, (String)object2, string2, (String)object, null));
+                        InAppMessageImpl.addMessageToCache(new Message(n2, string4, string3, (String)object2, string2, null, null));
                         return;
                     }
                     catch (Exception exception) {
@@ -220,9 +181,9 @@ IInAppMessage {
         this.m_receiver = new BroadcastReceiver(){
 
             public void onReceive(Context context, Intent intent) {
-                context = intent.getExtras();
-                if (context == null) return;
-                if (!context.getString("result").equals("1")) return;
+                Bundle extras = intent.getExtras();
+                if (extras == null) return;
+                if (!extras.getString("result").equals("1")) return;
                 InAppMessageImpl.this.refreshInAppMessage();
             }
         };
@@ -233,17 +194,17 @@ IInAppMessage {
 
     private void removeMessageFromCache(Message message) {
         if (message == null) {
-            Log.Helper.LOGD(this, "Removing msg from cache but no message to remove", new Object[0]);
+            Log.Helper.LOGD(this, "Removing msg from cache but no message to remove");
             return;
         }
         Persistence persistence = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.inappmessage", Persistence.Storage.CACHE);
         Message message2 = (Message)persistence.getValue("currentInAppMessage");
         if (message2 == null) {
-            Log.Helper.LOGD(this, "Removing message from cache but nothing in the cache", new Object[0]);
+            Log.Helper.LOGD(this, "Removing message from cache but nothing in the cache");
             return;
         }
         if (message2.m_messageID != message.m_messageID) return;
-        Log.Helper.LOGD(this, "Removing message from cache. Removed successfully", new Object[0]);
+        Log.Helper.LOGD(this, "Removing message from cache. Removed successfully");
         persistence.setValue("currentInAppMessage", null);
         persistence.setValue("messageExcludeID", Integer.valueOf(message.m_messageID));
         persistence.synchronize();
@@ -251,10 +212,10 @@ IInAppMessage {
 
     @Override
     public void cleanup() {
-        Log.Helper.LOGD(this, "cleanup", new Object[0]);
+        Log.Helper.LOGD(this, "cleanup");
         SynergyNetworkConnectionHandle synergyNetworkConnectionHandle = this.m_synergyNetworkConnectionHandle;
         if (synergyNetworkConnectionHandle != null) {
-            Log.Helper.LOGD(this, "Canceling network connection.", new Object[0]);
+            Log.Helper.LOGD(this, "Canceling network connection.");
             synergyNetworkConnectionHandle.cancel();
             this.m_synergyNetworkConnectionHandle = null;
         }
@@ -278,36 +239,36 @@ IInAppMessage {
         Message message = this.getMessageFromCache();
         if (message != null) {
             this.removeMessageFromCache(message);
-            Log.Helper.LOGV(this, "----- BEGIN POPPED IAM INFO -----", new Object[0]);
-            Log.Helper.LOGV(this, "messageId = " + message.getMessageId(), new Object[0]);
-            Log.Helper.LOGV(this, "title = " + message.getTitle(), new Object[0]);
-            Log.Helper.LOGV(this, "message = " + message.getMessage(), new Object[0]);
-            Log.Helper.LOGV(this, "url = " + message.getUrl(), new Object[0]);
-            Log.Helper.LOGV(this, "buttonLabel1 = " + message.buttonLabel1Title(), new Object[0]);
-            Log.Helper.LOGV(this, "buttonLabel2 = " + message.buttonLabel2Title(), new Object[0]);
-            Log.Helper.LOGV(this, "buttonLabel3 = " + message.buttonLabel3Title(), new Object[0]);
-            Log.Helper.LOGV(this, "----- END POPPED IAM INFO -----", new Object[0]);
+            Log.Helper.LOGV(this, "----- BEGIN POPPED IAM INFO -----");
+            Log.Helper.LOGV(this, "messageId = " + message.getMessageId());
+            Log.Helper.LOGV(this, "title = " + message.getTitle());
+            Log.Helper.LOGV(this, "message = " + message.getMessage());
+            Log.Helper.LOGV(this, "url = " + message.getUrl());
+            Log.Helper.LOGV(this, "buttonLabel1 = " + message.buttonLabel1Title());
+            Log.Helper.LOGV(this, "buttonLabel2 = " + message.buttonLabel2Title());
+            Log.Helper.LOGV(this, "buttonLabel3 = " + message.buttonLabel3Title());
+            Log.Helper.LOGV(this, "----- END POPPED IAM INFO -----");
             return message;
         }
-        Log.Helper.LOGD(this, "No message in cache to display info for.", new Object[0]);
+        Log.Helper.LOGD(this, "No message in cache to display info for.");
         return null;
     }
 
     @Override
     public void restore() {
-        Log.Helper.LOGD(this, "restore", new Object[0]);
+        Log.Helper.LOGD(this, "restore");
         this.refreshInAppMessageCache();
     }
 
     @Override
     public void resume() {
-        Log.Helper.LOGD(this, "resume", new Object[0]);
+        Log.Helper.LOGD(this, "resume");
         this.refreshInAppMessageCache();
     }
 
     @Override
     public void setup() {
-        Log.Helper.LOGD(this, "setup", new Object[0]);
+        Log.Helper.LOGD(this, "setup");
     }
 
     @Override
@@ -317,39 +278,25 @@ IInAppMessage {
             return;
         }
         this.removeMessageFromCache(message);
-        final AlertDialog.Builder builder = new AlertDialog.Builder((Context)ApplicationEnvironment.getCurrentActivity());
-        builder.setTitle((CharSequence)message.m_title);
-        builder.setMessage((CharSequence)message.m_message);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(ApplicationEnvironment.getCurrentActivity());
+        builder.setTitle(message.m_title);
+        builder.setMessage(message.m_message);
         if (message.m_buttonLabel1Title != null && message.m_url != null && !message.m_url.equals("")) {
-            builder.setPositiveButton((CharSequence)message.m_buttonLabel1Title, new DialogInterface.OnClickListener(){
-
-                public void onClick(DialogInterface dialogInterface, int n2) {
-                    dialogInterface = new Intent("android.intent.action.VIEW", Uri.parse((String)message.m_url));
-                    ApplicationEnvironment.getCurrentActivity().startActivity((Intent)dialogInterface);
-                }
+            builder.setPositiveButton(message.m_buttonLabel1Title, (dialogInterface, n2) -> {
+                Intent intent = new Intent("android.intent.action.VIEW", Uri.parse(message.m_url));
+                ApplicationEnvironment.getCurrentActivity().startActivity(intent);
             });
         }
         if (message.m_buttonLabel2Title != null) {
-            builder.setNegativeButton((CharSequence)message.m_buttonLabel2Title, new DialogInterface.OnClickListener(){
-
-                public void onClick(DialogInterface dialogInterface, int n2) {
-                    dialogInterface.cancel();
-                }
-            });
+            builder.setNegativeButton((CharSequence)message.m_buttonLabel2Title, (dialogInterface, n2) -> dialogInterface.cancel());
         }
-        ApplicationEnvironment.getCurrentActivity().runOnUiThread(new Runnable(){
-
-            @Override
-            public void run() {
-                builder.show();
-            }
-        });
+        ApplicationEnvironment.getCurrentActivity().runOnUiThread(builder::show);
     }
 
     @Override
     public void suspend() {
         if (this.m_synergyNetworkConnectionHandle == null) return;
-        Log.Helper.LOGD(this, "Canceling network connection.", new Object[0]);
+        Log.Helper.LOGD(this, "Canceling network connection.");
         this.m_synergyNetworkConnectionHandle.cancel();
         this.m_synergyNetworkConnectionHandle = null;
     }

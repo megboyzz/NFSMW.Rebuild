@@ -45,16 +45,16 @@ class FacebookImpl extends Component implements IApplicationLifecycle.ActivityEv
         try {
             return String.valueOf(getClass().getClassLoader().loadClass("com.facebook.FacebookSdkVersion").getField("BUILD").get(null));
         } catch (ClassNotFoundException e) {
-            Log.Helper.LOGW(TAG, "Unable to get FB SDK version.", new Object[0]);
+            Log.Helper.LOGW(TAG, "Unable to get FB SDK version.");
             return null;
         } catch (IllegalAccessException e2) {
-            Log.Helper.LOGW(TAG, "Unable to get FB SDK version.", new Object[0]);
+            Log.Helper.LOGW(TAG, "Unable to get FB SDK version.");
             return null;
         } catch (IllegalArgumentException e3) {
-            Log.Helper.LOGW(TAG, "Unable to get FB SDK version.", new Object[0]);
+            Log.Helper.LOGW(TAG, "Unable to get FB SDK version.");
             return null;
         } catch (NoSuchFieldException e4) {
-            Log.Helper.LOGW(TAG, "Unable to get FB SDK version.", new Object[0]);
+            Log.Helper.LOGW(TAG, "Unable to get FB SDK version.");
             return null;
         }
     }
@@ -239,7 +239,7 @@ class FacebookImpl extends Component implements IApplicationLifecycle.ActivityEv
                         Session.setActiveSession(session);
                         return;
                     }
-                    Log.Helper.LOGE(this, "Invalid Facebook accessToken " + str + " from Origin", new Object[0]);
+                    Log.Helper.LOGE(this, "Invalid Facebook accessToken " + str + " from Origin");
                 }
             });
         }
@@ -266,7 +266,7 @@ class FacebookImpl extends Component implements IApplicationLifecycle.ActivityEv
                     bundle.putString("fields", "name,id,picture.type(normal)");
                     Request.executeBatchAsync(new Request[]{new Request(Session.getActiveSession(), "me/friends", bundle, HttpMethod.GET, new Request.Callback() { // from class: com.ea.nimble.FacebookImpl.4.1
                         public void onCompleted(Response response) {
-                            Log.Helper.LOGD(this, response.toString(), new Object[0]);
+                            Log.Helper.LOGD(this, response.toString());
                             if (response.getError() != null) {
                                 facebookFriendsCallback.callback(Facebook.getComponent(), null, new NimbleFacebookError(NimbleFacebookError.Code.FBSERVER_ERROR, response.getError().toString()));
                                 return;
@@ -276,7 +276,7 @@ class FacebookImpl extends Component implements IApplicationLifecycle.ActivityEv
                                 try {
                                     facebookFriendsCallback.callback(Facebook.getComponent(), graphObject.getInnerJSONObject().getJSONArray("data"), null);
                                 } catch (JSONException e) {
-                                    Log.Helper.LOGE(this, "JSON Exception encountered when parsing the facebook FQL query", new Object[0]);
+                                    Log.Helper.LOGE(this, "JSON Exception encountered when parsing the facebook FQL query");
                                     facebookFriendsCallback.callback(Facebook.getComponent(), null, new NimbleFacebookError(NimbleFacebookError.Code.RESPONSE_PARSE_ERROR.intValue(), e.toString()));
                                 }
                             } else {
@@ -321,7 +321,7 @@ class FacebookImpl extends Component implements IApplicationLifecycle.ActivityEv
     /* JADX INFO: Access modifiers changed from: protected */
     @Override // com.ea.nimble.Component
     public void setup() {
-        Log.Helper.LOGV(TAG, "Currently using FB SDK version " + getFacebookSDKVersion() + ".", new Object[0]);
+        Log.Helper.LOGV(TAG, "Currently using FB SDK version " + getFacebookSDKVersion() + ".");
         try {
             Class.forName("android.os.AsyncTask");
         } catch (ClassNotFoundException e) {
@@ -335,25 +335,25 @@ class FacebookImpl extends Component implements IApplicationLifecycle.ActivityEv
                 if (sessionState == SessionState.OPENED || sessionState == SessionState.OPENED_TOKEN_UPDATED) {
                     Request.executeMeRequestAsync(session, new Request.GraphUserCallback() { // from class: com.ea.nimble.FacebookImpl.1.1
                         public void onCompleted(GraphUser graphUser, Response response) {
-                            Log.Helper.LOGI(this, "Facebook GraphUser data received", new Object[0]);
+                            Log.Helper.LOGI(this, "Facebook GraphUser data received");
                             if (response.getError() != null || graphUser == null) {
-                                Log.Helper.LOGE(this, "Failed to retrieve graph user info", new Object[0]);
+                                Log.Helper.LOGE(this, "Failed to retrieve graph user info");
                                 return;
                             }
-                            Log.Helper.LOGI(this, "Facebook graph user info successfully retrieved", new Object[0]);
+                            Log.Helper.LOGI(this, "Facebook graph user info successfully retrieved");
                             FacebookImpl.this.userInfo = graphUser.asMap();
                             try {
                                 FacebookImpl.this.userInfo.put("avatar", "https://graph.facebook.com/" + FacebookImpl.this.userInfo.get("id").toString() + "/picture");
                                 FacebookImpl.this.isUserGraphReady.set(true);
                             } catch (Exception e2) {
-                                Log.Helper.LOGE(this, "Failed to get facebook user id", new Object[0]);
+                                Log.Helper.LOGE(this, "Failed to get facebook user id");
                                 FacebookImpl.this.isUserGraphReady.set(true);
                             }
                         }
                     });
                 }
                 if (sessionState == SessionState.CLOSED || sessionState == SessionState.OPENED || sessionState == SessionState.OPENED_TOKEN_UPDATED) {
-                    Utility.sendBroadcast(IFacebook.NIMBLE_NOTIFICATION_FACEBOOK_STATUS_CHANGED, null);
+                    com.ea.nimble.Utility.sendBroadcast(IFacebook.NIMBLE_NOTIFICATION_FACEBOOK_STATUS_CHANGED, null);
                 }
                 if (sessionState == SessionState.OPENING || sessionState == SessionState.CLOSED) {
                     FacebookImpl.bHasSeenOpening = true;

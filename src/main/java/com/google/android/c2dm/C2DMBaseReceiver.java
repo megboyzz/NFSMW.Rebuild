@@ -13,6 +13,7 @@
  */
 package com.google.android.c2dm;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
@@ -51,43 +52,20 @@ extends IntentService {
     private void handleRegistration(Context context, Intent object) {
         String string = object.getStringExtra(EXTRA_REGISTRATION_ID);
         String string2 = object.getStringExtra(EXTRA_ERROR);
-        object = object.getStringExtra(EXTRA_UNREGISTERED);
+        String stringExtra = object.getStringExtra(EXTRA_UNREGISTERED);
         if (Log.isLoggable((String)TAG, (int)3)) {
-            Log.d((String)TAG, (String)("dmControl: registrationId = " + string + ", error = " + string2 + ", removed = " + (String)object));
+            Log.d((String)TAG, (String)("dmControl: registrationId = " + string + ", error = " + string2 + ", removed = " + stringExtra));
         }
-        if (object != null) {
-            C2DMessaging.clearRegistrationId(context);
-            this.onUnregistered(context);
-            return;
-        }
-        if (string2 != null) {
-            C2DMessaging.clearRegistrationId(context);
-            Log.e((String)TAG, (String)("Registration error " + string2));
-            this.onError(context, string2);
-            if (!ERR_SERVICE_NOT_AVAILABLE.equals(string2)) return;
-            long l2 = C2DMessaging.getBackoff(context);
-            Log.d((String)TAG, (String)("Scheduling registration retry, backoff = " + l2));
-            object = PendingIntent.getBroadcast((Context)context, (int)0, (Intent)new Intent(C2DM_RETRY), (int)0);
-            ((AlarmManager)context.getSystemService("alarm")).set(3, l2, (PendingIntent)object);
-            C2DMessaging.setBackoff(context, l2 * 2L);
-            return;
-        }
-        try {
-            this.onRegistered(context, string);
-            C2DMessaging.setRegistrationId(context, string);
-            return;
-        }
-        catch (IOException iOException) {
-            Log.e((String)TAG, (String)("Registration error " + iOException.getMessage()));
-            return;
-        }
+        C2DMessaging.clearRegistrationId(context);
+        this.onUnregistered(context);
     }
 
+    @SuppressLint("InvalidWakeLockTag")
     static void runIntentInService(Context context, Intent intent) {
         if (mWakeLock == null) {
-            mWakeLock = ((PowerManager)context.getSystemService("power")).newWakeLock(1, WAKELOCK_KEY);
+            mWakeLock = ((PowerManager)context.getSystemService(Context.POWER_SERVICE)).newWakeLock(1, WAKELOCK_KEY);
         }
-        mWakeLock.acquire();
+        mWakeLock.acquire(10*60*1000L /*10 minutes*/);
         intent.setClassName(context, context.getPackageName() + ".C2DMReceiver");
         context.startService(intent);
     }

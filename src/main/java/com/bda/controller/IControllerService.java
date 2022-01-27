@@ -1,13 +1,3 @@
-/*
- * Decompiled with CFR 0.152.
- * 
- * Could not load the following classes:
- *  android.os.Binder
- *  android.os.IBinder
- *  android.os.IInterface
- *  android.os.Parcel
- *  android.os.RemoteException
- */
 package com.bda.controller;
 
 import android.os.Binder;
@@ -15,30 +5,28 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
-import com.bda.controller.IControllerListener;
-import com.bda.controller.IControllerMonitor;
 
-public interface IControllerService
+interface IControllerService
 extends IInterface {
-    public float getAxisValue(int var1, int var2) throws RemoteException;
+    float getAxisValue(int var1, int var2) throws RemoteException;
 
-    public int getInfo(int var1) throws RemoteException;
+    int getInfo(int var1) throws RemoteException;
 
-    public int getKeyCode(int var1, int var2) throws RemoteException;
+    int getKeyCode(int var1, int var2) throws RemoteException;
 
-    public int getState(int var1, int var2) throws RemoteException;
+    int getState(int var1, int var2) throws RemoteException;
 
-    public void registerListener(IControllerListener var1, int var2) throws RemoteException;
+    void registerListener(IControllerListener var1, int var2) throws RemoteException;
 
-    public void registerMonitor(IControllerMonitor var1, int var2) throws RemoteException;
+    void registerMonitor(IControllerMonitor var1, int var2) throws RemoteException;
 
-    public void sendMessage(int var1, int var2) throws RemoteException;
+    void sendMessage(int var1, int var2) throws RemoteException;
 
-    public void unregisterListener(IControllerListener var1, int var2) throws RemoteException;
+    void unregisterListener(IControllerListener var1, int var2) throws RemoteException;
 
-    public void unregisterMonitor(IControllerMonitor var1, int var2) throws RemoteException;
+    void unregisterMonitor(IControllerMonitor var1, int var2) throws RemoteException;
 
-    public static abstract class Stub
+    abstract class Stub
     extends Binder
     implements IControllerService {
         private static final String DESCRIPTOR = "com.bda.controller.IControllerService";
@@ -52,11 +40,11 @@ extends IInterface {
         static final int TRANSACTION_unregisterListener = 2;
         static final int TRANSACTION_unregisterMonitor = 4;
 
-        public Stub() {
+        Stub() {
             this.attachInterface(this, DESCRIPTOR);
         }
 
-        public static IControllerService asInterface(IBinder iBinder) {
+        static IControllerService asInterface(IBinder iBinder) {
             if (iBinder == null) {
                 return null;
             }
@@ -188,7 +176,7 @@ extends IInterface {
                 }
             }
 
-            public String getInterfaceDescriptor() {
+            String getInterfaceDescriptor() {
                 return Stub.DESCRIPTOR;
             }
 
@@ -236,7 +224,7 @@ extends IInterface {
                 Parcel parcel2 = Parcel.obtain();
                 try {
                     parcel.writeInterfaceToken(Stub.DESCRIPTOR);
-                    iControllerListener = iControllerListener != null ? iControllerListener.asBinder() : null;
+                    iControllerListener = iControllerListener != null ? (IControllerListener) iControllerListener.asBinder() : null;
                     parcel.writeStrongBinder((IBinder)iControllerListener);
                     parcel.writeInt(n2);
                     this.mRemote.transact(1, parcel, parcel2, 0);
@@ -255,7 +243,7 @@ extends IInterface {
                 Parcel parcel2 = Parcel.obtain();
                 try {
                     parcel.writeInterfaceToken(Stub.DESCRIPTOR);
-                    iControllerMonitor = iControllerMonitor != null ? iControllerMonitor.asBinder() : null;
+                    iControllerMonitor = iControllerMonitor != null ? (IControllerMonitor) iControllerMonitor.asBinder() : null;
                     parcel.writeStrongBinder((IBinder)iControllerMonitor);
                     parcel.writeInt(n2);
                     this.mRemote.transact(3, parcel, parcel2, 0);
@@ -292,7 +280,7 @@ extends IInterface {
                 Parcel parcel2 = Parcel.obtain();
                 try {
                     parcel.writeInterfaceToken(Stub.DESCRIPTOR);
-                    iControllerListener = iControllerListener != null ? iControllerListener.asBinder() : null;
+                    iControllerListener = iControllerListener != null ? (IControllerListener) iControllerListener.asBinder() : null;
                     parcel.writeStrongBinder((IBinder)iControllerListener);
                     parcel.writeInt(n2);
                     this.mRemote.transact(2, parcel, parcel2, 0);
@@ -311,7 +299,7 @@ extends IInterface {
                 Parcel parcel2 = Parcel.obtain();
                 try {
                     parcel.writeInterfaceToken(Stub.DESCRIPTOR);
-                    iControllerMonitor = iControllerMonitor != null ? iControllerMonitor.asBinder() : null;
+                    iControllerMonitor = iControllerMonitor != null ? (IControllerMonitor) iControllerMonitor.asBinder() : null;
                     parcel.writeStrongBinder((IBinder)iControllerMonitor);
                     parcel.writeInt(n2);
                     this.mRemote.transact(4, parcel, parcel2, 0);

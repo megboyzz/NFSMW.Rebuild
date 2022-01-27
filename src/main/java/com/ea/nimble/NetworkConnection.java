@@ -4,7 +4,6 @@ import android.text.TextUtils;
 
 import com.ea.ironmonkey.devmenu.util.Observer;
 import com.google.ads.AdSize;
-import com.google.android.gms.common.api.Status;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -98,7 +97,7 @@ public class NetworkConnection implements LogSource, NetworkConnectionHandle, Ru
                         break;
                     }
                 case '\n':
-                case Status.ERROR /* 13 */:
+                case 13 /* 13 */:
                     break;
                 case ',':
                     sb.append(charAt).append(property).append(multiplyStringNTimes("\t", i));

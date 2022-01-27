@@ -15,14 +15,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
-import com.bda.controller.BaseServiceConnection;
-import com.bda.controller.ControllerListener;
-import com.bda.controller.ControllerMonitor;
-import com.bda.controller.IControllerListener;
-import com.bda.controller.IControllerMonitor;
-import com.bda.controller.KeyEvent;
-import com.bda.controller.MotionEvent;
-import com.bda.controller.StateEvent;
 
 abstract class BaseController<TService>
 extends BaseServiceConnection<TService> {
@@ -139,34 +131,34 @@ extends BaseServiceConnection<TService> {
         @Override
         public void onKeyEvent(KeyEvent object) throws RemoteException {
             if (BaseController.this.mListener == null) return;
-            object = new KeyRunnable((KeyEvent)object);
+            KeyRunnable keyRunnable = new KeyRunnable(object);
             if (BaseController.this.mHandler != null) {
-                BaseController.this.mHandler.post((Runnable)object);
+                BaseController.this.mHandler.post(keyRunnable);
                 return;
             }
-            ((KeyRunnable)object).run();
+            keyRunnable.run();
         }
 
         @Override
         public void onMotionEvent(MotionEvent object) throws RemoteException {
             if (BaseController.this.mListener == null) return;
-            object = new MotionRunnable((MotionEvent)object);
+            MotionRunnable motionRunnable = new MotionRunnable(object);
             if (BaseController.this.mHandler != null) {
-                BaseController.this.mHandler.post((Runnable)object);
+                BaseController.this.mHandler.post(motionRunnable);
                 return;
             }
-            ((MotionRunnable)object).run();
+            motionRunnable.run();
         }
 
         @Override
         public void onStateEvent(StateEvent object) throws RemoteException {
             if (BaseController.this.mListener == null) return;
-            object = new StateRunnable((StateEvent)object);
+            StateRunnable stateRunnable = new StateRunnable(object);
             if (BaseController.this.mHandler != null) {
-                BaseController.this.mHandler.post((Runnable)object);
+                BaseController.this.mHandler.post(stateRunnable);
                 return;
             }
-            ((StateRunnable)object).run();
+            stateRunnable.run();
         }
     }
 

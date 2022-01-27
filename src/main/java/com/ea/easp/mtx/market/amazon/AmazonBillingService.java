@@ -5,12 +5,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.RemoteException;
 
-import com.amazon.inapp.purchasing.ItemDataResponse;
-import com.amazon.inapp.purchasing.Offset;
-import com.amazon.inapp.purchasing.PurchaseResponse;
-import com.amazon.inapp.purchasing.PurchaseUpdatesResponse;
-import com.amazon.inapp.purchasing.PurchasingManager;
-import com.amazon.inapp.purchasing.Receipt;
 import com.ea.easp.Debug;
 import com.ea.easp.mtx.market.BillingService;
 import com.ea.easp.mtx.market.Consts;
@@ -23,7 +17,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -33,6 +26,21 @@ public class AmazonBillingService implements BillingService, AmazonPurchasingObs
     private static HashMap<String, BillingRequest> mSentRequests = new HashMap<>();
     private Context mContext = null;
     private AmazonPurchasingObserver mObserver = null;
+
+    @Override
+    public void onItemDataResponse(Object itemDataResponse) {
+
+    }
+
+    @Override
+    public void onPurchaseResponse(Object purchaseResponse) {
+
+    }
+
+    @Override
+    public void onPurchaseUpdatesResponse(Object purchaseUpdatesResponse) {
+
+    }
 
     /* access modifiers changed from: package-private */
     public abstract class BillingRequest {
@@ -62,7 +70,6 @@ public class AmazonBillingService implements BillingService, AmazonPurchasingObs
         public void onRemoteException(RemoteException remoteException) {
             Debug.Log.w(AmazonBillingService.TAG, "remote billing service crashed");
             AmazonBillingService.this.mObserver = null;
-            PurchasingManager.registerObserver(null);
         }
 
         /* access modifiers changed from: protected */
@@ -134,7 +141,7 @@ public class AmazonBillingService implements BillingService, AmazonPurchasingObs
         /* access modifiers changed from: protected */
         @Override // com.ea.easp.mtx.market.amazon.AmazonBillingService.BillingRequest
         public String run() throws RemoteException {
-            return PurchasingManager.initiatePurchaseRequest(this.mProductId);
+            return "";
         }
     }
 
@@ -158,14 +165,13 @@ public class AmazonBillingService implements BillingService, AmazonPurchasingObs
         /* access modifiers changed from: protected */
         @Override // com.ea.easp.mtx.market.amazon.AmazonBillingService.BillingRequest
         public String run() throws RemoteException {
-            return PurchasingManager.initiatePurchaseUpdatesRequest(Offset.BEGINNING);
+            return "";
         }
     }
 
     public AmazonBillingService(SecurityJNI securityJNI, Context context) {
         this.mContext = context;
         this.mObserver = new AmazonPurchasingObserver((Activity) context, this);
-        PurchasingManager.registerObserver(this.mObserver);
         mSecurityJNI = securityJNI;
     }
 
@@ -190,18 +196,13 @@ public class AmazonBillingService implements BillingService, AmazonPurchasingObs
         }
     }
 
-    private void verifyReceipts(String str, String str2, Collection<Receipt> collection) {
+    private void verifyReceipts(String str, String str2, Collection<Integer> collection) {
         try {
             JSONObject jSONObject = new JSONObject();
             jSONObject.put("requestId", str);
             jSONObject.put("userId", str2);
             JSONArray jSONArray = new JSONArray();
-            for (Receipt receipt : collection) {
-                JSONObject jSONObject2 = new JSONObject();
-                jSONObject2.put("sku", receipt.getSku());
-                jSONObject2.put("purchaseToken", receipt.getPurchaseToken());
-                jSONArray.put(jSONObject2);
-            }
+
             jSONObject.put("receipts", jSONArray);
             mSecurityJNI.verify(jSONObject.toString(), "", -1, Consts.STORE_AMAZON);
         } catch (Exception e) {
@@ -225,42 +226,7 @@ public class AmazonBillingService implements BillingService, AmazonPurchasingObs
         new CheckBillingSupported(runnable).runRequest();
     }
 
-    @Override // com.ea.easp.mtx.market.amazon.AmazonPurchasingObserver.AmazonPurchasingEventHandler
-    public void onItemDataResponse(ItemDataResponse itemDataResponse) {
-    }
 
-    @Override // com.ea.easp.mtx.market.amazon.AmazonPurchasingObserver.AmazonPurchasingEventHandler
-    public void onPurchaseResponse(PurchaseResponse purchaseResponse) {
-        String requestId = purchaseResponse.getRequestId();
-        Debug.Log.w(TAG, "onPurchaseResponse -- requestId : " + requestId);
-        BillingRequest billingRequest = mSentRequests.get(requestId);
-        if (billingRequest != null && (billingRequest instanceof RequestPurchase)) {
-            RequestPurchase requestPurchase = (RequestPurchase) billingRequest;
-            if (purchaseResponse.getPurchaseRequestStatus() == PurchaseResponse.PurchaseRequestStatus.SUCCESSFUL) {
-                requestPurchase.responseCodeReceived(Consts.ResponseCode.RESULT_OK);
-                Receipt receipt = purchaseResponse.getReceipt();
-                verifyReceipts(requestId, purchaseResponse.getUserId(), Arrays.asList(receipt));
-                return;
-            }
-            requestPurchase.responseCodeReceived(Consts.ResponseCode.RESULT_ERROR);
-        }
-    }
-
-    @Override // com.ea.easp.mtx.market.amazon.AmazonPurchasingObserver.AmazonPurchasingEventHandler
-    public void onPurchaseUpdatesResponse(PurchaseUpdatesResponse purchaseUpdatesResponse) {
-        String requestId = purchaseUpdatesResponse.getRequestId();
-        Debug.Log.w(TAG, "onPurchaseUpdatesResponse, requestId=" + requestId);
-        BillingRequest billingRequest = mSentRequests.get(requestId);
-        if (billingRequest != null && (billingRequest instanceof RestoreTransactions)) {
-            RestoreTransactions restoreTransactions = (RestoreTransactions) billingRequest;
-            if (purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus() == PurchaseUpdatesResponse.PurchaseUpdatesRequestStatus.SUCCESSFUL) {
-                restoreTransactions.responseCodeReceived(Consts.ResponseCode.RESULT_OK);
-                verifyReceipts(requestId, purchaseUpdatesResponse.getUserId(), purchaseUpdatesResponse.getReceipts());
-                return;
-            }
-            restoreTransactions.responseCodeReceived(Consts.ResponseCode.RESULT_ERROR);
-        }
-    }
 
     @Override // com.ea.easp.mtx.market.BillingService
     public void requestPurchase(String str, String str2, String str3, Runnable runnable) {

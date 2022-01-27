@@ -50,11 +50,11 @@ SynergyRequest.SynergyRequestPreparingCallback {
     }
 
     public void onReceive(Context object, Intent intent) {
-        object = new HashMap();
+        HashMap<String, Object> hashMap = new HashMap();
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
             for (String string2 : bundle.keySet()) {
-                ((HashMap)object).put(string2, bundle.get(string2));
+                hashMap.put(string2, bundle.get(string2));
             }
         }
         BaseNativeCallback.nativeCallback(this.m_id, intent.getAction(), object);

@@ -1,42 +1,36 @@
-/*
- * Decompiled with CFR 0.152.
- * 
- * Could not load the following classes:
- *  com.ea.easp.Debug$Log
- */
 package com.facebook.android;
 
-import com.ea.easp.Debug;
-import com.facebook.android.AsyncFacebookRunner;
-import com.facebook.android.FacebookError;
+import android.util.Log;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-public abstract class BaseRequestListener
-implements AsyncFacebookRunner.RequestListener {
-    @Override
-    public void onFacebookError(FacebookError facebookError, Object object) {
-        Debug.Log.e((String)"Facebook", (String)facebookError.getMessage());
-        facebookError.printStackTrace();
+/**
+ * Skeleton base class for RequestListeners, providing default error 
+ * handling. Applications should handle these error conditions.
+ *
+ */
+public abstract class BaseRequestListener implements AsyncFacebookRunner.RequestListener {
+
+    public void onFacebookError(FacebookError e) {
+        Log.e("Facebook", e.getMessage());
+        e.printStackTrace();
     }
 
-    @Override
-    public void onFileNotFoundException(FileNotFoundException fileNotFoundException, Object object) {
-        Debug.Log.e((String)"Facebook", (String)fileNotFoundException.getMessage());
-        fileNotFoundException.printStackTrace();
+    public void onFileNotFoundException(FileNotFoundException e) {
+        Log.e("Facebook", e.getMessage());
+        e.printStackTrace();
     }
 
-    @Override
-    public void onIOException(IOException iOException, Object object) {
-        Debug.Log.e((String)"Facebook", (String)iOException.getMessage());
-        iOException.printStackTrace();
+    public void onIOException(IOException e) {
+        Log.e("Facebook", e.getMessage());
+        e.printStackTrace();
     }
 
-    @Override
-    public void onMalformedURLException(MalformedURLException malformedURLException, Object object) {
-        Debug.Log.e((String)"Facebook", (String)malformedURLException.getMessage());
-        malformedURLException.printStackTrace();
+    public void onMalformedURLException(MalformedURLException e) {
+        Log.e("Facebook", e.getMessage());
+        e.printStackTrace();
     }
+    
 }
-

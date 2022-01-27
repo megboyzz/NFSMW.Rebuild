@@ -23,13 +23,10 @@
 package com.ea.nimble.mtx.googleplay.util;
 
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
@@ -37,17 +34,16 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
-import android.text.TextUtils;
 
 import com.ea.ironmonkey.devmenu.util.Observer;
-import com.ea.nimble.ApplicationEnvironment;
 import com.ea.nimble.Log;
 import com.ea.nimble.LogSource;
+
+import org.json.JSONException;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import org.json.JSONException;
 
 public class IabHelper
 implements LogSource {
@@ -447,8 +443,8 @@ implements LogSource {
         final Handler handler = new Handler(looper2);
         final QueryInventoryFinishedListener queryInventoryFinishedListener1 = queryInventoryFinishedListener;
         this.startOrQueueRunnable(new AsyncOperation("queryInventory", true, new Runnable(){
-            final Handler val$handler = handler;
-            final QueryInventoryFinishedListener val$listener = queryInventoryFinishedListener1;
+            final Handler handler2 = handler;
+            final QueryInventoryFinishedListener listener = queryInventoryFinishedListener1;
 
             @Override
             public void run() {
@@ -463,7 +459,7 @@ implements LogSource {
                 }
                 IabResult finalIabResult = iabResult;
                 Inventory finalInventory = inventory;
-                this.val$handler.post(() -> val$listener.onQueryInventoryFinished(finalIabResult, finalInventory));
+                this.handler2.post(() -> listener.onQueryInventoryFinished(finalIabResult, finalInventory));
             }
         }));
     }

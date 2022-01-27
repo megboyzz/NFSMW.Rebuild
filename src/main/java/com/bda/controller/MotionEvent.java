@@ -12,7 +12,6 @@ package com.bda.controller;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.SparseArray;
-import com.bda.controller.BaseEvent;
 
 public final class MotionEvent
 extends BaseEvent
@@ -30,13 +29,13 @@ implements Parcelable {
     public MotionEvent(long l2, int n2, float f2, float f3, float f4, float f5, float f6, float f7) {
         super(l2, n2);
         this.mAxis = new SparseArray(4);
-        this.mAxis.put(0, (Object)Float.valueOf(f2));
-        this.mAxis.put(1, (Object)Float.valueOf(f3));
-        this.mAxis.put(11, (Object)Float.valueOf(f4));
-        this.mAxis.put(14, (Object)Float.valueOf(f5));
+        this.mAxis.put(0, f2);
+        this.mAxis.put(1, f3);
+        this.mAxis.put(11, f4);
+        this.mAxis.put(14, f5);
         this.mPrecision = new SparseArray(2);
-        this.mPrecision.put(0, (Object)Float.valueOf(f6));
-        this.mPrecision.put(1, (Object)Float.valueOf(f7));
+        this.mPrecision.put(0, f6);
+        this.mPrecision.put(1, f7);
     }
 
     public MotionEvent(long l2, int n2, int[] nArray, float[] fArray, int[] nArray2, float[] fArray2) {
@@ -46,14 +45,14 @@ implements Parcelable {
         n2 = 0;
         while (true) {
             if (n2 >= n3) break;
-            this.mAxis.put(nArray[n2], (Object)Float.valueOf(fArray[n2]));
+            this.mAxis.put(nArray[n2], fArray[n2]);
             ++n2;
         }
         n3 = nArray2.length;
         this.mPrecision = new SparseArray(n3);
         n2 = 0;
         while (n2 < n3) {
-            this.mPrecision.put(nArray2[n2], (Object)Float.valueOf(fArray2[n2]));
+            this.mPrecision.put(nArray2[n2], fArray2[n2]);
             ++n2;
         }
         return;
@@ -70,7 +69,7 @@ implements Parcelable {
             if (n4 >= n3) break;
             n2 = parcel.readInt();
             f2 = parcel.readFloat();
-            this.mAxis.put(n2, (Object)Float.valueOf(f2));
+            this.mAxis.put(n2, f2);
             ++n4;
         }
         this.mPrecision = new SparseArray(parcel.readInt());
@@ -78,7 +77,7 @@ implements Parcelable {
         while (n4 < n3) {
             n2 = parcel.readInt();
             f2 = parcel.readFloat();
-            this.mPrecision.put(n2, (Object)Float.valueOf(f2));
+            this.mPrecision.put(n2, f2);
             ++n4;
         }
         return;
@@ -100,7 +99,7 @@ implements Parcelable {
     public final float getAxisValue(int n2, int n3) {
         float f2 = 0.0f;
         if (n3 != 0) return f2;
-        return ((Float)this.mAxis.get(n2, (Object)Float.valueOf(0.0f))).floatValue();
+        return this.mAxis.get(n2, 0.001f);
     }
 
     public final int getPointerCount() {
@@ -128,7 +127,7 @@ implements Parcelable {
     }
 
     public final float getXPrecision() {
-        return ((Float)this.mPrecision.get(0, (Object)Float.valueOf(0.0f))).floatValue();
+        return this.mPrecision.get(0, 0.0f);
     }
 
     public final float getY() {
@@ -140,7 +139,7 @@ implements Parcelable {
     }
 
     public final float getYPrecision() {
-        return ((Float)this.mPrecision.get(1, (Object)Float.valueOf(0.0f))).floatValue();
+        return this.mPrecision.get(1, 0.0f);
     }
 
     @Override

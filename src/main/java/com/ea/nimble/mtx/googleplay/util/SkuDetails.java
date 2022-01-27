@@ -22,14 +22,14 @@ public class SkuDetails {
 
     public SkuDetails(String string2) throws JSONException {
         this.mJson = string2;
-        string2 = new JSONObject(this.mJson);
-        this.mSku = string2.optString("productId");
-        this.mType = string2.optString("type");
-        this.mPrice = string2.optString("price");
-        this.mPriceMicros = string2.optString("price_amount_micros");
-        this.mCurrencyCode = string2.optString("price_currency_code");
-        this.mTitle = string2.optString("title");
-        this.mDescription = string2.optString("description");
+        JSONObject jsonObject = new JSONObject(this.mJson);
+        this.mSku = jsonObject.optString("productId");
+        this.mType = jsonObject.optString("type");
+        this.mPrice = jsonObject.optString("price");
+        this.mPriceMicros = jsonObject.optString("price_amount_micros");
+        this.mCurrencyCode = jsonObject.optString("price_currency_code");
+        this.mTitle = jsonObject.optString("title");
+        this.mDescription = jsonObject.optString("description");
     }
 
     public String getCurrencyCode() {

@@ -11,20 +11,9 @@ package com.ea.nimble;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import com.ea.nimble.ApplicationEnvironment;
-import com.ea.nimble.Base;
-import com.ea.nimble.Component;
-import com.ea.nimble.ISynergyIdManager;
-import com.ea.nimble.Log;
-import com.ea.nimble.LogSource;
-import com.ea.nimble.Persistence;
-import com.ea.nimble.PersistenceService;
-import com.ea.nimble.SynergyEnvironment;
-import com.ea.nimble.SynergyIdManagerError;
-import com.ea.nimble.Utility;
+
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 
 class SynergyIdManagerImpl
 extends Component
@@ -49,24 +38,24 @@ LogSource {
 
     private void onSynergyEnvironmentStartupRequestsFinished() {
         if (SynergyEnvironment.getComponent() != null) {
-            Log.Helper.LOGD(this, "onSynergyEnvironmentStartupRequestsFinished - Process the notification, everything looks okay", new Object[0]);
+            Log.Helper.LOGD(this, "onSynergyEnvironmentStartupRequestsFinished - Process the notification, everything looks okay");
             this.setAnonymousSynergyId(SynergyEnvironment.getComponent().getSynergyId());
             if (Utility.validString(this.m_currentSynergyId)) return;
             this.setCurrentSynergyId(this.m_anonymousSynergyId);
             return;
         }
-        Log.Helper.LOGI(this, "onSynergyEnvironmentStartupRequestsFinished - Aborted because we were unable to get SynergyEnvironment", new Object[0]);
+        Log.Helper.LOGI(this, "onSynergyEnvironmentStartupRequestsFinished - Aborted because we were unable to get SynergyEnvironment");
     }
 
     private void restoreFromPersistent() {
         Persistence persistence = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.synergyidmanager", Persistence.Storage.CACHE);
         if (persistence != null) {
-            Log.Helper.LOGD("Loaded persistence data version,  %s.", persistence.getStringValue(VERSION_PERSISTENCE_DATA_ID), new Object[0]);
+            Log.Helper.LOGD("Loaded persistence data version,  %s.", persistence.getStringValue(VERSION_PERSISTENCE_DATA_ID));
             this.m_currentSynergyId = persistence.getStringValue(CURRENT_ID_PERSISTENCE_DATA_ID);
             this.m_authenticatorIdentifier = persistence.getStringValue(AUTHENTICATOR_PERSISTENCE_DATA_ID);
             Log.Helper.LOGD(this, "Loaded Synergy ID, %s, with authenticator, %s.", this.m_currentSynergyId, this.m_authenticatorIdentifier);
         } else {
-            Log.Helper.LOGE(this, "Could not get persistence object to load from.", new Object[0]);
+            Log.Helper.LOGE(this, "Could not get persistence object to load from.");
         }
         if ((persistence = PersistenceService.getPersistenceForNimbleComponent(SYNERGY_ID_MANAGER_ANONYMOUS_ID_PERSISTENCE_ID, Persistence.Storage.DOCUMENT)) != null) {
             Log.Helper.LOGD(this, "Loaded persistence data version, %s.", Utility.safeString(persistence.getStringValue(VERSION_PERSISTENCE_DATA_ID)));
@@ -74,19 +63,19 @@ LogSource {
             Log.Helper.LOGD(this, "Loaded anonymous Synergy ID, %s.", Utility.safeString(this.m_anonymousSynergyId));
             return;
         }
-        Log.Helper.LOGE(this, "Could not get anonymous Synergy ID persistence object to load from.", new Object[0]);
+        Log.Helper.LOGE(this, "Could not get anonymous Synergy ID persistence object to load from.");
     }
 
     private void saveDataToPersistent() {
         Persistence persistence = PersistenceService.getPersistenceForNimbleComponent(SYNERGY_ID_MANAGER_ANONYMOUS_ID_PERSISTENCE_ID, Persistence.Storage.DOCUMENT);
         if (persistence != null) {
-            Log.Helper.LOGD("Saving anonymous Synergy ID, %s, to persistent.", this.m_anonymousSynergyId, new Object[0]);
+            Log.Helper.LOGD("Saving anonymous Synergy ID, %s, to persistent.", this.m_anonymousSynergyId);
             persistence.setValue(VERSION_PERSISTENCE_DATA_ID, (Serializable)((Object)"1.0.0"));
             persistence.setValue(ANONYMOUS_ID_PERSISTENCE_DATA_ID, (Serializable)((Object)this.m_anonymousSynergyId));
             persistence.setBackUp(true);
             persistence.synchronize();
         } else {
-            Log.Helper.LOGE(this, "Could not get anonymous Synergy ID persistence object to save to.", new Object[0]);
+            Log.Helper.LOGE(this, "Could not get anonymous Synergy ID persistence object to save to.");
         }
         if ((persistence = PersistenceService.getPersistenceForNimbleComponent("com.ea.nimble.synergyidmanager", Persistence.Storage.CACHE)) != null) {
             Log.Helper.LOGD(this, "Saving current Synergy ID, %s, and authenticator, %s, to persistent.", this.m_currentSynergyId, this.m_authenticatorIdentifier);
@@ -96,7 +85,7 @@ LogSource {
             persistence.synchronize();
             return;
         }
-        Log.Helper.LOGE(this, "Could not get persistence object to save to.", new Object[0]);
+        Log.Helper.LOGE(this, "Could not get persistence object to save to.");
     }
 
     private void setAnonymousSynergyId(String object) {
@@ -108,10 +97,10 @@ LogSource {
         this.m_anonymousSynergyId = object;
         this.saveDataToPersistent();
         if (Utility.validString(string2) && (Utility.validString(string2) && !string2.equals(this.m_anonymousSynergyId) || Utility.validString(this.m_anonymousSynergyId) && !this.m_anonymousSynergyId.equals(string2))) {
-            object = new HashMap();
-            object.put("previousSynergyId", Utility.safeString(string2));
-            object.put("currentSynergyId", Utility.safeString(this.m_anonymousSynergyId));
-            Utility.sendBroadcast("nimble.synergyidmanager.notification.anonymous_synergy_id_changed", (Map<String, String>)object);
+            HashMap<String, String> hashMap = new HashMap<>();
+            hashMap.put("previousSynergyId", Utility.safeString(string2));
+            hashMap.put("currentSynergyId", Utility.safeString(this.m_anonymousSynergyId));
+            Utility.sendBroadcast("nimble.synergyidmanager.notification.anonymous_synergy_id_changed", hashMap);
         }
         if (this.m_authenticatorIdentifier != null) return;
         this.setCurrentSynergyId(this.m_anonymousSynergyId);
@@ -130,10 +119,10 @@ LogSource {
             if (!Utility.validString(this.m_currentSynergyId)) return;
             if (this.m_currentSynergyId.equals(string2)) return;
         }
-        object = new HashMap();
-        object.put("previousSynergyId", Utility.safeString(string2));
-        object.put("currentSynergyId", Utility.safeString(this.m_currentSynergyId));
-        Utility.sendBroadcast("nimble.synergyidmanager.notification.synergy_id_changed", (Map<String, String>)object);
+        HashMap<String, String> hashMap = new HashMap<>();
+        hashMap.put("previousSynergyId", Utility.safeString(string2));
+        hashMap.put("currentSynergyId", Utility.safeString(this.m_currentSynergyId));
+        Utility.sendBroadcast("nimble.synergyidmanager.notification.synergy_id_changed", hashMap);
     }
 
     private void sleep() {

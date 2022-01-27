@@ -71,7 +71,7 @@ LogSource {
         this.m_googleLimitAdTrackingEnabled = true;
         this.m_googleAdvertiserInfoLoaded = false;
         if (s_currentActivity == null) {
-            throw new AssertionError((Object)"Cannot create a ApplicationEnvironment without a valid current activity");
+            throw new AssertionError("Cannot create a ApplicationEnvironment without a valid current activity");
         }
         this.m_core = fileArray;
         this.m_context = s_currentActivity.getApplicationContext();
@@ -79,10 +79,11 @@ LogSource {
         File documentPath = new File(this.getDocumentPath());
         File tempPath = new File(this.getTempPath());
         if (!documentPath.exists()) {
-            if (!documentPath.mkdirs()) throw new AssertionError((Object)"APP_ENV: Cannot create necessary folder");
+            if (!documentPath.mkdirs()) throw new AssertionError("APP_ENV: Cannot create necessary folder");
         }
+        Log.i("lol", tempPath.getAbsolutePath());
         if (!tempPath.exists() && !tempPath.mkdirs()) {
-            throw new AssertionError((Object)"APP_ENV: Cannot create necessary folder");
+            throw new AssertionError("APP_ENV: Cannot create necessary folder");
         }
         File[] files = tempPath.listFiles();
         int n3 = files.length;
@@ -316,12 +317,7 @@ LogSource {
 
     @Override
     public String getCachePath() {
-        Object object = this.getApplicationContext();
-        if (object == null) {
-            object = System.getProperty("user.dir") + File.separator + "cache";
-            return (String)object + File.separator + "Nimble" + File.separator + this.m_core.getConfiguration().toString();
-        }
-        return (String)object + File.separator + "Nimble" + File.separator + this.m_core.getConfiguration().toString();
+        return System.getProperty("user.dir") + File.separator + "cache" + File.separator + "Nimble" + File.separator + this.m_core.getConfiguration().toString();
     }
 
     @Override

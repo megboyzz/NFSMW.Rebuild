@@ -12,6 +12,7 @@ package com.google.android.c2dm;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Parcelable;
 
 public class C2DMessaging {
@@ -26,10 +27,10 @@ public class C2DMessaging {
     public static final String REQUEST_UNREGISTRATION_INTENT = "com.google.android.c2dm.intent.UNREGISTER";
 
     static void clearRegistrationId(Context context) {
-        context = context.getSharedPreferences(PREFERENCE, 0).edit();
-        context.putString("dm_registration", "");
-        context.putLong(LAST_REGISTRATION_CHANGE, System.currentTimeMillis());
-        context.commit();
+        SharedPreferences.Editor edit = context.getSharedPreferences(PREFERENCE, 0).edit();
+        edit.putString("dm_registration", "");
+        edit.putLong(LAST_REGISTRATION_CHANGE, System.currentTimeMillis());
+        edit.apply();
     }
 
     static long getBackoff(Context context) {
@@ -53,15 +54,15 @@ public class C2DMessaging {
     }
 
     static void setBackoff(Context context, long l2) {
-        context = context.getSharedPreferences(PREFERENCE, 0).edit();
-        context.putLong(BACKOFF, l2);
-        context.commit();
+        SharedPreferences.Editor edit = context.getSharedPreferences(PREFERENCE, 0).edit();
+        edit.putLong(BACKOFF, l2);
+        edit.apply();
     }
 
     static void setRegistrationId(Context context, String string) {
-        context = context.getSharedPreferences(PREFERENCE, 0).edit();
-        context.putString("dm_registration", string);
-        context.commit();
+        SharedPreferences.Editor edit = context.getSharedPreferences(PREFERENCE, 0).edit();
+        edit.putString("dm_registration", string);
+        edit.apply();
     }
 
     public static void unregister(Context context) {

@@ -35,7 +35,7 @@ import java.util.TimeZone;
 import java.util.UUID;
 
 /* loaded from: stdlib.jar:com/ea/nimble/tracking/NimbleTrackingS2SImpl.class */
-class NimbleTrackingS2SImpl extends NimbleTrackingImplBase implements LogSource {
+public class NimbleTrackingS2SImpl extends NimbleTrackingImplBase implements LogSource {
     public static final int EVENT_APPRESUMED = 103;
     public static final int EVENT_APPSTARTED = 102;
     public static final int EVENT_APPSTARTED_AFTERINSTALL = 101;

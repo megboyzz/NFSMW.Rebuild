@@ -8,9 +8,7 @@ import com.ea.nimble.Base;
 import com.ea.nimble.Component;
 import com.ea.nimble.Log;
 import com.ea.nimble.LogSource;
-import com.ea.nimble.tracking.ITracking;
-import com.ea.nimble.tracking.ReferrerReceiver;
-import com.ea.nimble.tracking.Tracking;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -99,7 +97,6 @@ ITracking {
                 ReferrerReceiver.clearReferrerId(ApplicationEnvironment.getComponent().getApplicationContext());
                 return;
             }
-            this.m_trackingComponents[n2] = (ITracking)((Object)object[n2]);
             ++n2;
         }
     }
@@ -113,7 +110,6 @@ ITracking {
         int n2 = ((ITracking[])object).length;
         int n3 = 0;
         while (n3 < n2) {
-            object[n3].setEnable(bl2);
             ++n3;
         }
     }

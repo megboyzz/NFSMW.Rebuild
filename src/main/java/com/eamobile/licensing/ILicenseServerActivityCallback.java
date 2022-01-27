@@ -4,8 +4,7 @@
 package com.eamobile.licensing;
 
 public interface ILicenseServerActivityCallback {
-    public void onLicenseResultEnd();
-
-    public void onLicenseResultStart();
+    void onLicenseResultEnd();
+    void onLicenseResultStart();
 }
 

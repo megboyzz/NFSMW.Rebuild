@@ -15,12 +15,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import com.ea.nimble.ApplicationEnvironment;
-import com.ea.nimble.BaseCore;
-import com.ea.nimble.Component;
-import com.ea.nimble.IApplicationLifecycle;
-import com.ea.nimble.Log;
-import com.ea.nimble.LogSource;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -347,10 +342,6 @@ LogSource {
 
     @Override
     public void notifyActivityWindowFocusChanged(boolean bl2, Activity object) {
-        object = this.m_activityEventCallbacks.iterator();
-        while (object.hasNext()) {
-            ((IApplicationLifecycle.ActivityEventCallbacks)object.next()).onWindowFocusChanged(bl2);
-        }
     }
 
     @Override

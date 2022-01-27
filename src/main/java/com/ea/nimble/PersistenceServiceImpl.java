@@ -3,16 +3,7 @@
  */
 package com.ea.nimble;
 
-import com.ea.nimble.Component;
-import com.ea.nimble.Encryptor;
-import com.ea.nimble.IPersistenceService;
-import com.ea.nimble.Log;
-import com.ea.nimble.LogSource;
-import com.ea.nimble.Persistence;
-import com.ea.nimble.PersistenceService;
-import com.ea.nimble.Utility;
 import java.io.File;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -34,27 +25,26 @@ LogSource {
             if (persistence != null) {
                 return persistence;
             }
-            if (!new File(Persistence.getPersistencePath((String)object, storage)).exists()) {
+            if (!new File(Persistence.getPersistencePath(object, storage)).exists()) {
                 return null;
             }
-            object = new Persistence((String)object, storage, this.m_encryptor);
-            ((Persistence)object).restore(false, null);
-            this.m_persistences.put(string2, (Persistence)object);
-            return object;
+            Persistence persistence1 = new Persistence(object, storage, this.m_encryptor);
+            persistence1.restore(false, null);
+            this.m_persistences.put(string2, persistence1);
+            return persistence1;
         }
     }
 
     private void synchronize() {
-        Iterator iterator = this.m_persistences.values().iterator();
-        while (iterator.hasNext()) {
-            ((Persistence)iterator.next()).synchronize();
+        for (Persistence persistence : this.m_persistences.values()) {
+            persistence.synchronize();
         }
     }
 
     @Override
     public void cleanPersistenceReference(String string2, Persistence.Storage storage) {
         if (!Utility.validString(string2)) {
-            Log.Helper.LOGF(this, "Invalid identifier " + string2 + " for persistence", new Object[0]);
+            Log.Helper.LOGF(this, "Invalid identifier " + string2 + " for persistence");
             return;
         }
         Object object = Persistence.s_dataLock;
@@ -80,7 +70,7 @@ LogSource {
     @Override
     public Persistence getPersistence(String string2, Persistence.Storage storage) {
         if (!Utility.validString(string2)) {
-            Log.Helper.LOGF(this, "Invalid identifier " + string2 + " for persistence", new Object[0]);
+            Log.Helper.LOGF(this, "Invalid identifier " + string2 + " for persistence");
             return null;
         }
         Object object = Persistence.s_dataLock;
@@ -101,34 +91,34 @@ LogSource {
     @Override
     public void migratePersistence(String object, Persistence.Storage object2, String string2, PersistenceService.PersistenceMergePolicy persistenceMergePolicy) {
         if (!Utility.validString((String)object) || !Utility.validString(string2)) {
-            Log.Helper.LOGF(this, "Invalid identifiers " + (String)object + " or " + string2 + " for component persistence", new Object[0]);
+            Log.Helper.LOGF(this, "Invalid identifiers " + (String)object + " or " + string2 + " for component persistence");
             return;
         }
-        Object object3 = Persistence.s_dataLock;
+        Persistence.Storage object3 = (Persistence.Storage) Persistence.s_dataLock;
         synchronized (object3) {
             String string3 = string2 + "-" + ((Enum)object2).toString();
-            object = this.loadPersistenceById((String)object, (Persistence.Storage)((Object)object2));
-            if (object == null) {
+            Persistence persistence = this.loadPersistenceById(object, object2);
+            if (persistence == null) {
                 if (persistenceMergePolicy != PersistenceService.PersistenceMergePolicy.OVERWRITE) return;
                 this.m_persistences.remove(string3);
-                new File(Persistence.getPersistencePath(string2, (Persistence.Storage)((Object)object2))).delete();
+                new File(Persistence.getPersistencePath(string2, object2)).delete();
                 return;
             }
-            if ((object2 = this.loadPersistenceById(string2, (Persistence.Storage)((Object)object2))) == null) {
-                object = new Persistence((Persistence)object, string2);
-                this.m_persistences.put(string3, (Persistence)object);
-                ((Persistence)object).synchronize();
+            Persistence persistence2 = this.loadPersistenceById(string2, object2);
+            if (persistence2 == null) {
+                Persistence persistence1 = new Persistence(persistence, string2);
+                this.m_persistences.put(string3, persistence);
+                persistence1.synchronize();
             } else {
-                ((Persistence)object2).merge((Persistence)object, persistenceMergePolicy);
+                persistence2.merge(persistence, persistenceMergePolicy);
             }
-            return;
         }
     }
 
     @Override
     public void removePersistence(String string2, Persistence.Storage storage) {
         if (!Utility.validString(string2)) {
-            Log.Helper.LOGF(this, "Invalid identifier " + string2 + " for persistence", new Object[0]);
+            Log.Helper.LOGF(this, "Invalid identifier " + string2 + " for persistence");
             return;
         }
         this.cleanPersistenceReference(string2, storage);
@@ -136,7 +126,7 @@ LogSource {
 
     @Override
     public void setup() {
-        this.m_persistences = new ConcurrentHashMap<String, Persistence>();
+        this.m_persistences = new ConcurrentHashMap<>();
         this.m_encryptor = new Encryptor();
     }
 
