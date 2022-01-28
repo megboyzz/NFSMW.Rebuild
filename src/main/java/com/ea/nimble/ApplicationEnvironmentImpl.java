@@ -77,7 +77,7 @@ LogSource {
         this.m_context = s_currentActivity.getApplicationContext();
         this.m_language = null;
         File documentPath = new File(this.getDocumentPath());
-        File tempPath = new File(this.getTempPath());
+        File tempPath = new File( "/data/data/" + m_context.getPackageName() + File.separator + this.getTempPath());
         if (!documentPath.exists()) {
             if (!documentPath.mkdirs()) throw new AssertionError("APP_ENV: Cannot create necessary folder");
         }
@@ -155,14 +155,11 @@ LogSource {
                     block12: {
                         Helper.LOGV(this, "APP_ENV: Running thread to get Google Advertising ID");
                         if (ApplicationEnvironment.getCurrentActivity() != null) {
-                            AdvertisingIdClient.Info info;
-                            AdvertisingIdClient.Info info2 = info = null;
+                            AdvertisingIdClient.Info info2 = null;
                             try {
                                 if (ApplicationEnvironment.isMainApplicationRunning()) {
-                                    info2 = info;
-                                    if (ApplicationEnvironment.getCurrentActivity() != null) {
-                                        info2 = AdvertisingIdClient.getAdvertisingIdInfo((Context)ApplicationEnvironment.getCurrentActivity());
-                                    }
+                                    info2 = null;
+                                    info2 = AdvertisingIdClient.getAdvertisingIdInfo(ApplicationEnvironment.getCurrentActivity());
                                 }
                                 if (info2 != null) {
                                     Helper.LOGD(this, "APP_ENV: Setting values for Google Advertising ID and isLimitAdTrackingEnabled flag");
@@ -399,7 +396,7 @@ LogSource {
     @Override
     public String getGoogleEmail() {
         int n2 = 0;
-        AccountManager accountArray = AccountManager.get((Context)this.getApplicationContext());
+        AccountManager accountArray = AccountManager.get(this.getApplicationContext());
         Account[] accountsByType = accountArray.getAccountsByType("com.google");
         if (accountsByType.length > 0) {
             return accountsByType[0].name;

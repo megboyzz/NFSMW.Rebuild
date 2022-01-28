@@ -16,7 +16,44 @@ public class TrackingWrangler
 extends Component
 implements LogSource,
 ITracking {
-    private ITracking[] m_trackingComponents;
+    private static ITracking[] m_trackingComponents;
+
+    public TrackingWrangler() {
+        m_trackingComponents = new ITracking[10];
+        for (int i = 0; i < m_trackingComponents.length; i++) {
+            m_trackingComponents[i] = new ITracking() {
+                @Override
+                public void addCustomSessionData(String var1, String var2) {
+
+                }
+
+                @Override
+                public void clearCustomSessionData() {
+
+                }
+
+                @Override
+                public boolean getEnable() {
+                    return false;
+                }
+
+                @Override
+                public void logEvent(String var1, Map<String, String> var2) {
+
+                }
+
+                @Override
+                public void setEnable(boolean var1) {
+
+                }
+
+                @Override
+                public void setTrackingAttribute(String var1, String var2) {
+
+                }
+            };
+        }
+    }
 
     static TrackingWrangler getComponent() {
         return (TrackingWrangler)Tracking.getComponent();
@@ -24,23 +61,17 @@ ITracking {
 
     @Override
     public void addCustomSessionData(String string2, String string3) {
-        ITracking[] iTrackingArray = this.m_trackingComponents;
-        int n2 = iTrackingArray.length;
-        int n3 = 0;
-        while (n3 < n2) {
-            iTrackingArray[n3].addCustomSessionData(string2, string3);
-            ++n3;
+        ITracking[] iTrackingArray = m_trackingComponents;
+        for(ITracking tracking : iTrackingArray){
+            tracking.addCustomSessionData(string2, string3);
         }
     }
 
     @Override
     public void clearCustomSessionData() {
         ITracking[] iTrackingArray = this.m_trackingComponents;
-        int n2 = iTrackingArray.length;
-        int n3 = 0;
-        while (n3 < n2) {
-            iTrackingArray[n3].clearCustomSessionData();
-            ++n3;
+        for(ITracking tracking : iTrackingArray){
+            tracking.clearCustomSessionData();
         }
     }
 
@@ -53,12 +84,39 @@ ITracking {
     public boolean getEnable() {
         boolean bl2 = false;
         ITracking[] iTrackingArray = this.m_trackingComponents;
-        int n2 = iTrackingArray.length;
-        int n3 = 0;
-        while (n3 < n2) {
-            ITracking iTracking = iTrackingArray[n3];
-            bl2 = bl2 || iTracking.getEnable();
-            ++n3;
+        for(ITracking tracking : iTrackingArray){
+            tracking = new ITracking() {
+                @Override
+                public void addCustomSessionData(String var1, String var2) {
+
+                }
+
+                @Override
+                public void clearCustomSessionData() {
+
+                }
+
+                @Override
+                public boolean getEnable() {
+                    return false;
+                }
+
+                @Override
+                public void logEvent(String var1, Map<String, String> var2) {
+
+                }
+
+                @Override
+                public void setEnable(boolean var1) {
+
+                }
+
+                @Override
+                public void setTrackingAttribute(String var1, String var2) {
+
+                }
+            };
+            bl2 = bl2 || tracking.getEnable();
         }
         return bl2;
     }
@@ -71,7 +129,7 @@ ITracking {
     @Override
     public void logEvent(String string2, Map<String, String> map) {
         int n2 = 0;
-        Log.Helper.LOGD(this, "Logging event, " + string2, new Object[0]);
+        Log.Helper.LOGD(this, "Logging event, " + string2);
         ITracking[] iTrackingArray = this.m_trackingComponents;
         int n3 = iTrackingArray.length;
         while (n2 < n3) {
@@ -90,7 +148,7 @@ ITracking {
                 object = ReferrerReceiver.getReferrerId(ApplicationEnvironment.getComponent().getApplicationContext());
                 if (object == null) return;
                 if (((String)object).isEmpty()) return;
-                Log.Helper.LOGI(this, "Received a referrer id that was been sent while Nimble was not active; referrerId = " + (String)object, new Object[0]);
+                Log.Helper.LOGI(this, "Received a referrer id that was been sent while Nimble was not active; referrerId = " + (String)object);
                 HashMap<String, String> hashMap = new HashMap<String, String>();
                 hashMap.put("NIMBLESTANDARD::KEY_REFERRER_ID", (String)object);
                 this.logEvent("NIMBLESTANDARD::REFERRER_ID_RECEIVED", hashMap);
@@ -105,7 +163,7 @@ ITracking {
     public void setEnable(boolean bl2) {
         StringBuilder stringBuilder = new StringBuilder();
         Object object = bl2 ? "ENABLE" : "DISABLE";
-        Log.Helper.LOGD(this, stringBuilder.append((String)object).append(" tracking").toString(), new Object[0]);
+        Log.Helper.LOGD(this, stringBuilder.append((String)object).append(" tracking").toString());
         object = this.m_trackingComponents;
         int n2 = ((ITracking[])object).length;
         int n3 = 0;

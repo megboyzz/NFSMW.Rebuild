@@ -28,7 +28,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -404,10 +403,10 @@ implements LogSource {
             }
         }
         catch (RemoteException remoteException) {
-            throw new IabException(-1001, "Remote exception while refreshing inventory.", (Exception)((Object)remoteException));
+            throw new IabException(-1001, "Remote exception while refreshing inventory.", remoteException);
         }
         catch (JSONException jSONException) {
-            throw new IabException(-1002, "Error parsing JSON response while refreshing inventory.", (Exception)((Object)jSONException));
+            throw new IabException(-1002, "Error parsing JSON response while refreshing inventory.", jSONException);
         }
         catch (IllegalStateException illegalStateException) {
             throw new IabException(-1008, "IabHelper in a bad state (billing service not connected, application context is null, etc.", illegalStateException);
@@ -499,12 +498,12 @@ implements LogSource {
             this.mServiceConn = null;
             return;
         }
-        this.logDebug("PackageName = " + ((ResolveInfo)onIabBroadcastListener).serviceInfo.packageName);
-        this.logDebug("ClassName = " + ((ResolveInfo)onIabBroadcastListener).serviceInfo.name);
-        if (this.mContext.bindService((Intent)onIabSetupFinishedListener, this.mServiceConn, Context.BIND_AUTO_CREATE)) {
+        //this.logDebug("PackageName = " + ((ResolveInfo)onIabBroadcastListener).serviceInfo.packageName);
+        //this.logDebug("ClassName = " + ((ResolveInfo)onIabBroadcastListener).serviceInfo.name);
+        /*if (this.mContext.bindService((Intent)onIabSetupFinishedListener, this.mServiceConn, Context.BIND_AUTO_CREATE)) {
             this.logDebug("Success - Bind to InAppBillingService");
             return;
-        }
+        }*/
         this.logError("Failed to Bind to InAppBillingService");
         this.mServiceConn = null;
     }
@@ -534,7 +533,7 @@ implements LogSource {
         }
     }
 
-    public class IabPurchaseUpdateReceiver
+    public static class IabPurchaseUpdateReceiver
     extends BroadcastReceiver {
         private final OnIabBroadcastListener mListener;
 

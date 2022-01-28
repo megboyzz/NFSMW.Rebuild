@@ -1,5 +1,6 @@
 package com.ea.ironmonkey.devmenu;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -186,6 +187,10 @@ public class MainActivity extends Activity {
         });
 
 
+        //Настройка языка игры
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        ///preferences.set
+
     }
 
     @Override
@@ -254,6 +259,7 @@ public class MainActivity extends Activity {
     }
 
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -278,9 +284,7 @@ public class MainActivity extends Activity {
 
                 builder.setTitle("lol");
                 builder.setMessage("Hello, world!");
-                builder.setPositiveButton("OK", (dialogInterface, i) -> {
-                    Toast.makeText(MainActivity.this, "Deleted)", Toast.LENGTH_LONG).show();
-                });
+                builder.setPositiveButton("OK", (dialogInterface, i) -> Toast.makeText(MainActivity.this, "Deleted)", Toast.LENGTH_LONG).show());
                 builder.setNegativeButton("Cancel", (dialogInterface, i) -> {
 
                 });

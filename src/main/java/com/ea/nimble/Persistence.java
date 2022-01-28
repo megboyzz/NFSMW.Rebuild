@@ -250,6 +250,7 @@ public class Persistence implements LogSource {
                 Log.Helper.LOGE(this, "Fail to save persistence file for id[%s] in storage %s: %s", this.m_identifier, this.m_storage.toString(), e.toString());
                 try {
                     assert fileOutputStream != null;
+                    if(fileOutputStream != null)
                     fileOutputStream.close();
                 } catch (IOException e6) {
                 }
