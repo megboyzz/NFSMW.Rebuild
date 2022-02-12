@@ -38,6 +38,5 @@
     <ListView
         android:id="@+id/FileList"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:choiceMode="singleChoice" />
+        android:layout_height="wrap_content" />
 </LinearLayout>

@@ -48,7 +48,7 @@ LogSource {
     }
 
     private void notifyApplicationLaunch(Intent intent) {
-        Log.Helper.LOGD(this, "Application launch", new Object[0]);
+        Log.Helper.LOGD(this, "Application launch");
         Iterator<IApplicationLifecycle.ApplicationLifecycleCallbacks> iterator = this.m_applicationLifecycleCallbacks.iterator();
         while (iterator.hasNext()) {
             iterator.next().onApplicationLaunch(intent);
@@ -59,7 +59,7 @@ LogSource {
         Iterator<IApplicationLifecycle.ApplicationLifecycleCallbacks> iterator = this.m_applicationLifecycleCallbacks.iterator();
         while (true) {
             if (!iterator.hasNext()) {
-                Log.Helper.LOGD(this, "Application quit", new Object[0]);
+                Log.Helper.LOGD(this, "Application quit");
                 return;
             }
             iterator.next().onApplicationQuit();
@@ -67,7 +67,7 @@ LogSource {
     }
 
     private void notifyApplicationResume() {
-        Log.Helper.LOGD(this, "Application resume", new Object[0]);
+        Log.Helper.LOGD(this, "Application resume");
         Iterator<IApplicationLifecycle.ApplicationLifecycleCallbacks> iterator = this.m_applicationLifecycleCallbacks.iterator();
         while (iterator.hasNext()) {
             iterator.next().onApplicationResume();
@@ -78,7 +78,7 @@ LogSource {
         Iterator<IApplicationLifecycle.ApplicationLifecycleCallbacks> iterator = this.m_applicationLifecycleCallbacks.iterator();
         while (true) {
             if (!iterator.hasNext()) {
-                Log.Helper.LOGD(this, "Application suspend", new Object[0]);
+                Log.Helper.LOGD(this, "Application suspend");
                 return;
             }
             iterator.next().onApplicationSuspend();
@@ -127,7 +127,7 @@ LogSource {
             if (ApplicationEnvironment.getCurrentActivity() != activity) {
                 Log.Helper.LOGE(this, "Activity created with state CONFIG_CHANGE but different activity %s and %s", ApplicationEnvironment.getCurrentActivity().getLocalClassName(), activity.getLocalClassName());
             } else {
-                Log.Helper.LOGD(this, "Activity created from CONFIG_CHANGE, activity configuration changed", new Object[0]);
+                Log.Helper.LOGD(this, "Activity created from CONFIG_CHANGE, activity configuration changed");
             }
             if (RESTART_ON_CONFIG_CHANGE) {
                 this.m_core.onApplicationResume();
@@ -141,14 +141,14 @@ LogSource {
                 this.m_runningActivityCount = 0;
             }
         } else if (this.m_state == State.PAUSE) {
-            Log.Helper.LOGD(this, "Activity created from PAUSE, normal activity switch", new Object[0]);
+            Log.Helper.LOGD(this, "Activity created from PAUSE, normal activity switch");
             Iterator<IApplicationLifecycle.ActivityLifecycleCallbacks> iterator = this.m_activityLifecycleCallbacks.iterator();
             while (iterator.hasNext()) {
                 iterator.next().onActivityCreated(activity, bundle);
             }
             ++this.m_createdActivityCount;
         } else if (this.m_state == State.SUSPEND) {
-            Log.Helper.LOGD(this, "Activity created from SUSPEND, external activity switch; (new) app restart", new Object[0]);
+            Log.Helper.LOGD(this, "Activity created from SUSPEND, external activity switch; (new) app restart");
             this.m_core.onApplicationResume();
             this.m_state = State.RESUME;
             Iterator<IApplicationLifecycle.ActivityLifecycleCallbacks> iterator = this.m_activityLifecycleCallbacks.iterator();
@@ -206,11 +206,11 @@ LogSource {
         Log.Helper.LOGV(this, "Activity %s RESTART", activity.getLocalClassName());
         ApplicationEnvironment.setCurrentActivity(activity);
         if (this.m_state == State.PAUSE) {
-            Log.Helper.LOGD(this, "Activity restart from PAUSE, normal activity switch", new Object[0]);
+            Log.Helper.LOGD(this, "Activity restart from PAUSE, normal activity switch");
         } else if (this.m_state == State.SUSPEND) {
             this.m_core.onApplicationResume();
             this.m_state = State.RESUME;
-            Log.Helper.LOGD(this, "Activity restart from SUSPEND, external activity switch; (new) app restart", new Object[0]);
+            Log.Helper.LOGD(this, "Activity restart from SUSPEND, external activity switch; (new) app restart");
         } else {
             Log.Helper.LOGE(this, "Activity restart with invalid state %s", this.m_state.toString());
         }
@@ -240,7 +240,7 @@ LogSource {
         }
         if (this.m_state != State.PAUSE) {
             Log.Helper.LOGE(this, "Activity resume on invalid state %s", this.m_state.toString());
-            Log.Helper.LOGE(this, "<NOTE>Please double check if the game's activity hooks ApplicationLifecycle.onActivityRestart() correctly.", new Object[0]);
+            Log.Helper.LOGE(this, "<NOTE>Please double check if the game's activity hooks ApplicationLifecycle.onActivityRestart() correctly.");
         }
         this.m_state = State.RUN;
         Log.Helper.LOGV(this, "State after resume %s (%d, %d)", this.m_state.toString(), this.m_createdActivityCount, this.m_runningActivityCount);
@@ -270,7 +270,7 @@ LogSource {
         ApplicationEnvironment.setCurrentActivity(activity);
         if (this.m_state == State.LAUNCH) {
             this.m_state = State.PAUSE;
-            Log.Helper.LOGD(this, "Activity start with LAUNCH state, normal app start", new Object[0]);
+            Log.Helper.LOGD(this, "Activity start with LAUNCH state, normal app start");
         } else if (this.m_state == State.RESUME) {
             Iterator<IApplicationLifecycle.ActivityLifecycleCallbacks> iterator = this.m_activityLifecycleCallbacks.iterator();
             while (iterator.hasNext()) {
@@ -278,7 +278,7 @@ LogSource {
             }
             this.notifyApplicationResume();
             this.m_state = State.PAUSE;
-            Log.Helper.LOGD(this, "Activity start with RESUME state, set to PAUSE", new Object[0]);
+            Log.Helper.LOGD(this, "Activity start with RESUME state, set to PAUSE");
         } else if (this.m_state == State.CONFIG_CHANGE) {
             Iterator<IApplicationLifecycle.ActivityLifecycleCallbacks> iterator = this.m_activityLifecycleCallbacks.iterator();
             while (iterator.hasNext()) {
@@ -288,9 +288,9 @@ LogSource {
                 this.notifyApplicationResume();
             }
             this.m_state = State.PAUSE;
-            Log.Helper.LOGD(this, "Activity start with CONFIG_CHANGE state, set to PAUSE", new Object[0]);
+            Log.Helper.LOGD(this, "Activity start with CONFIG_CHANGE state, set to PAUSE");
         } else if (this.m_state == State.PAUSE) {
-            Log.Helper.LOGD(this, "Activity start with PAUSE state, normal activity switch", new Object[0]);
+            Log.Helper.LOGD(this, "Activity start with PAUSE state, normal activity switch");
         } else {
             Iterator<IApplicationLifecycle.ActivityLifecycleCallbacks> iterator = this.m_activityLifecycleCallbacks.iterator();
             while (iterator.hasNext()) {
@@ -326,7 +326,7 @@ LogSource {
             } else if (this.m_state == State.PAUSE) {
                 this.m_state = State.SUSPEND;
                 if (!activity.isFinishing()) {
-                    Log.Helper.LOGW(this, "running activity count may be messed", new Object[0]);
+                    Log.Helper.LOGW(this, "running activity count may be messed");
                     this.notifyApplicationSuspend();
                     this.m_core.onApplicationSuspend();
                 }

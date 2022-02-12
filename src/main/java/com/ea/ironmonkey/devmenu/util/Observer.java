@@ -6,15 +6,16 @@ public class Observer {
 
     private static final String LOG_TAG = "Observer";
 
-    public static void onCallingMethod(Object... states){
+    public static void onCallingMethod(Method... states){
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 
         Log.i(LOG_TAG, "info{");
-        if(states instanceof Method[]){
+        if(states.length != 0){
             Log.i(LOG_TAG, "States of method:");
-            for(Method mthd : (Method[])states){
+            for(Method mthd : states){
                 Log.i(LOG_TAG, "\t" + mthd.title);
             }
+            Log.i(LOG_TAG, "\n");
         }
         for(int i = 1; i < stackTrace.length; i++) {
             Log.i(LOG_TAG, "\t" + stackTrace[i]);

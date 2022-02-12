@@ -22,16 +22,8 @@ public class RunLoop {
 
     private void updateRenderMode() {
         Log.v("RunLoop", "RunLoop.state = " + this.state);
-        switch (this.state) {
-            case 0:
-                this.glSurfaceView.setRenderMode(0);
-                return;
-            case 1:
-                this.glSurfaceView.setRenderMode(1);
-                return;
-            default:
-                return;
-        }
+        if(state == STATE_STOPPED) glSurfaceView.setRenderMode(STATE_STOPPED);
+        if(state == STATE_RUNNING) glSurfaceView.setRenderMode(STATE_RUNNING);
     }
 
     public int getState() {
@@ -39,20 +31,18 @@ public class RunLoop {
     }
 
     public void join() {
-        setState(0);
+        setState(STATE_STOPPED);
     }
 
     public void onRunLoopTick() {
-        if (this.state == 1) {
-            nativeOnRunLoopTick();
-        }
+        if (state == STATE_RUNNING) nativeOnRunLoopTick();
     }
 
     public void start() {
-        setState(1);
+        setState(STATE_RUNNING);
     }
 
     public void stop() {
-        setState(0);
+        setState(STATE_STOPPED);
     }
 }

@@ -7,31 +7,35 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.TwoLineListItem;
 
 import com.ea.games.nfs13_na.BuildConfig;
 import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.GameActivity;
+import com.ea.ironmonkey.devmenu.util.PathList;
+import com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 public class MainActivity extends Activity {
 
@@ -45,20 +49,100 @@ public class MainActivity extends Activity {
     private ListView fileList;
     private Button backButton;
 
+    public void openFile(File url) {
+        File tempFile = null;
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+
+        if(url.getAbsolutePath().contains(PathList.getInternalStorage())){
+            Log.wtf(LOG_TAG, "WTF, man, you cant read my files!!! bitch");
+
+            //Создаем временный файл, там где можем его прочитать
+            Random random = new Random(10000);
+            tempFile = new File(PathList.getExternalStorage() + File.separator + "temp_" + random.nextInt());
+            //Копируем тот файл который хотим посмотреть
+            copy(url.getAbsolutePath(), tempFile.getAbsolutePath());
+            url = tempFile;
+
+            intent.putExtra("pathToTemp", tempFile.getAbsolutePath());
+        }
+
+        // Create URI
+        Uri uri = Uri.fromFile(url);
+
+        // Check what kind of file you are trying to open, by comparing the url with extensions.
+        // When the if condition is matched, plugin sets the correct intent (mime) type,
+        // so Android knew what application to use to open the file
+        if (url.toString().contains(".doc") || url.toString().contains(".docx")) {
+            // Word document
+            intent.setDataAndType(uri, "application/msword");
+        } else if(url.toString().contains(".pdf")) {
+            // PDF file
+            intent.setDataAndType(uri, "application/pdf");
+        } else if(url.toString().contains(".ppt") || url.toString().contains(".pptx")) {
+            // Powerpoint file
+            intent.setDataAndType(uri, "application/vnd.ms-powerpoint");
+        } else if(url.toString().contains(".xls") || url.toString().contains(".xlsx")) {
+            // Excel file
+            intent.setDataAndType(uri, "application/vnd.ms-excel");
+        } else if(url.toString().contains(".zip") || url.toString().contains(".rar")) {
+            // WAV audio file
+            intent.setDataAndType(uri, "application/x-wav");
+        } else if(url.toString().contains(".rtf")) {
+            // RTF file
+            intent.setDataAndType(uri, "application/rtf");
+        } else if(url.toString().contains(".wav") || url.toString().contains(".mp3")) {
+            // WAV audio file
+            intent.setDataAndType(uri, "audio/x-wav");
+        } else if(url.toString().contains(".gif")) {
+            // GIF file
+            intent.setDataAndType(uri, "image/gif");
+        } else if(url.toString().contains(".jpg") || url.toString().contains(".jpeg") || url.toString().contains(".png")) {
+            // JPG file
+            intent.setDataAndType(uri, "image/jpeg");
+        } else if(url.toString().contains(".txt")) {
+            // Text file
+            intent.setDataAndType(uri, "text/plain");
+        } else if(url.toString().contains(".3gp") || url.toString().contains(".mpg") || url.toString().contains(".mpeg") || url.toString().contains(".mpe") || url.toString().contains(".mp4") || url.toString().contains(".avi")) {
+            // Video files
+            intent.setDataAndType(uri, "video/*");
+        } else {
+            //if you want you can also define the intent type for any other file
+
+            //additionally use else clause below, to manage other unknown extensions
+            //in this case, Android will show all applications installed on the device
+            //so you can choose which application to use
+            intent.setDataAndType(uri, "*/*");
+        }
+
+        //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivityForResult(intent, 442);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        File[] files = new File(PathList.getExternalStorage()).listFiles();
+
+        for (File file : files)
+            if(file.getName().startsWith("temp_"))
+                file.delete();
+
+    }
+
     private void runGame() {
 
         Intent GoToGame = new Intent(this, GameActivity.class);
         startActivity(GoToGame);
 
     }
-/*
-    void copy(){
-        File source = new File("/data/data/com.vkontakte.android/account.json");
+    void copy(String from, String to) {
+        File source = new File(from);
 
-        File dest = Environment.getExternalStorageDirectory();
+        File dest = new File(to);
 
 
-        if(!dest.exists()) {
+        if (!dest.exists()) {
             try {
                 dest.createNewFile();
             } catch (IOException e) {
@@ -71,6 +155,7 @@ public class MainActivity extends Activity {
         try {
             is = new FileInputStream(source);
             os = new FileOutputStream(dest);
+            //Math.max(getFileSize(source), getFileSize(dest));
             byte[] buffer = new byte[1024];
             int length;
             while ((length = is.read(buffer)) > 0) {
@@ -79,13 +164,15 @@ public class MainActivity extends Activity {
             is.close();
             os.close();
         } catch (FileNotFoundException e) {
-            Log.e("lol",e.toString());
+            Log.e(LOG_TAG, e.toString());
+            dest.delete();
             e.printStackTrace();
         } catch (IOException e) {
-            Log.e("lol1",e.toString());
+            Log.e(LOG_TAG, e.toString());
+            dest.delete();
             e.printStackTrace();
         }
-    }*/
+    }
 
     private <T> List<T> asList(T[] a){
         return Arrays.asList(a);
@@ -107,15 +194,23 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        internalFiles = "/data/data/" + getPackageName();
-        externalFiles = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + getPackageName() + "/files";
+        PathList.init(this);
 
-        File activityFlag = new File(externalFiles + "/" + BuildConfig.DEV_MENU_ID);
+        internalFiles = PathList.getInternalStorage();
+        externalFiles = PathList.getExternalStorage();
+
+        File replacements = new File(PathList.getReplacementsStorage());
+        if(!replacements.exists()) replacements.mkdir();
+
+
+        File activityFlag = new File(externalFiles + File.separator + BuildConfig.DEV_MENU_ID);
         if(!activityFlag.exists()){
             updateLanguage();
             runGame();
             return;
         }
+
+        ReplacementDataBaseHelper helper = new ReplacementDataBaseHelper(this);
 
         setContentView(R.layout.custom);
 
@@ -145,19 +240,17 @@ public class MainActivity extends Activity {
                 fileList.setAdapter(new FileAdapter(getApplicationContext(), asList(file.listFiles())));
             }
             else{
-               String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(".JPG");
-
-                Intent intent = new Intent();
-                intent.setAction(android.content.Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.fromFile(intermid), mime);
-                startActivityForResult(intent, 10);
+               openFile(intermid);
             }
 
         });
 
         fileList.setOnItemLongClickListener((parent, view, position, id) -> {
-            TextView textView = (TextView) view;
-            String chosenElem = textView.getText().toString();
+            String chosenElem =
+                    (view instanceof TwoLineListItem) ?
+                    ((TwoLineListItem) view).getText1().getText().toString() :
+                    ((TextView) view).getText().toString();
+
 
             DataNinja ninja = new DataNinja(this, globalPath + "/" + chosenElem, fileList, position);
             return true;

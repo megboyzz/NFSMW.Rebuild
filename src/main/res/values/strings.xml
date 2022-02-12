@@ -76,5 +76,6 @@
     <string name="file_props_title">Properties</string>
     <string name="file_lastmod_title">Last modified:</string>
     <string name="file_size_title">Size:</string>
+    <string name="hide_file_title">Hide file</string>
 
 </resources>

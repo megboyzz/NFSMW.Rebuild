@@ -75,5 +75,6 @@
     <string name="file_props_title">Свойства</string>
     <string name="file_lastmod_title">Последние изменение:</string>
     <string name="file_size_title">Размер:</string>
+    <string name="hide_file_title">Скрыть/Покзать файл игре</string>
 
 </resources>

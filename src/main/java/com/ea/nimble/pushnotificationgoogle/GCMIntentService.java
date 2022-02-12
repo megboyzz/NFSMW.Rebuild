@@ -62,7 +62,7 @@ public class GCMIntentService extends GCMBaseIntentService {
                 Log.e(TAG, "Attempt to play sound file " + str3 + " but the resource was not found");
             }
         }
-        notification.setLatestEventInfo(context, str4, str, activity);
+        //notification.setLatestEventInfo(context, str4, str, activity);
         notification.flags |= 16;
         notificationManager.notify(0, notification);
     }

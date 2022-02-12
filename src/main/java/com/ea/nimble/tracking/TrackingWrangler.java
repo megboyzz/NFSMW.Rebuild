@@ -3,12 +3,12 @@
  */
 package com.ea.nimble.tracking;
 
+import com.ea.ironmonkey.devmenu.util.Observer;
 import com.ea.nimble.ApplicationEnvironment;
 import com.ea.nimble.Base;
 import com.ea.nimble.Component;
 import com.ea.nimble.Log;
 import com.ea.nimble.LogSource;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,6 +84,11 @@ ITracking {
     public boolean getEnable() {
         boolean bl2 = false;
         ITracking[] iTrackingArray = this.m_trackingComponents;
+        Observer.onCallingMethod(Observer.Method.VERY_SUSPICIOUS_METHOD);
+
+        /**
+         * TO DO разобраться почему m_trackingComponents содержит две пустые ссылки
+         */
         for(ITracking tracking : iTrackingArray){
             tracking = new ITracking() {
                 @Override

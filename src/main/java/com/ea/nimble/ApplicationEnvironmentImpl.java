@@ -77,7 +77,7 @@ LogSource {
         this.m_context = s_currentActivity.getApplicationContext();
         this.m_language = null;
         File documentPath = new File(this.getDocumentPath());
-        File tempPath = new File( "/data/data/" + m_context.getPackageName() + File.separator + this.getTempPath());
+        File tempPath = new File(this.getTempPath());
         if (!documentPath.exists()) {
             if (!documentPath.mkdirs()) throw new AssertionError("APP_ENV: Cannot create necessary folder");
         }
@@ -314,7 +314,7 @@ LogSource {
 
     @Override
     public String getCachePath() {
-        return System.getProperty("user.dir") + File.separator + "cache" + File.separator + "Nimble" + File.separator + this.m_core.getConfiguration().toString();
+        return "/data/data/" + m_context.getPackageName() + File.separator + "cache" + File.separator + "Nimble" + File.separator + this.m_core.getConfiguration().toString();
     }
 
     @Override

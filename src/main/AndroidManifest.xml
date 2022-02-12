@@ -4,7 +4,7 @@
     android:installLocation="auto" 
     package="com.ea.games.nfs13_na">
 
-    <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="19"/>
+    <uses-sdk android:targetSdkVersion="19"/>
 
     <supports-screens 
         android:anyDensity="true" 
@@ -19,12 +19,12 @@
         android:maxSdkVersion="22" />
     <application
         android:hardwareAccelerated="true" 
-        android:icon="@string/icon_name" 
+        android:icon="@drawable/icon"
         android:label="@string/app_name" 
         android:screenOrientation="landscape">
         
-        <activity android:name="com.ea.ironmonkey.devmenu.MainActivity">
-
+        <activity android:name="com.ea.ironmonkey.devmenu.MainActivity"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

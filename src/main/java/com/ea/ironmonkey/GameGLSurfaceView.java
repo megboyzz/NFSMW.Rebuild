@@ -27,13 +27,13 @@ public class GameGLSurfaceView extends GLSurfaceView {
         protected int mStencilSize;
         private int[] mValue = new int[1];
 
-        public ConfigChooser(int i, int i2, int i3, int i4, int i5, int i6) {
-            this.mRedSize = i;
-            this.mGreenSize = i2;
-            this.mBlueSize = i3;
-            this.mAlphaSize = i4;
-            this.mDepthSize = i5;
-            this.mStencilSize = i6;
+        public ConfigChooser(int redSize, int greenSize, int blueSize, int alphaSize, int depthSize, int stencilSize) {
+            this.mRedSize = redSize;
+            this.mGreenSize = greenSize;
+            this.mBlueSize = blueSize;
+            this.mAlphaSize = alphaSize;
+            this.mDepthSize = depthSize;
+            this.mStencilSize = stencilSize;
         }
 
         private int findConfigAttrib(EGL10 egl10, EGLDisplay eGLDisplay, EGLConfig eGLConfig, int i, int i2) {
@@ -56,9 +56,7 @@ public class GameGLSurfaceView extends GLSurfaceView {
         public EGLConfig chooseConfig(EGL10 egl10, EGLDisplay eGLDisplay, EGLConfig[] eGLConfigArr) {
             EGLConfig eGLConfig = null;
             while (eGLConfig == null) {
-                int length = eGLConfigArr.length;
-                for (int i = 0; i < length; i++) {
-                    EGLConfig eGLConfig2 = eGLConfigArr[i];
+                for (EGLConfig eGLConfig2 : eGLConfigArr) {
                     int findConfigAttrib = findConfigAttrib(egl10, eGLDisplay, eGLConfig2, 12325, 0);
                     int findConfigAttrib2 = findConfigAttrib(egl10, eGLDisplay, eGLConfig2, 12326, 0);
                     if (findConfigAttrib >= this.mDepthSize && findConfigAttrib2 >= this.mStencilSize) {
@@ -85,12 +83,16 @@ public class GameGLSurfaceView extends GLSurfaceView {
             return eGLConfig;
         }
     }
-
+    // TODO Разобраться с рендерингом игры
     public GameGLSurfaceView(GameActivity gameActivity) {
         super(gameActivity);
+
+        //MotionEvent motionEvent;
+
         this.mActivity = gameActivity;
         try {
-            MotionEvent.class.getMethod("getSource", new Class[0]);
+            MotionEvent.class.getMethod("getSource");
+
             this.kMotionEvent_GetSource = true;
         } catch (Exception e) {
         }
@@ -100,6 +102,7 @@ public class GameGLSurfaceView extends GLSurfaceView {
         if (Build.VERSION.SDK_INT >= 11) {
             try {
                 Log.i(TAG, "setPreserveEGLContextOnPause");
+
                 getClass().getMethod("setPreserveEGLContextOnPause", Boolean.TYPE).invoke(this, false);
                 Log.e(TAG, "setPreserveEGLContextOnPause(false) success");
             } catch (Exception e2) {
