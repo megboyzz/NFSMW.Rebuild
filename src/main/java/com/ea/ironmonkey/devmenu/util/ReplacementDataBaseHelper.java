@@ -21,17 +21,16 @@ public class ReplacementDataBaseHelper extends SQLiteOpenHelper {
     public ReplacementDataBaseHelper(Context context) {
         super(context, MAIN_TABLE_NAME + ".db", (SQLiteDatabase.CursorFactory) (db, masterQuery, editTable, query) -> null, DATABASE_VERSION);
         database = context.openOrCreateDatabase(MAIN_TABLE_NAME + ".db", Context.MODE_PRIVATE, null);
+        database.execSQL("CREATE TABLE IF NOT EXISTS " + MAIN_TABLE_NAME + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + PATH_TO_REPLACED_ELEMENT + " TEXT,"
+                + NAME_OF_BACKUPED_ELEMENT + " TEXT);");
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + MAIN_TABLE_NAME + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        + PATH_TO_REPLACED_ELEMENT + " TEXT,"
-        + NAME_OF_BACKUPED_ELEMENT + " TEXT);");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
     }
 }

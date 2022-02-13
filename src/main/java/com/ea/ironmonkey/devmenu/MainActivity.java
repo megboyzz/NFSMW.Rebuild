@@ -1,5 +1,7 @@
 package com.ea.ironmonkey.devmenu;
 
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.OPEN_FILE_ON_REPLACE_REQUEST;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -15,14 +17,16 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.TwoLineListItem;
 
 import com.ea.games.nfs13_na.BuildConfig;
 import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.GameActivity;
-import com.ea.ironmonkey.devmenu.util.PathList;
+import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 import com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper;
+import com.ea.ironmonkey.devmenu.util.ResultListener;
+
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,40 +47,75 @@ public class MainActivity extends Activity {
 
     private String internalFiles;
     private String externalFiles;
+    private ResultListener resultListener;
+    private ResultListener openResult = new ResultListener() {};
+
+    public void setResultListener(ResultListener resultListener) {
+        this.resultListener = resultListener;
+    }
 
     private String globalPath = "";
 
     private ListView fileList;
     private Button backButton;
+    private static final int READ_FILE_REQUEST_CODE = 101;
+
+    private byte[] generateMD5(File file){
+        try {
+            return DigestUtils.md5(new FileInputStream(file));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new byte[1];
+    }
 
     public void openFile(File url) {
         File tempFile = null;
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
 
-        if(url.getAbsolutePath().contains(PathList.getInternalStorage())){
+        if(url.getAbsolutePath().contains(UtilitiesAndData.getInternalStorage())){
             Log.wtf(LOG_TAG, "WTF, man, you cant read my files!!! bitch");
 
             //Создаем временный файл, там где можем его прочитать
-            Random random = new Random(10000);
-            tempFile = new File(PathList.getExternalStorage() + File.separator + "temp_" + random.nextInt());
+            Random random = new Random();
+            tempFile = new File(UtilitiesAndData.getExternalStorage() + File.separator + "temp_" + random.nextInt());
             //Копируем тот файл который хотим посмотреть
             copy(url.getAbsolutePath(), tempFile.getAbsolutePath());
-            url = tempFile;
 
+            //Сохраняем ссылку на окрытый файл, в случае его изменения
+            final File openedFile = url;
+            url = tempFile;
+            File finalTempFile = tempFile;
+
+            //Создаем хеш файла для того чтобы его потом сравнить
+
+            final byte[] compTemp = generateMD5(finalTempFile);
+
+            File finalUrl = url;
+            openResult = new ResultListener(){
+                @Override
+                public void onResult(Object data) {
+                    byte[] bytes = generateMD5(finalTempFile);
+                    //Если хеши не одинаковы то заменяем одно на другое
+                    if(!bytes.equals(compTemp)){
+                        copy(finalTempFile.getAbsolutePath(), openedFile.getAbsolutePath());
+                    }
+                    finalTempFile.delete();
+                }
+            };
             intent.putExtra("pathToTemp", tempFile.getAbsolutePath());
         }
-
         // Create URI
         Uri uri = Uri.fromFile(url);
 
         // Check what kind of file you are trying to open, by comparing the url with extensions.
         // When the if condition is matched, plugin sets the correct intent (mime) type,
         // so Android knew what application to use to open the file
-        if (url.toString().contains(".doc") || url.toString().contains(".docx")) {
-            // Word document
+        // Word document
+        if (url.toString().contains(".doc") || url.toString().contains(".docx"))
             intent.setDataAndType(uri, "application/msword");
-        } else if(url.toString().contains(".pdf")) {
+        else if(url.toString().contains(".pdf")) {
             // PDF file
             intent.setDataAndType(uri, "application/pdf");
         } else if(url.toString().contains(".ppt") || url.toString().contains(".pptx")) {
@@ -116,17 +155,23 @@ public class MainActivity extends Activity {
         }
 
         //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivityForResult(intent, 442);
+        startActivityForResult(intent, READ_FILE_REQUEST_CODE);
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        File[] files = new File(PathList.getExternalStorage()).listFiles();
 
-        for (File file : files)
-            if(file.getName().startsWith("temp_"))
-                file.delete();
+        switch (requestCode){
+            case OPEN_FILE_ON_REPLACE_REQUEST:{
+                resultListener.onResult(data);
+            }break;
+
+            case READ_FILE_REQUEST_CODE:{
+                openResult.onResult(data);
+            }
+        }
 
     }
 
@@ -194,12 +239,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        PathList.init(this);
+        UtilitiesAndData.init(this);
 
-        internalFiles = PathList.getInternalStorage();
-        externalFiles = PathList.getExternalStorage();
+        internalFiles = UtilitiesAndData.getInternalStorage();
+        externalFiles = UtilitiesAndData.getExternalStorage();
 
-        File replacements = new File(PathList.getReplacementsStorage());
+        File replacements = new File(UtilitiesAndData.getReplacementsStorage());
         if(!replacements.exists()) replacements.mkdir();
 
 
@@ -229,8 +274,10 @@ public class MainActivity extends Activity {
         RadioGroup group = (RadioGroup) findViewById(R.id.switcherFiles);
 
         fileList.setOnItemClickListener((parent, view, position, id) -> {
-            TextView textView = (TextView) view;
-            String chosenElem = textView.getText().toString(); // получаем текст нажатого элемента
+            String chosenElem =
+                    (view instanceof TwoLineListItem) ?
+                            ((TwoLineListItem) view).getText1().getText().toString() :
+                            ((TextView) view).getText().toString(); // получаем текст нажатого элемента
 
             //String currentPath = (group.getCheckedRadioButtonId() == R.id.externalStoreButton) ? externalFiles : internalFiles;
             File intermid =  new File(globalPath + "/" + chosenElem);
@@ -375,12 +422,15 @@ public class MainActivity extends Activity {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-                builder.setTitle("lol");
-                builder.setMessage("Hello, world!");
-                builder.setPositiveButton("OK", (dialogInterface, i) -> Toast.makeText(MainActivity.this, "Deleted)", Toast.LENGTH_LONG).show());
-                builder.setNegativeButton("Cancel", (dialogInterface, i) -> {
-
+                builder.setTitle(getString(R.string.remove_action_title));
+                builder.setMessage(getString(R.string.sure_remove_all_data_title));
+                builder.setPositiveButton(R.string.ok_title, (dialogInterface, i) -> {
+                    File[] internals = new File(UtilitiesAndData.getInternalStorage()).listFiles();
+                    for (File internal : internals)
+                        if(!UtilitiesAndData.isExclusionName(internal.getName()))
+                            internal.delete();
                 });
+                builder.setNegativeButton(R.string.cancel_title, null);
                 builder.show();
 
             }

@@ -76,5 +76,8 @@
     <string name="file_lastmod_title">Последние изменение:</string>
     <string name="file_size_title">Размер:</string>
     <string name="hide_file_title">Скрыть/Покзать файл игре</string>
+    <string name="sure_remove_all_data_title">Уверен, что хочешь удалить все внутренние файлы игры?</string>
+    <string name="remove_action_title">Удаление</string>
+    <string name="recover_title">Файлы для востановления</string>
 
 </resources>

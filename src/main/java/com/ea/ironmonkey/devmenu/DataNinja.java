@@ -1,8 +1,16 @@
 package com.ea.ironmonkey.devmenu;
 
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.OPEN_FILE_ON_REPLACE_REQUEST;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.copy;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.getFileSize;
+import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.MAIN_TABLE_NAME;
+import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.NAME_OF_BACKUPED_ELEMENT;
+import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.PATH_TO_REPLACED_ELEMENT;
+
 import android.app.AlertDialog;
 import android.content.ContentValues;
-import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.widget.ArrayAdapter;
@@ -11,23 +19,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ea.games.nfs13_na.R;
-import com.ea.ironmonkey.devmenu.util.PathList;
+import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 import com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper;
+import com.ea.ironmonkey.devmenu.util.ResultListener;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.CharacterIterator;
 import java.text.SimpleDateFormat;
 import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -35,7 +38,8 @@ public class DataNinja extends AlertDialog.Builder {
 
     private File data;
     private ListView fileList;
-    private Context context;
+    private MainActivity activity;
+    private static final String LOG_TAG = "DataNinja";
 
     private List<File> asList(String path){
         path = path.substring(0, path.lastIndexOf("/"));
@@ -52,7 +56,7 @@ public class DataNinja extends AlertDialog.Builder {
 
     private void rebuildList(String path){
 
-        fileList.setAdapter(new FileAdapter(context, asList(path)));
+        fileList.setAdapter(new FileAdapter(activity, asList(path)));
 
     }
 
@@ -64,73 +68,13 @@ public class DataNinja extends AlertDialog.Builder {
         fileOrDirectory.delete();
     }
 
-    long getFileSize(final File file) {
-        if (file == null || !file.exists())
-            return 0;
-        if (!file.isDirectory())
-            return file.length();
-        final List<File> dirs = new LinkedList<>();
-        dirs.add(file);
-        long result = 0;
-        while (!dirs.isEmpty()) {
-            final File dir = dirs.remove(0);
-            if (!dir.exists())
-                continue;
-            final File[] listFiles = dir.listFiles();
-            if (listFiles == null || listFiles.length == 0)
-                continue;
-            for (final File child : listFiles) {
-                result += child.length();
-                if (child.isDirectory())
-                    dirs.add(child);
-            }
-        }
-        return result;
-    }
-
-
-    void copy(String from, String to) {
-        File source = new File(from);
-
-        File dest = new File(to);
-
-
-        if (!dest.exists()) {
-            try {
-                dest.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        InputStream is = null;
-        OutputStream os = null;
-        try {
-            is = new FileInputStream(source);
-            os = new FileOutputStream(dest);
-            Math.max(getFileSize(source), getFileSize(dest));
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = is.read(buffer)) > 0) {
-                os.write(buffer, 0, length);
-            }
-            is.close();
-            os.close();
-        } catch (FileNotFoundException e) {
-            Log.e("lol", e.toString());
-            e.printStackTrace();
-        } catch (IOException e) {
-            Log.e("lol1", e.toString());
-            e.printStackTrace();
-        }
-    }
 
     private File generateReplacementFile(){
         Random random = new Random();
         int index = random.nextInt();
         index = (index < 0) ? index * -1 : index;
         String nameReplacedOriginal = "replacement_" + index + "";
-        File original = new File(PathList.getReplacementsStorage() + File.separator + nameReplacedOriginal);
+        File original = new File(UtilitiesAndData.getReplacementsStorage() + File.separator + nameReplacedOriginal);
         try {
             original.createNewFile();
         } catch (IOException e) {
@@ -151,38 +95,38 @@ public class DataNinja extends AlertDialog.Builder {
         return String.format("%.1f %cB", bytes / 1000.0, ci.current());
     }
 
-    protected DataNinja(final Context context, String path, ListView fileList, int selectedFileInd) {
-        super(context);
-        this.context = context;
+    protected DataNinja(final MainActivity activity, String path, ListView fileList, int selectedFileInd) {
+        super(activity);
+        this.activity = activity;
         data = new File(path);
-        ListView optionsView = new ListView(context);
+        ListView optionsView = new ListView(activity);
         this.fileList = fileList;
 
         //Порядок следования строк в этом массиве влияет на обработку нажатий на текствью с ними
         String[] optionsTitles = {
-                context.getString(R.string.replace_file_title),     //0
-                context.getString(R.string.recover_file_title),          //1
-                context.getString(R.string.remove_file_title),      //2
-                context.getString(R.string.track_file_title),   //3
-                context.getString(R.string.file_props_title),        //4
-                context.getString(R.string.hide_file_title) //5
+                activity.getString(R.string.replace_file_title),     //0
+                activity.getString(R.string.recover_file_title),          //1
+                activity.getString(R.string.remove_file_title),      //2
+                activity.getString(R.string.track_file_title),   //3
+                activity.getString(R.string.file_props_title),        //4
+                activity.getString(R.string.hide_file_title) //5
         };
 
 
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1,  optionsTitles);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1,  optionsTitles);
         optionsView.setAdapter(adapter);
         final DataNinja f_this = this;
         setView(optionsView);
         setTitle(data.getName()
                 + " - " +
                 ((data.isDirectory()) ?
-                        context.getString(R.string.folder_title) :
-                        context.getString(R.string.file_title)));
+                        activity.getString(R.string.folder_title) :
+                        activity.getString(R.string.file_title)));
 
         final AlertDialog show = show();
-        ReplacementDataBaseHelper dataBaseHelper = new ReplacementDataBaseHelper(context);
-        SQLiteDatabase writableDatabase = dataBaseHelper.getWritableDatabase();
+        ReplacementDataBaseHelper dataBaseHelper = new ReplacementDataBaseHelper(activity);
+        SQLiteDatabase writableDatabase = dataBaseHelper.getDatabase();
         ContentValues values = new ContentValues();
 
         optionsView.setOnItemClickListener((parent, view, position, id) -> {
@@ -190,40 +134,81 @@ public class DataNinja extends AlertDialog.Builder {
             String chosenElem = textView.getText().toString();
             switch (position){
                 case 0: {
-                    OpenFileDialog replaceDialog = new OpenFileDialog(context);
-                    replaceDialog.setOpenDialogListener(selectedFileToReplace -> {
-                        //Реализовать замену и воостановление данных
+                    Intent chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
+                    chooseFile.addCategory(Intent.CATEGORY_OPENABLE);
+                    chooseFile.setType("text/plain");
+                    activity.setResultListener(new ResultListener() {
+                        @Override
+                        public void onResult(Object object) {
+                            //Реализовать замену и воостановление данных
+                            Intent data;
+                            if(object instanceof Intent)
+                                data = (Intent) object;
+                            else return;
 
-                        //Создание файла куда будет складывться замена
-                        File replacement = generateReplacementFile();
+                            String selectedFileToReplace = "";
+                            selectedFileToReplace = data.getData().getPath();
 
-                        //Копирование выбранного оригинального файла в хранилище замен
-                        //Иначе говоря, создание резервной копии
-                        copy(path, replacement.getPath());
+                            //Создание файла куда будет складывться замена
+                            File replacement = generateReplacementFile();
 
-                        //Непосредственная замена
-                        copy(selectedFileToReplace, path);
+                            //Копирование выбранного оригинального файла в хранилище замен
+                            //Иначе говоря, создание резервной копии
+                            copy(path, replacement.getPath());
 
-                        values.put(ReplacementDataBaseHelper.NAME_OF_BACKUPED_ELEMENT, replacement.getName());
-                        values.put(ReplacementDataBaseHelper.PATH_TO_REPLACED_ELEMENT, path);
+                            //Непосредственная замена
+                            copy(selectedFileToReplace, path);
 
-                        writableDatabase.insert(ReplacementDataBaseHelper.MAIN_TABLE_NAME, null, values);
+                            values.put(NAME_OF_BACKUPED_ELEMENT, replacement.getName());
+                            values.put(ReplacementDataBaseHelper.PATH_TO_REPLACED_ELEMENT, path);
 
-                        writableDatabase.close();
-                        //Log.i("lol", selectedFileToReplace + " " + path);
-                        //Log.i("lol", PathList.getReplacementsStorage());
-                        Toast.makeText(context, "Заменено!", Toast.LENGTH_LONG).show();
-                        show.cancel();
+                            //Запись в бд
+                            writableDatabase.insert(MAIN_TABLE_NAME, null, values);
+
+                            writableDatabase.close();
+                            rebuildList(path);
+                            show.cancel();
+                            //TODO Язык!!!!
+                            Toast.makeText(activity, "Заменено!", Toast.LENGTH_LONG).show();
+                        }
                     });
-                    replaceDialog.show();
+                    activity.startActivityForResult(
+                            Intent.createChooser(chooseFile, "Choose a file"),
+                            OPEN_FILE_ON_REPLACE_REQUEST
+                    );
                 } break;
                 case 1: {
+                    Cursor query = writableDatabase.rawQuery("SELECT " + PATH_TO_REPLACED_ELEMENT + " , " + NAME_OF_BACKUPED_ELEMENT + " FROM " + MAIN_TABLE_NAME + " WHERE " + PATH_TO_REPLACED_ELEMENT + " = \"" + path + "\"", null);
+                    if(query.getCount() == 1) {
+                        query.moveToFirst();
+                        //Путь к заменяемому файлу
+                        String pathToReplace = query.getString(query.getColumnIndex(PATH_TO_REPLACED_ELEMENT));
+                        //Имя бэкапа
+                        String nameFile = query.getString(query.getColumnIndex(NAME_OF_BACKUPED_ELEMENT));
+
+                        //Файл замены
+                        File toReplace = new File(pathToReplace);
+
+                        //Файл бэкапа
+                        File backup = new File(UtilitiesAndData.getReplacementsStorage() + File.separator + nameFile);
+
+                        copy(backup, toReplace);
+
+                        writableDatabase.delete(MAIN_TABLE_NAME, PATH_TO_REPLACED_ELEMENT + " = ?", new String[]{path});
+                        backup.delete();
+
+                        Log.i("lol", pathToReplace + " -> " + nameFile + " " + backup.exists() + " " + backup.getAbsolutePath() + "|");
+                    }
+
+                    query.close();
+                    rebuildList(path);
+                    show.cancel();
 
                 } break;
                 case 2: {
-                    AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(activity);
                     dialog.setTitle(optionsTitles[2]);
-                    String message = String.format(context.getString(R.string.sure_remove_title), data.getName());
+                    String message = String.format(activity.getString(R.string.sure_remove_title), data.getName());
                     dialog.setMessage(message);
                     dialog.setPositiveButton(R.string.ok_title, (dialog1, which) -> {
                         deleteRecursive(data);
@@ -236,12 +221,12 @@ public class DataNinja extends AlertDialog.Builder {
 
                 }break;
                 case 4:{
-                    AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(activity);
                     dialog.setTitle(data.getName()
                             + " - " +
                             ((data.isDirectory()) ?
-                                    context.getString(R.string.folder_title) :
-                                    context.getString(R.string.file_title)));
+                                    activity.getString(R.string.folder_title) :
+                                    activity.getString(R.string.file_title)));
 
                     long lastModified = data.lastModified();
                     Date date = new Date(lastModified);
@@ -254,9 +239,9 @@ public class DataNinja extends AlertDialog.Builder {
 
 
                     dialog.setMessage(
-                            context.getString(R.string.file_lastmod_title) + "\n" +
+                            activity.getString(R.string.file_lastmod_title) + "\n" +
                             formattedDate + "\n\n" +
-                            context.getString(R.string.file_size_title) + "\n" +
+                            activity.getString(R.string.file_size_title) + "\n" +
                             humanReadableByteCountSI(size) + " (" + size + " B)"
                     );
                     dialog.show();
