@@ -1,5 +1,6 @@
 package com.ea.ironmonkey;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -67,6 +68,7 @@ public class WebActivity extends Activity {
         this.backImage.setOnTouchListener(new View.OnTouchListener() {
             /* class com.ea.ironmonkey.WebActivity.AnonymousClass2 */
 
+            @SuppressLint("ClickableViewAccessibility")
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == 0) {
                     WebActivity.this.backImage.setImageBitmap(WebActivity.this.backButtonPressed);

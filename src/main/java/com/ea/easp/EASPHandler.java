@@ -7,8 +7,8 @@ import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
+
 import com.ea.InAppWebBrowser.BrowserAndroid;
-import com.ea.easp.Debug;
 import com.ea.easp.facebook.FacebookAgentJNI;
 import com.ea.easp.mtx.market.MarketJNI;
 
@@ -21,12 +21,15 @@ public class EASPHandler {
     private GLSurfaceView mGLSurfaceView;
     private Handler mHandler = new Handler();
     private PhysicalKeyboardAndroid mPhysicalKeyboard;
-    private TaskLauncher mTaskLauncher = new TaskLauncher(this.mHandler, this.mGLSurfaceView);
+    private TaskLauncher mTaskLauncher;
 
     public EASPHandler(Activity activity, ViewGroup viewGroup, GLSurfaceView gLSurfaceView) {
         mActivity = activity;
         mViewGroup = viewGroup;
         this.mGLSurfaceView = gLSurfaceView;
+        mTaskLauncher = new TaskLauncher(this.mHandler, this.mGLSurfaceView);
+        mTaskLauncher.runInUIThread(() -> System.out.println("loool"));
+        mTaskLauncher.runInGLThread(() -> System.out.println("loool"));
     }
 
     public native void initJNI();

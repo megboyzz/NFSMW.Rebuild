@@ -54,7 +54,9 @@ public class GameGLSurfaceView extends GLSurfaceView {
         }
 
         public EGLConfig chooseConfig(EGL10 egl10, EGLDisplay eGLDisplay, EGLConfig[] eGLConfigArr) {
+
             EGLConfig eGLConfig = null;
+
             while (eGLConfig == null) {
                 for (EGLConfig eGLConfig2 : eGLConfigArr) {
                     int findConfigAttrib = findConfigAttrib(egl10, eGLDisplay, eGLConfig2, 12325, 0);
@@ -102,8 +104,7 @@ public class GameGLSurfaceView extends GLSurfaceView {
         if (Build.VERSION.SDK_INT >= 11) {
             try {
                 Log.i(TAG, "setPreserveEGLContextOnPause");
-
-                getClass().getMethod("setPreserveEGLContextOnPause", Boolean.TYPE).invoke(this, false);
+                setPreserveEGLContextOnPause(false);
                 Log.e(TAG, "setPreserveEGLContextOnPause(false) success");
             } catch (Exception e2) {
                 Log.e(TAG, "setPreserveEGLContextOnPause failed");
@@ -117,7 +118,7 @@ public class GameGLSurfaceView extends GLSurfaceView {
 
     private void setGLESVersion2() {
         setEGLContextFactory(new GLSurfaceView.EGLContextFactory() {
-            /* class com.ea.ironmonkey.GameGLSurfaceView.AnonymousClass1 */
+
             private static final int EGL_CONTEXT_CLIENT_VERSION = 12440;
 
             public EGLContext createContext(EGL10 egl10, EGLDisplay eGLDisplay, EGLConfig eGLConfig) {
@@ -144,35 +145,32 @@ public class GameGLSurfaceView extends GLSurfaceView {
         motionEvent.getHistorySize();
         final int pointerCount = motionEvent.getPointerCount();
         final MotionEvent obtain = MotionEvent.obtain(motionEvent);
-        queueEvent(new Runnable() {
-            @Override
-            public void run() {
-                Log.i(TAG, "queueEvent...");
+        queueEvent(() -> {
+            Log.i(TAG, "queueEvent...");
 
-                if (GameGLSurfaceView.this.kMotionEvent_GetSource) {
+            if (GameGLSurfaceView.this.kMotionEvent_GetSource) {
 
-                    if (obtain.getSource() == 4098 || obtain.getSource() == 1048584) {
-                        if (obtain.getAction() == MotionEvent.ACTION_MOVE) {
-                            for (int i = 0; i < pointerCount; i++) {
-                                Log.i(TAG, "TouchEvent 1");
-                                GameGLSurfaceView.this.nativeTouchScreenEvent(obtain.getAction(), obtain.getPointerId(i), obtain.getX(i), obtain.getY(i));
-                            }
-                            return;
+                if (obtain.getSource() == 4098 || obtain.getSource() == 1048584) {
+                    if (obtain.getAction() == MotionEvent.ACTION_MOVE) {
+                        for (int i = 0; i < pointerCount; i++) {
+                            Log.i(TAG, "TouchEvent 1");
+                            GameGLSurfaceView.this.nativeTouchScreenEvent(obtain.getAction(), obtain.getPointerId(i), obtain.getX(i), obtain.getY(i));
                         }
-                        int actionIndex = obtain.getActionIndex();
-                        Log.i(TAG, "TouchEvent 2");
-                        GameGLSurfaceView.this.nativeTouchScreenEvent(obtain.getAction(), obtain.getPointerId(actionIndex), obtain.getX(actionIndex), obtain.getY(actionIndex));
+                        return;
                     }
-                } else if (obtain.getAction() == MotionEvent.ACTION_MOVE) {
-                    for (int i = 0; i < pointerCount; i++) {
-                        Log.i(TAG, "TouchEvent 5");
-                        GameGLSurfaceView.this.nativeTouchScreenEvent(obtain.getAction(), obtain.getPointerId(i), obtain.getX(i), obtain.getY(i));
-                    }
-                } else {
-                    int actionIndex3 = obtain.getActionIndex();
-                    Log.i(TAG, "TouchEvent 6");
-                    GameGLSurfaceView.this.nativeTouchScreenEvent(obtain.getAction(), obtain.getPointerId(actionIndex3), obtain.getX(actionIndex3), obtain.getY(actionIndex3));
+                    int actionIndex = obtain.getActionIndex();
+                    Log.i(TAG, "TouchEvent 2");
+                    GameGLSurfaceView.this.nativeTouchScreenEvent(obtain.getAction(), obtain.getPointerId(actionIndex), obtain.getX(actionIndex), obtain.getY(actionIndex));
                 }
+            } else if (obtain.getAction() == MotionEvent.ACTION_MOVE) {
+                for (int i = 0; i < pointerCount; i++) {
+                    Log.i(TAG, "TouchEvent 5");
+                    GameGLSurfaceView.this.nativeTouchScreenEvent(obtain.getAction(), obtain.getPointerId(i), obtain.getX(i), obtain.getY(i));
+                }
+            } else {
+                int actionIndex3 = obtain.getActionIndex();
+                Log.i(TAG, "TouchEvent 6");
+                GameGLSurfaceView.this.nativeTouchScreenEvent(obtain.getAction(), obtain.getPointerId(actionIndex3), obtain.getX(actionIndex3), obtain.getY(actionIndex3));
             }
         });
         return true;

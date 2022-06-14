@@ -22,7 +22,15 @@ public class SplashScreen {
     private int _program;
     private int[] _textureId;
     private int _vertexShader;
-    private final String fShaderStr = "precision highp float;                              \nvarying vec2 v_texCoord;                            \nuniform sampler2D s_texture;                        \nvoid main()                                         \n{                                                   \n  gl_FragColor = texture2D( s_texture, v_texCoord );\n}                                                   \n";
+
+    private final String fShaderStr =
+                    "precision highp float; " +
+                    "varying vec2 v_texCoord;" +
+                    "uniform sampler2D s_texture;"+
+                    "void main(){" +
+                    "   gl_FragColor = texture2D( s_texture, v_texCoord );" +
+                    "}";
+
     private FloatBuffer vBuffer;
     private final String vShaderStr = "attribute vec4 a_position;   \nattribute vec4 a_texCoord;   \nvarying vec2 v_texCoord;     \nvoid main()                  \n{                            \n   gl_Position = a_position; \n   v_texCoord = a_texCoord.xy;  \n}                            \n";
 
@@ -120,9 +128,9 @@ public class SplashScreen {
         }
         GLES20.glViewport(0, 0, i, i2);
         GLES20.glUseProgram(this._program);
-        GLES20.glEnable(3553);
+        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
         GLES20.glActiveTexture(33984);
-        GLES20.glBindTexture(3553, this._textureId[0]);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this._textureId[0]);
         GLES20.glUniform1i(this._attSampler, 0);
         this.vBuffer.position(0);
         GLES20.glVertexAttribPointer(this._attPosition, 2, 5126, false, 16, (Buffer) this.vBuffer);
@@ -144,7 +152,8 @@ public class SplashScreen {
         }
         GLES20.glGetError();
         GLES20.glGenTextures(1, this._textureId, 0);
-        GLES20.glBindTexture(3553, this._textureId[0]);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, this._textureId[0]);
+        
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_4444;
         Bitmap bitmap = null;
@@ -153,11 +162,11 @@ public class SplashScreen {
         } catch (Exception e) {
             Log.e(TAG, "loadBitmap ", e);
         }
-        GLUtils.texImage2D(3553, 0, bitmap, 0);
-        GLES20.glTexParameterf(3553, 10241, 9729.0f);
-        GLES20.glTexParameterf(3553, 10240, 9729.0f);
-        GLES20.glTexParameterf(3553, 10242, 33071.0f);
-        GLES20.glTexParameterf(3553, 10243, 33071.0f);
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         bitmap.recycle();
         int glGetError = GLES20.glGetError();
         if (glGetError != 0) {

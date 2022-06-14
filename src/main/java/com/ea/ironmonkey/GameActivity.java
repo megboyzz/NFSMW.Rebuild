@@ -62,7 +62,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 //TODO А тут тоже может происходить много чего интересного
-//TODO бить нахуй гугл дрм
+//TODO убить гугл дрм
 public class GameActivity extends Activity implements DrawFrameListener, IDeviceData, IDownloadActivity {
 
     private final String TAG = "GameActivity";
@@ -670,6 +670,7 @@ public class GameActivity extends Activity implements DrawFrameListener, IDevice
                     assetsReady = true;
                     nativeOnStart();
                     nativeOnResume();
+                    //drawRectangle(gl10, 0, 0, 100, 100, 100, 100, 4, 100);
                     this.gameRenderer.setDrawFrameListener(null);
                     z = true;
                     break;

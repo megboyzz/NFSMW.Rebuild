@@ -79,5 +79,15 @@
     <string name="sure_remove_all_data_title">Уверен, что хочешь удалить все внутренние файлы игры?</string>
     <string name="remove_action_title">Удаление</string>
     <string name="recover_title">Файлы для востановления</string>
+    <string name="hint_name_svmw">Имя файла svmw</string>
+    <string name="hint_des_svmw">Описание svmw</string>
+    <string name="title_svmw_create_btn">Создать SVMW</string>
+    <string name="title_svmw_where_to_save_btn">Куда положить</string>
+    <string name="toast_strings_must_be_entered">Поля не должны быть пустыми</string>
+    <string name="title_use_cur_save">Использовать текущий nfstr_save.sb?</string>
+    <string name="title_select_save_file">Выбрать nfstr_save.sb</string>
+    <string name="title_date_of_creation">Дата создания</string>
+    <string name="title_load_svmw">Загрузить svmw</string>
+    <string name="msg_devmenu_off">Уверен что хочешь выключить DevMenu? Чтобы его включить нужно будет создать пустой файл c именем DevMenu в корне кэша игры</string>
 
 </resources>

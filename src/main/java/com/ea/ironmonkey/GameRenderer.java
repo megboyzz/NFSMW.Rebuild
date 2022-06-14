@@ -31,7 +31,6 @@ public class GameRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-
         if (this.drawFrameListener != null) {
             this.drawFrameListener.onDrawFrame(gl10);
         } else {
@@ -58,8 +57,8 @@ public class GameRenderer implements GLSurfaceView.Renderer {
         this.drawFrameListener = drawFrameListener2;
     }
 
-    public static final void drawRectangle(GL10 gl, float x, float y, float width, float height, float r, float g,
-                                           float b, float a) {
+    public static void drawRectangle(GL10 gl, float x, float y, float width, float height, float r, float g,
+                                     float b, float a) {
         float[] verticies = { -0.5f * width + x, -0.5f * height + y, 0.5f * width + x, -0.5f * height + y,
                 -0.5f * width + x, 0.5f * height + y, 0.5f * width + x, 0.5f * height + y, };
 

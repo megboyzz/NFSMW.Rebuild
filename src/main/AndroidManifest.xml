@@ -23,8 +23,7 @@
         android:label="@string/app_name" 
         android:screenOrientation="landscape">
         
-        <activity android:name="com.ea.ironmonkey.devmenu.MainActivity"
-            >
+        <activity android:name="com.ea.ironmonkey.devmenu.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -46,14 +45,19 @@
             android:alwaysRetainTaskState="true" 
             android:configChanges="keyboardHidden|locale|orientation|screenSize|smallestScreenSize" 
             android:label="@string/app_name" android:launchMode="singleTop" 
-            android:name="com.ea.ironmonkey.GameActivity" android:screenOrientation="landscape" android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-            <meta-data android:name="foo" android:value="bar"/>
+            android:name="com.ea.ironmonkey.GameActivity"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            <meta-data
+                android:name="foo"
+                android:value="bar"/>
         </activity>
         
         <activity 
             android:configChanges="keyboardHidden|locale" 
             android:name="com.ea.ironmonkey.WebActivity" 
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
+        <activity android:name="com.ea.ironmonkey.devmenu.RecoverListActivity" />
 
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/app_id"/>
         <meta-data android:name="com.ea.nimble.configuration" android:value="@string/nimble_configuration"/>

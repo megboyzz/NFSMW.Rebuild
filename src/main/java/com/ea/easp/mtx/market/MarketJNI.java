@@ -245,16 +245,9 @@ public class MarketJNI {
         this.mTaskLauncher.runInUIThread(new Runnable() {
 
             public Runnable makeErrorHandler() {
-                return new Runnable() {
-                    @Override
-                    public void run() {
-                        Debug.Log.e(MarketJNI.TAG, "purchase(): fail to connect to Market");
-                        MarketJNI.this.mTaskLauncher.runInGLThread(new Runnable() {
-                            public void run() {
-                                MarketJNI.this.onRequestFailJNI(1, -999998, "fail to connect to Android Market");
-                            }
-                        });
-                    }
+                return () -> {
+                    Debug.Log.e(MarketJNI.TAG, "purchase(): fail to connect to Market");
+                    MarketJNI.this.mTaskLauncher.runInGLThread(() -> MarketJNI.this.onRequestFailJNI(1, -999998, "fail to connect to Android Market"));
                 };
             }
 

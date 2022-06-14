@@ -1,4 +1,4 @@
-package com.ea.ironmonkey.devmenu;
+package com.ea.ironmonkey.devmenu.dialog;
 
 import android.app.AlertDialog;
 import android.content.Context;

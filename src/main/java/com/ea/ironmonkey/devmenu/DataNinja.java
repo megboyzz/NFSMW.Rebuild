@@ -1,16 +1,14 @@
 package com.ea.ironmonkey.devmenu;
 
+import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.MAIN_TABLE_NAME;
+import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.NAME_OF_BACKUPED_ELEMENT;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.OPEN_FILE_ON_REPLACE_REQUEST;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.copy;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.getFileSize;
-import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.MAIN_TABLE_NAME;
-import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.NAME_OF_BACKUPED_ELEMENT;
-import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.PATH_TO_REPLACED_ELEMENT;
 
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.widget.ArrayAdapter;
@@ -19,9 +17,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ea.games.nfs13_na.R;
-import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 import com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper;
 import com.ea.ironmonkey.devmenu.util.ResultListener;
+import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 
 import java.io.File;
 import java.io.IOException;
@@ -178,6 +176,7 @@ public class DataNinja extends AlertDialog.Builder {
                     );
                 } break;
                 case 1: {
+                    /*
                     Cursor query = writableDatabase.rawQuery("SELECT " + PATH_TO_REPLACED_ELEMENT + " , " + NAME_OF_BACKUPED_ELEMENT + " FROM " + MAIN_TABLE_NAME + " WHERE " + PATH_TO_REPLACED_ELEMENT + " = \"" + path + "\"", null);
                     if(query.getCount() == 1) {
                         query.moveToFirst();
@@ -196,11 +195,9 @@ public class DataNinja extends AlertDialog.Builder {
 
                         writableDatabase.delete(MAIN_TABLE_NAME, PATH_TO_REPLACED_ELEMENT + " = ?", new String[]{path});
                         backup.delete();
-
-                        Log.i("lol", pathToReplace + " -> " + nameFile + " " + backup.exists() + " " + backup.getAbsolutePath() + "|");
                     }
-
-                    query.close();
+                     */
+                    UtilitiesAndData.recoverFile(path);
                     rebuildList(path);
                     show.cancel();
 

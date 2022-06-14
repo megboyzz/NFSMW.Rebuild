@@ -1,6 +1,8 @@
 package com.ea.ironmonkey.devmenu;
 
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.OPEN_FILE_ON_REPLACE_REQUEST;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.generateMD5;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.isFirstRun;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -9,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -22,11 +25,9 @@ import android.widget.TwoLineListItem;
 import com.ea.games.nfs13_na.BuildConfig;
 import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.GameActivity;
-import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
-import com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper;
 import com.ea.ironmonkey.devmenu.util.ResultListener;
-
-import org.apache.commons.codec.digest.DigestUtils;
+import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
+import com.ea.nimble.Utility;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,13 +36,24 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-public class MainActivity extends Activity {
+//TODO сделать нормальный файл сохранения
+//TODO сделать его нрмальное отображние
+
+//TODO сделать нормальное отслеживние файлов сохранений
+//TODO сдлеать настройки отслеживания файла
+//TODO сделать отображение текущего пути в проводнике
+//TODO добавить иконки к проводику
+//TODO сделать динамическое контекстное меню файла
+
+//TODO реализовать сохранение файлов в память телефона из внутреннего хранилища
+public class MainActivity extends Activity{
 
     private final String LOG_TAG = "InjectedActivity";
 
@@ -49,6 +61,7 @@ public class MainActivity extends Activity {
     private String externalFiles;
     private ResultListener resultListener;
     private ResultListener openResult = new ResultListener() {};
+    private static Thread observerThread;
 
     public void setResultListener(ResultListener resultListener) {
         this.resultListener = resultListener;
@@ -60,26 +73,64 @@ public class MainActivity extends Activity {
     private Button backButton;
     private static final int READ_FILE_REQUEST_CODE = 101;
 
-    private byte[] generateMD5(File file){
-        try {
-            return DigestUtils.md5(new FileInputStream(file));
-        } catch (IOException e) {
-            e.printStackTrace();
+    // TODO Сделать номальную систему учета измения файлов
+    public static void observ(){
+        File save = new File(UtilitiesAndData.getInternalStorage() + File.separator + "files/var/nfstr_save.sb");
+        File fileOut = new File(UtilitiesAndData.getExternalStorage() + File.separator + "Log.txt");
+        File pathToSave = new File(UtilitiesAndData.getExternalStorage() + File.separator + "saves");
+        pathToSave.mkdir();
+        if(!fileOut.exists()) {
+            try {
+                fileOut.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return new byte[1];
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault());
+        UtilitiesAndData.setLogger(fileOut);
+        observerThread = new Thread(() -> {
+            int count = 1;
+            byte[] lastMD5 = new byte[10];
+            while (true){
+                byte[] md5 = generateMD5(save);
+                if(!Arrays.equals(md5, lastMD5)) {
+                    UtilitiesAndData.printLog(format.format(new Date()) + " | " + Utility.bytesToHexString(md5) + "\n");
+                    File change = new File(pathToSave.getAbsolutePath() + File.separator + "nfs_save_change_"+ count +".sb");
+                    try {
+                        change.createNewFile();
+                        UtilitiesAndData.copy(save, change);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                lastMD5 = md5;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                count++;
+            }
+        });
+        observerThread.start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     public void openFile(File url) {
         File tempFile = null;
-
         Intent intent = new Intent(Intent.ACTION_VIEW);
 
         if(url.getAbsolutePath().contains(UtilitiesAndData.getInternalStorage())){
-            Log.wtf(LOG_TAG, "WTF, man, you cant read my files!!! bitch");
+            Log.wtf(LOG_TAG, "WTF, man, you cant read my files!!!");
 
             //Создаем временный файл, там где можем его прочитать
             Random random = new Random();
             tempFile = new File(UtilitiesAndData.getExternalStorage() + File.separator + "temp_" + random.nextInt());
+
             //Копируем тот файл который хотим посмотреть
             copy(url.getAbsolutePath(), tempFile.getAbsolutePath());
 
@@ -89,18 +140,15 @@ public class MainActivity extends Activity {
             File finalTempFile = tempFile;
 
             //Создаем хеш файла для того чтобы его потом сравнить
-
             final byte[] compTemp = generateMD5(finalTempFile);
 
-            File finalUrl = url;
             openResult = new ResultListener(){
                 @Override
                 public void onResult(Object data) {
                     byte[] bytes = generateMD5(finalTempFile);
                     //Если хеши не одинаковы то заменяем одно на другое
-                    if(!bytes.equals(compTemp)){
+                    if(!Arrays.equals(bytes, compTemp))
                         copy(finalTempFile.getAbsolutePath(), openedFile.getAbsolutePath());
-                    }
                     finalTempFile.delete();
                 }
             };
@@ -109,48 +157,29 @@ public class MainActivity extends Activity {
         // Create URI
         Uri uri = Uri.fromFile(url);
 
-        // Check what kind of file you are trying to open, by comparing the url with extensions.
-        // When the if condition is matched, plugin sets the correct intent (mime) type,
-        // so Android knew what application to use to open the file
-        // Word document
         if (url.toString().contains(".doc") || url.toString().contains(".docx"))
             intent.setDataAndType(uri, "application/msword");
         else if(url.toString().contains(".pdf")) {
-            // PDF file
             intent.setDataAndType(uri, "application/pdf");
         } else if(url.toString().contains(".ppt") || url.toString().contains(".pptx")) {
-            // Powerpoint file
             intent.setDataAndType(uri, "application/vnd.ms-powerpoint");
         } else if(url.toString().contains(".xls") || url.toString().contains(".xlsx")) {
-            // Excel file
             intent.setDataAndType(uri, "application/vnd.ms-excel");
         } else if(url.toString().contains(".zip") || url.toString().contains(".rar")) {
-            // WAV audio file
             intent.setDataAndType(uri, "application/x-wav");
         } else if(url.toString().contains(".rtf")) {
-            // RTF file
             intent.setDataAndType(uri, "application/rtf");
         } else if(url.toString().contains(".wav") || url.toString().contains(".mp3")) {
-            // WAV audio file
             intent.setDataAndType(uri, "audio/x-wav");
         } else if(url.toString().contains(".gif")) {
-            // GIF file
             intent.setDataAndType(uri, "image/gif");
         } else if(url.toString().contains(".jpg") || url.toString().contains(".jpeg") || url.toString().contains(".png")) {
-            // JPG file
             intent.setDataAndType(uri, "image/jpeg");
         } else if(url.toString().contains(".txt")) {
-            // Text file
             intent.setDataAndType(uri, "text/plain");
         } else if(url.toString().contains(".3gp") || url.toString().contains(".mpg") || url.toString().contains(".mpeg") || url.toString().contains(".mpe") || url.toString().contains(".mp4") || url.toString().contains(".avi")) {
-            // Video files
             intent.setDataAndType(uri, "video/*");
         } else {
-            //if you want you can also define the intent type for any other file
-
-            //additionally use else clause below, to manage other unknown extensions
-            //in this case, Android will show all applications installed on the device
-            //so you can choose which application to use
             intent.setDataAndType(uri, "*/*");
         }
 
@@ -227,44 +256,67 @@ public class MainActivity extends Activity {
         return asList(new File(path).listFiles());
     }
 
-    private ArrayList<File> asList2(String path){
-        ArrayList<File> arrayList = new ArrayList<>();
-        File file = new File(path);
-        for(int i = 0; i < file.list().length; i++)
-            arrayList.add(file.listFiles()[i]);
-        return arrayList;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         UtilitiesAndData.init(this);
-
+        UtilitiesAndData.init(this);
         internalFiles = UtilitiesAndData.getInternalStorage();
         externalFiles = UtilitiesAndData.getExternalStorage();
+/*
+        Проверка функционирования svmw
+        String absolutePath = Environment.getExternalStorageDirectory().getAbsolutePath();
 
+        File save = new File(internalFiles + File.separator + "files" + File.separator + "var" + File.separator + "nfstr_save.sb");
+        File to = new File(absolutePath + File.separator + "Download" + File.separator + "lol.svmw");
+
+        SaveManager manager = new SaveManager(this);
+        manager.createBundleFile("хуйня ебана", to, save);
+
+        String description = manager.getDescriptionOf(to);
+        Toast.makeText(this, description, Toast.LENGTH_LONG).show();
+        Log.i("lol", description);
+
+        Date dateOfCreateOf = manager.getDateOfCreateOf(to);
+        Log.i("lol", dateOfCreateOf.toString());
+
+        manager.loadBundleFile(to);
+*/
         File replacements = new File(UtilitiesAndData.getReplacementsStorage());
         if(!replacements.exists()) replacements.mkdir();
 
-
         File activityFlag = new File(externalFiles + File.separator + BuildConfig.DEV_MENU_ID);
+        // TODO доделать проверку первого запуска
+        if(isFirstRun()){
+            File data = new File(UtilitiesAndData.getExternalStorage());
+            if(!data.exists()){
+                File data1 = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + getPackageName() + "_");
+                if(data1.exists()) {
+                    String path = data1.getPath();
+                    data1.renameTo(new File(path.substring(0, path.length() - 2)));
+                    activityFlag = data1;
+                }
+            }
+            try {
+                File temp = new File(UtilitiesAndData.getInternalStorage() + File.separator + "load");
+                temp.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         if(!activityFlag.exists()){
             updateLanguage();
             runGame();
             return;
         }
 
-        ReplacementDataBaseHelper helper = new ReplacementDataBaseHelper(this);
-
         setContentView(R.layout.custom);
+
 
         String title = String.format(getString(R.string.dev_menu_title), BuildConfig.DEV_MENU_VERSION);
 
         getActionBar().setTitle(title);
-
-
-
 
         fileList = (ListView) findViewById(R.id.FileList);
 
@@ -433,13 +485,16 @@ public class MainActivity extends Activity {
                 builder.setNegativeButton(R.string.cancel_title, null);
                 builder.show();
 
-            }
-            break;
+            }break;
+            case R.id.optionCheckRecovers:{
+
+                Intent GoToRecovers = new Intent(this, RecoverListActivity.class);
+                startActivity(GoToRecovers);
+
+            }break;
 
         }
 
         return super.onOptionsItemSelected(item);
     }
-
-
 }

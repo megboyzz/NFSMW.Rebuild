@@ -71,16 +71,6 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.7'
     implementation 'com.facebook.android:facebook-android-sdk:3.21.0'
 }
-/*
-task nativeLibsToJar(type: Jar, description: 'create a jar archive of the native libs') {
-    destinationDir file("$buildDir/native-libs")
-    baseName 'native-libs'
-    from fileTree(dir: 'libs', include: '** /*.so')
-    into 'lib/'
-}
 
-tasks.withType(JavaCompile) {
-    compileTask -> compileTask.dependsOn(nativeLibsToJar)
-}*/
 
 

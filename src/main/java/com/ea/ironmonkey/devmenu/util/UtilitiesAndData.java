@@ -1,10 +1,18 @@
 package com.ea.ironmonkey.devmenu.util;
 
+import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.MAIN_TABLE_NAME;
+import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.NAME_OF_BACKUPED_ELEMENT;
+import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.PATH_TO_REPLACED_ELEMENT;
+
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.util.Log;
 
 import com.ea.games.nfs13_na.BuildConfig;
+
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,34 +21,93 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class UtilitiesAndData {
 
     private static Context context;
+    private static FileOutputStream stream;
     public static final int OPEN_FILE_ON_REPLACE_REQUEST = 100;
     public static final int READ_FILE_REQUEST_CODE = 101;
+
+    private static final String LOG_TAG = "UtilitiesAndData";
 
     public static void init(Context context){
         UtilitiesAndData.context = context;
     }
 
+    public static void setLogger(File file){
+        if(file.exists()){
+            try {
+                stream = new FileOutputStream(file);
+            } catch (FileNotFoundException e) {
+                Log.wtf(LOG_TAG, "cant create out stream(((");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static boolean isLoggerEnabled(){
+        return stream != null;
+    }
+
+    public static void printLog(String msg){
+        try{
+            if(isLoggerEnabled())
+            stream.write(msg.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            Log.wtf(LOG_TAG, "cant write to stream(((");
+            e.printStackTrace();
+        }
+    }
+
     public static String getInternalStorage(){
-        return "/data/data/" + context.getPackageName() + File.separator;
+        return "/data/data/" + context.getPackageName();
     }
 
     public static String getExternalStorage(){
         return Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + context.getPackageName() + "/files";
     }
 
+    public static File getDevMenuSwitcher(){
+        return new File(UtilitiesAndData.getExternalStorage() + File.separator + "DevMenu");
+    }
+
+    public static File getSaveFile(){
+        File save = new File(getInternalStorage() + File.separator + "files" + File.separator + "var" + File.separator + "nfstr_save.sb");
+        if(!save.exists()) {
+            try {
+                save.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return save;
+    }
+
     public static String getReplacementsStorage(){
         return getInternalStorage() + File.separator + "replace";
     }
 
-    private static String[] exclusionNamesArr = {
+    public static boolean isFirstRun(){
+        File temp = new File(getInternalStorage() + File.separator + "load");
+        try {
+            if(!temp.exists()){
+                temp.createNewFile();
+                return true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private static final String[] exclusionNamesArr = {
 
             BuildConfig.DEV_MENU_ID,
             "replace",
@@ -113,10 +180,108 @@ public class UtilitiesAndData {
         return result;
     }
 
-    private static final HashSet<String> exclusionNames = new HashSet<>(Arrays.asList(exclusionNamesArr));
+    private static final Set<String> exclusionNames = new HashSet<>(Arrays.asList(exclusionNamesArr));
 
     public static boolean isExclusionName(String name){
         return exclusionNames.contains(name);
+    }
+
+
+    public static void recoverFile(String path){
+        ReplacementDataBaseHelper dataBaseHelper = new ReplacementDataBaseHelper(context);
+        SQLiteDatabase writableDatabase = dataBaseHelper.getDatabase();
+        Cursor query = writableDatabase.rawQuery("SELECT " + PATH_TO_REPLACED_ELEMENT + " , " + NAME_OF_BACKUPED_ELEMENT + " FROM " + MAIN_TABLE_NAME + " WHERE " + PATH_TO_REPLACED_ELEMENT + " = \"" + path + "\"", null);
+        if(query.getCount() == 1) {
+            query.moveToFirst();
+            //Путь к заменяемому файлу
+            String pathToReplace = query.getString(query.getColumnIndex(PATH_TO_REPLACED_ELEMENT));
+            //Имя бэкапа
+            String nameFile = query.getString(query.getColumnIndex(NAME_OF_BACKUPED_ELEMENT));
+
+            //Файл замены
+            File toReplace = new File(pathToReplace);
+
+            //Файл бэкапа
+            File backup = new File(UtilitiesAndData.getReplacementsStorage() + File.separator + nameFile);
+
+            copy(backup, toReplace);
+
+            writableDatabase.delete(MAIN_TABLE_NAME, PATH_TO_REPLACED_ELEMENT + " = ?", new String[]{path});
+            backup.delete();
+        }
+
+        query.close();
+    }
+
+    public static byte[] generateMD5(File file){
+        try {
+            return DigestUtils.md5(new FileInputStream(file));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new byte[1];
+    }
+
+    public static void getInfoAboutFile(File file){
+        Log.i(LOG_TAG, "Info about File -> " + file.getAbsolutePath());
+        if(file.exists()){
+            if(file.isFile()) {
+                Log.i(LOG_TAG, "isCanRead = " + file.canRead());
+                Log.i(LOG_TAG, "isCanWrite = " + file.canWrite());
+                Log.i(LOG_TAG, "isCanExecute = " + file.canExecute());
+            }else
+                Log.i(LOG_TAG, "its dir!");
+        }else
+            Log.wtf(LOG_TAG, "it does not exists!");
+    }
+
+    public static byte[] fileAsByteArray(File file){
+        byte[] b = new byte[(int) file.length()];
+        try {
+            FileInputStream fileInputStream = new FileInputStream(file);
+            fileInputStream.read(b);
+        } catch (Exception e) {
+            return null;
+        }
+        return b;
+    }
+
+    public static void saveBytesToFile(byte[] bytes, File saveTo){
+        try{
+            saveTo.createNewFile();
+            FileOutputStream outputStream = new FileOutputStream(saveTo);
+            outputStream.write(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int findHeaderInByteFile(byte[] byteFile, byte[] header){
+        int[] pf = prefix(header);
+        int index = 0;
+        for (int i = 0; i < byteFile.length; i++){
+            while (index > 0 && header[index] != byteFile[i]) index = pf[index - 1];
+            if (header[index] == byteFile[i]) index++;
+            if (index == header.length) return i - index + 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Префикс функция для алгоритма КМП
+     */
+    private static int[] prefix(byte[] s) {
+        int[] result = new int[s.length];
+        result[0] = 0;
+        int index = 0;
+
+        for (int i = 1; i < s.length; i++) {
+            while (index >= 0 && s[index] != s[i]) { index--; }
+            index++;
+            result[i] = index;
+        }
+
+        return result;
     }
 
 }
