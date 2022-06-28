@@ -3,6 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.main.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.unitTest.iml" />
     </modules>
   </component>
 </project>

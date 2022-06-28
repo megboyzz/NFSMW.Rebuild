@@ -10,6 +10,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,8 +42,18 @@ public class SaveManager {
         try {
             fileToSave.createNewFile();
             FileOutputStream fos = new FileOutputStream(fileToSave);
-            String curDate = dateFormat.format(new Date());
+
             Date date = new Date();
+
+            Long time = date.getTime();
+
+            ByteBuffer bb = ByteBuffer.allocate(Long.SIZE);
+            bb.order(ByteOrder.LITTLE_ENDIAN);
+            bb.putLong(time);
+            bb.flip();
+            //bb.
+            String curDate = dateFormat.format(new Date());
+
             fos.write(svmw_header);
             fos.write(curDate.getBytes(StandardCharsets.UTF_8));
             fos.write(description.getBytes(StandardCharsets.UTF_8));

@@ -351,7 +351,7 @@ public class MainActivity extends Activity{
                     ((TextView) view).getText().toString();
 
 
-            DataNinja ninja = new DataNinja(this, globalPath + "/" + chosenElem, fileList, position);
+            LongPressContextMenu ninja = new LongPressContextMenu(this, globalPath + "/" + chosenElem, fileList, position);
             return true;
         });
 
