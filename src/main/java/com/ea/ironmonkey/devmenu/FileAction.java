@@ -13,5 +13,5 @@ public interface FileAction {
     void actionGetPropsOfFile();
 
     void actionHideTheFile();
-    
+    //sfhsadfhsdjf
 }

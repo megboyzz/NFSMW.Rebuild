@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.androidTest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.main.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW_Raincarnation.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW.Rebuild.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW.Rebuild.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW.Rebuild.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW.Rebuild.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW.Rebuild.main.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW.Rebuild.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NFSMW.Rebuild.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/NFSMW.Rebuild.unitTest.iml" />
     </modules>
   </component>
 </project>
