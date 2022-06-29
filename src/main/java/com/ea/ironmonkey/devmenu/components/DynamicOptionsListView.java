@@ -9,7 +9,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Динамический список для контекстного меню файла LongPressContextMenu */
+/** Динамический список для контекстного меню файла в LongPressContextMenu */
 public class DynamicOptionsListView extends ListView {
 
     /** Названия позиций в контекстном меню */

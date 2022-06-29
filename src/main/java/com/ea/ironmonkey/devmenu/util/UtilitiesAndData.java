@@ -4,11 +4,13 @@ import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.MAIN_TABL
 import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.NAME_OF_BACKUPED_ELEMENT;
 import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.PATH_TO_REPLACED_ELEMENT;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.ea.games.nfs13_na.BuildConfig;
 
@@ -26,6 +28,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public class UtilitiesAndData {
@@ -34,8 +37,12 @@ public class UtilitiesAndData {
     private static FileOutputStream stream;
     public static final int OPEN_FILE_ON_REPLACE_REQUEST = 100;
     public static final int READ_FILE_REQUEST_CODE = 101;
-
     private static final String LOG_TAG = "UtilitiesAndData";
+
+    public static final int FILE_PICKER_CODE = 3;
+    public static final int FOLDER_PICKER_CODE = 2;
+
+    public static final int FILE_REPLACE_CODE = 4;
 
     public static void init(Context context){
         UtilitiesAndData.context = context;
@@ -194,7 +201,23 @@ public class UtilitiesAndData {
         return exclusionNames.contains(name);
     }
 
+    public static File generateReplacementFile(){
+        Random random = new Random();
+        int index = random.nextInt();
+        index = (index < 0) ? index * -1 : index;
+        String nameReplacedOriginal = "replacement_" + index + "";
+        File original = new File(UtilitiesAndData.getReplacementsStorage() + File.separator + nameReplacedOriginal);
+        try {
+            original.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return original;
+    }
 
+    /**
+     * Группа методов связанных с бд
+     */
     public static void recoverFile(String path){
         ReplacementDataBaseHelper dataBaseHelper = new ReplacementDataBaseHelper(context);
         SQLiteDatabase writableDatabase = dataBaseHelper.getDatabase();
@@ -219,6 +242,31 @@ public class UtilitiesAndData {
         }
 
         query.close();
+    }
+    public static void replaceFile(String what, String forWhat){
+
+        ReplacementDataBaseHelper dataBaseHelper = new ReplacementDataBaseHelper(context);
+        SQLiteDatabase writableDatabase = dataBaseHelper.getDatabase();
+        ContentValues values = new ContentValues();
+
+        //Создание файла куда будет складывться замена
+        File replacement = generateReplacementFile();
+
+        //Копирование выбранного оригинального файла в хранилище замен
+        //Иначе говоря, создание резервной копии
+        copy(what, replacement.getPath());
+
+        //Непосредственная замена
+        copy(forWhat, what);
+
+        values.put(NAME_OF_BACKUPED_ELEMENT, replacement.getName());
+        values.put(ReplacementDataBaseHelper.PATH_TO_REPLACED_ELEMENT, what);
+
+        //Запись в бд
+        writableDatabase.insert(MAIN_TABLE_NAME, null, values);
+
+        writableDatabase.close();
+
     }
 
     public static byte[] generateMD5(File file){

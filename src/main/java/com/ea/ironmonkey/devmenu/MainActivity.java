@@ -1,5 +1,7 @@
 package com.ea.ironmonkey.devmenu;
 
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.FILE_PICKER_CODE;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.FILE_REPLACE_CODE;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.OPEN_FILE_ON_REPLACE_REQUEST;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.copy;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.generateMD5;
@@ -21,6 +23,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.TwoLineListItem;
 
 import com.ea.games.nfs13_na.BuildConfig;
@@ -68,8 +71,6 @@ public class MainActivity extends Activity{
     private TextView currentPath;
     private Button backButton;
     private static final int READ_FILE_REQUEST_CODE = 101;
-    public static final int FILE_PICKER_CODE = 3;
-    public static final int FOLDER_PICKER_CODE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,9 +78,6 @@ public class MainActivity extends Activity{
         UtilitiesAndData.init(this);
         internalFiles = UtilitiesAndData.getInternalStorage();
         externalFiles = UtilitiesAndData.getExternalStorage();
-
-        Intent intent = new Intent(this, FolderPicker.class);
-        startActivity(intent);
 
         File replacements = new File(UtilitiesAndData.getReplacementsStorage());
         if(!replacements.exists()) replacements.mkdir();
@@ -179,16 +177,35 @@ public class MainActivity extends Activity{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if(data != null) {
+            if (data.hasExtra("data")) {
+                String path = data.getExtras().getString("data");
+                switch (requestCode) {
+                    case FILE_PICKER_CODE: {
+                        resultListener.onResult(data);
+                    }
+                    case FILE_REPLACE_CODE: {
+                        if (data.hasExtra("replace")) {
+                            String replace = data.getExtras().getString("replace");
+                            UtilitiesAndData.replaceFile(replace, path);
+                        } else throw new RuntimeException(LOG_TAG + " Не на что заменять((((");
+                        //TODO Язык!!!!
+                        Toast.makeText(this, "Заменено!", Toast.LENGTH_LONG).show();
+                        updateListView();
+                    }
+                }
+            }
+        }else{
+            Log.e(LOG_TAG, "В onActivityResult пришел intent == null((((");
 
-        switch (requestCode){
-            case OPEN_FILE_ON_REPLACE_REQUEST:{
-                resultListener.onResult(data);
-            }break;
-
-            case READ_FILE_REQUEST_CODE:{
-                openResult.onResult(data);
+            // Но возможно это был засранец Intent.ACTION_VIEW
+            // который возвращает intent == null
+            if(requestCode == READ_FILE_REQUEST_CODE){
+                Log.i(LOG_TAG, "Это Intent.ACTION_VIEW!");
+                openResult.onResult(null);
             }
         }
+
 
     }
 
@@ -271,7 +288,6 @@ public class MainActivity extends Activity{
                     finalTempFile.delete();
                 }
             };
-            intent.putExtra("pathToTemp", tempFile.getAbsolutePath());
         }
         // Create URI
         Uri uri = Uri.fromFile(url);
@@ -302,7 +318,6 @@ public class MainActivity extends Activity{
             intent.setDataAndType(uri, "*/*");
         }
 
-        //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivityForResult(intent, READ_FILE_REQUEST_CODE);
 
     }
