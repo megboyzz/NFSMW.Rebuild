@@ -13,16 +13,14 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.TwoLineListItem;
 
+import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper;
-import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 
 import java.io.File;
 import java.util.List;
 
 class FileAdapter extends ArrayAdapter<File> {
 
-    private static int count = 0;
-    private List files;
     private Context context;
     private ReplacementDataBaseHelper dataBaseHelper;
     private SQLiteDatabase database;
@@ -57,9 +55,5 @@ class FileAdapter extends ArrayAdapter<File> {
         }
         query.close();
         return view;
-    }
-
-    public List getFiles() {
-        return files;
     }
 }

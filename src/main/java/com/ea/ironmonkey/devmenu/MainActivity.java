@@ -64,6 +64,8 @@ public class MainActivity extends Activity{
     private static Thread observerThread;
     private String globalPath = "";
     private ListView fileList;
+    private String currentPathFormat;
+    private TextView currentPath;
     private Button backButton;
     private static final int READ_FILE_REQUEST_CODE = 101;
 
@@ -78,24 +80,7 @@ public class MainActivity extends Activity{
         if(!replacements.exists()) replacements.mkdir();
 
         File activityFlag = new File(externalFiles + File.separator + BuildConfig.DEV_MENU_ID);
-        // TODO доделать проверку первого запуска
-        if(isFirstRun()){
-            File data = new File(UtilitiesAndData.getExternalStorage());
-            if(!data.exists()){
-                File data1 = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + getPackageName() + "_");
-                if(data1.exists()) {
-                    String path = data1.getPath();
-                    data1.renameTo(new File(path.substring(0, path.length() - 2)));
-                    activityFlag = data1;
-                }
-            }
-            try {
-                File temp = new File(UtilitiesAndData.getInternalStorage() + File.separator + "load");
-                temp.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        // TODO cделать проверку первого запуска
 
         if(!activityFlag.exists()){
             updateLanguage();
@@ -111,9 +96,11 @@ public class MainActivity extends Activity{
         getActionBar().setTitle(title);
 
         fileList = (ListView) findViewById(R.id.FileList);
+        currentPath = (TextView) findViewById(R.id.current_path);
+        currentPathFormat = getString(R.string.title_current_path_format);
 
-        fileList.setAdapter(new FileAdapter(this, asList(externalFiles)));
         globalPath = externalFiles;
+        updateListView();
 
         RadioGroup group = (RadioGroup) findViewById(R.id.switcherFiles);
 
@@ -431,8 +418,19 @@ public class MainActivity extends Activity{
         this.resultListener = resultListener;
     }
 
+    /**
+     * Метод обновления списка файлов во внутреннем проводнике
+     * и текстовой метки текущего положения
+     */
     public void updateListView(){
         fileList.setAdapter(new FileAdapter(getApplicationContext(), asList(globalPath)));
+        String result = (globalPath.contains(externalFiles))
+                ?
+                globalPath.replace(externalFiles, "/")
+                :
+                globalPath.replace(internalFiles, "/");
+        result = result.replace("//", "/");
+        currentPath.setText(String.format(currentPathFormat, result));
     }
 
 }

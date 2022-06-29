@@ -90,5 +90,6 @@
     <string name="title_date_of_creation">Date of creation</string>
     <string name="title_load_svmw">Load svmw</string>
     <string name="msg_devmenu_off">Are you sure you want to disable DevMenu? To enable it, you will need to create an empty file called DevMenu in the root of the game cache</string>
+    <string name="title_current_path_format">Current path: %s</string>
 
 </resources>

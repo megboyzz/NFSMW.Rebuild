@@ -3,6 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Projects/AndroidStudioProjects/NFSMW.Rebuild/src/main/res/drawable/ic_baseline_folder_24.xml" value="0.124" />
+        <entry key="..\:/Projects/AndroidStudioProjects/NFSMW.Rebuild/src/main/res/layout/custom.xml" value="0.4" />
+        <entry key="..\:/Projects/AndroidStudioProjects/NFSMW.Rebuild/src/main/res/layout/item.xml" value="0.22826086956521738" />
         <entry key="..\:/Projects/AndroidStudioProjects/NFSMW_Raincarnation/src/main/res/drawable/iconio.xml" value="0.13229166666666667" />
         <entry key="..\:/Projects/AndroidStudioProjects/NFSMW_Raincarnation/src/main/res/drawable/laptop.xml" value="0.1859375" />
         <entry key="..\:/Projects/AndroidStudioProjects/NFSMW_Raincarnation/src/main/res/layout-land/saves.xml" value="0.152" />

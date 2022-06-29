@@ -89,5 +89,6 @@
     <string name="title_date_of_creation">Дата создания</string>
     <string name="title_load_svmw">Загрузить svmw</string>
     <string name="msg_devmenu_off">Уверен что хочешь выключить DevMenu? Чтобы его включить нужно будет создать пустой файл c именем DevMenu в корне кэша игры</string>
+    <string name="title_current_path_format">Текущий путь: %s</string>
 
 </resources>
