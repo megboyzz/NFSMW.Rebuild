@@ -36,7 +36,7 @@
         </activity>
 
         <activity 
-            android:name="com.ea.ironmonkey.devmenu.InjectedSettingsActivity"
+            android:name="com.ea.ironmonkey.devmenu.SettingsActivity"
             android:title="@string/settings_title">
             
         </activity>

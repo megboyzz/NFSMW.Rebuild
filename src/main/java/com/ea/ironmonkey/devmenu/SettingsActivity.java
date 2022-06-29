@@ -21,9 +21,9 @@ import com.ea.nimble.ApplicationLifecycle;
 
 import java.io.File;
 
-public class InjectedSettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity {
 
-    public static final String LOG_TAG = "InjectedSettingActivity";
+    public static final String LOG_TAG = "SettingActivity";
 
     private static final int PICKFILE_REQUEST_CODE = 128;
     public static final int PICK_SVMW_REQUEST_CODE = 129;

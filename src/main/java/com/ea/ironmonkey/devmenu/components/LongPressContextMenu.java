@@ -1,4 +1,4 @@
-package com.ea.ironmonkey.devmenu;
+package com.ea.ironmonkey.devmenu.components;
 
 import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.MAIN_TABLE_NAME;
 import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.NAME_OF_BACKUPED_ELEMENT;
@@ -10,13 +10,10 @@ import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ea.games.nfs13_na.R;
+import com.ea.ironmonkey.devmenu.MainActivity;
 import com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper;
 import com.ea.ironmonkey.devmenu.util.ResultListener;
 import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
@@ -26,10 +23,7 @@ import java.io.IOException;
 import java.text.CharacterIterator;
 import java.text.SimpleDateFormat;
 import java.text.StringCharacterIterator;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -38,34 +32,13 @@ import java.util.Random;
 public class LongPressContextMenu extends AlertDialog.Builder implements FileAction {
 
     private File chosenFile;
-    private ListView fileList;
     private MainActivity activity;
     private static final String LOG_TAG = "LongPressContextMenu";
 
-    private AlertDialog show = show();
-    private ReplacementDataBaseHelper dataBaseHelper = new ReplacementDataBaseHelper(activity);
-    private SQLiteDatabase writableDatabase = dataBaseHelper.getDatabase();
-    private ContentValues values = new ContentValues();
-
-    private List<File> asList(String path){
-        path = path.substring(0, path.lastIndexOf("/"));
-        List<File> list = new ArrayList<>();
-        File files = new File(path);
-        try {
-            list.addAll(Arrays.asList(files.listFiles()));
-        }catch (NullPointerException e){
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-        return list;
-    }
-
-    private void rebuildList(String path){
-
-        fileList.setAdapter(new FileAdapter(activity, asList(path)));
-
-    }
-
+    private AlertDialog show;
+    private ReplacementDataBaseHelper dataBaseHelper;
+    private SQLiteDatabase writableDatabase;
+    private ContentValues values;
 
     private File generateReplacementFile(){
         Random random = new Random();
@@ -93,31 +66,23 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
         return String.format("%.1f %cB", bytes / 1000.0, ci.current());
     }
 
-    protected LongPressContextMenu(MainActivity activity, String pathToChosenElem, ListView fileList, int selectedFileInd) {
+    public LongPressContextMenu(MainActivity activity, String pathToChosenElem) {
         super(activity);
         this.activity = activity;
         chosenFile = new File(pathToChosenElem);
-        ListView optionsView = new ListView(activity);
-        this.fileList = fileList;
+        DynamicOptionsListView optionsView = new DynamicOptionsListView(activity);
 
-        //Порядок следования строк в этом массиве влияет на обработку нажатий на текствью с ними
-        String[] optionsTitles = {
-                activity.getString(R.string.replace_file_title),     //0
-                activity.getString(R.string.recover_file_title),          //1
-                activity.getString(R.string.remove_file_title),      //2
-                activity.getString(R.string.track_file_title),   //3
-                activity.getString(R.string.file_props_title),        //4
-                activity.getString(R.string.hide_file_title) //5
-        };
+        this.dataBaseHelper = new ReplacementDataBaseHelper(activity);
+        this.writableDatabase = dataBaseHelper.getDatabase();
+        this.values = new ContentValues();
 
+        optionsView.addOption(activity.getString(R.string.replace_file_title), this::actionReplaceFile);
+        optionsView.addOption(activity.getString(R.string.recover_file_title), this::actionRecoverFile);
+        optionsView.addOption(activity.getString(R.string.remove_file_title), this::actionRemoveFile);
+        optionsView.addOption(activity.getString(R.string.track_file_title), this::actionTrackTheFile);
+        optionsView.addOption(activity.getString(R.string.file_props_title), this::actionGetPropsOfFile);
+        optionsView.addOption(activity.getString(R.string.hide_file_title), this::actionHideTheFile);
 
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                activity, 
-                android.R.layout.simple_list_item_1,  
-                optionsTitles);
-        optionsView.setAdapter(adapter);
-       
         setView(optionsView);
         setTitle(chosenFile.getName()
                 + " - " +
@@ -125,20 +90,7 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
                         activity.getString(R.string.folder_title) :
                         activity.getString(R.string.file_title)));
 
-
-        optionsView.setOnItemClickListener((parent, view, position, id) -> {
-            TextView textView = (TextView) view;
-            String chosenElem = textView.getText().toString();
-            switch (position){
-                case 0: actionReplaceFile();
-                case 1: actionRecoverFile();
-                case 2: actionDeleteFile();
-                case 3: actionTrackTheFile();
-                case 4: actionGetPropsOfFile();
-                case 5: actionHideTheFile();
-                default: Log.i(LOG_TAG, "No found action to do(");
-            }
-        });
+        this.show = show();
 
     }
 
@@ -178,7 +130,8 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
                 writableDatabase.insert(MAIN_TABLE_NAME, null, values);
 
                 writableDatabase.close();
-                rebuildList(path);
+
+                activity.updateListView();
                 show.cancel();
                 //TODO Язык!!!!
                 Toast.makeText(activity, "Заменено!", Toast.LENGTH_LONG).show();
@@ -194,21 +147,21 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
     public void actionRecoverFile() {
         String path = chosenFile.getAbsolutePath();
         UtilitiesAndData.recoverFile(path);
-        rebuildList(path);
+        activity.updateListView();
         show.cancel();
         //дщд
     }
 
     @Override
-    public void actionDeleteFile() {
+    public void actionRemoveFile() {
         AlertDialog.Builder dialog = new AlertDialog.Builder(activity);
         dialog.setTitle(activity.getString(R.string.remove_file_title));
         String message = String.format(activity.getString(R.string.sure_remove_title), chosenFile.getName());
         dialog.setMessage(message);
-        String path = chosenFile.getAbsolutePath();
+
         dialog.setPositiveButton(R.string.ok_title, (dialog1, which) -> {
             UtilitiesAndData.deleteRecursive(chosenFile);
-            rebuildList(path);
+            activity.updateListView();
         });
         dialog.setNegativeButton(R.string.cancel_title, null);
         dialog.show();

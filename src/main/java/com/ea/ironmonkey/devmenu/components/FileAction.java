@@ -1,4 +1,4 @@
-package com.ea.ironmonkey.devmenu;
+package com.ea.ironmonkey.devmenu.components;
 
 public interface FileAction {
     
@@ -6,7 +6,7 @@ public interface FileAction {
 
     void actionRecoverFile();
 
-    void actionDeleteFile();
+    void actionRemoveFile();
 
     void actionTrackTheFile();
 

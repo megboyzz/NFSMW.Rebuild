@@ -1,6 +1,7 @@
 package com.ea.ironmonkey.devmenu;
 
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.OPEN_FILE_ON_REPLACE_REQUEST;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.copy;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.generateMD5;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.isFirstRun;
 
@@ -25,6 +26,7 @@ import android.widget.TwoLineListItem;
 import com.ea.games.nfs13_na.BuildConfig;
 import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.GameActivity;
+import com.ea.ironmonkey.devmenu.components.LongPressContextMenu;
 import com.ea.ironmonkey.devmenu.util.ResultListener;
 import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 import com.ea.nimble.Utility;
@@ -34,8 +36,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -62,62 +62,189 @@ public class MainActivity extends Activity{
     private ResultListener resultListener;
     private ResultListener openResult = new ResultListener() {};
     private static Thread observerThread;
-
-    public void setResultListener(ResultListener resultListener) {
-        this.resultListener = resultListener;
-    }
-
     private String globalPath = "";
-
     private ListView fileList;
     private Button backButton;
     private static final int READ_FILE_REQUEST_CODE = 101;
 
-    // TODO Сделать номальную систему учета измения файлов
-    public static void observ(){
-        File save = new File(UtilitiesAndData.getInternalStorage() + File.separator + "files/var/nfstr_save.sb");
-        File fileOut = new File(UtilitiesAndData.getExternalStorage() + File.separator + "Log.txt");
-        File pathToSave = new File(UtilitiesAndData.getExternalStorage() + File.separator + "saves");
-        pathToSave.mkdir();
-        if(!fileOut.exists()) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        UtilitiesAndData.init(this);
+        internalFiles = UtilitiesAndData.getInternalStorage();
+        externalFiles = UtilitiesAndData.getExternalStorage();
+
+        File replacements = new File(UtilitiesAndData.getReplacementsStorage());
+        if(!replacements.exists()) replacements.mkdir();
+
+        File activityFlag = new File(externalFiles + File.separator + BuildConfig.DEV_MENU_ID);
+        // TODO доделать проверку первого запуска
+        if(isFirstRun()){
+            File data = new File(UtilitiesAndData.getExternalStorage());
+            if(!data.exists()){
+                File data1 = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + getPackageName() + "_");
+                if(data1.exists()) {
+                    String path = data1.getPath();
+                    data1.renameTo(new File(path.substring(0, path.length() - 2)));
+                    activityFlag = data1;
+                }
+            }
             try {
-                fileOut.createNewFile();
+                File temp = new File(UtilitiesAndData.getInternalStorage() + File.separator + "load");
+                temp.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault());
-        UtilitiesAndData.setLogger(fileOut);
-        observerThread = new Thread(() -> {
-            int count = 1;
-            byte[] lastMD5 = new byte[10];
-            while (true){
-                byte[] md5 = generateMD5(save);
-                if(!Arrays.equals(md5, lastMD5)) {
-                    UtilitiesAndData.printLog(format.format(new Date()) + " | " + Utility.bytesToHexString(md5) + "\n");
-                    File change = new File(pathToSave.getAbsolutePath() + File.separator + "nfs_save_change_"+ count +".sb");
-                    try {
-                        change.createNewFile();
-                        UtilitiesAndData.copy(save, change);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                lastMD5 = md5;
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                count++;
+
+        if(!activityFlag.exists()){
+            updateLanguage();
+            runGame();
+            return;
+        }
+
+        setContentView(R.layout.custom);
+
+
+        String title = String.format(getString(R.string.dev_menu_title), BuildConfig.DEV_MENU_VERSION);
+
+        getActionBar().setTitle(title);
+
+        fileList = (ListView) findViewById(R.id.FileList);
+
+        fileList.setAdapter(new FileAdapter(this, asList(externalFiles)));
+        globalPath = externalFiles;
+
+        RadioGroup group = (RadioGroup) findViewById(R.id.switcherFiles);
+
+        fileList.setOnItemClickListener((parent, view, position, id) -> {
+            String chosenElem =
+                    (view instanceof TwoLineListItem) ?
+                            ((TwoLineListItem) view).getText1().getText().toString() :
+                            ((TextView) view).getText().toString(); // получаем текст нажатого элемента
+
+            File intermid =  new File(globalPath + "/" + chosenElem);
+            if(intermid.isDirectory()) {
+                globalPath += "/" + chosenElem;
+                updateListView();
+            }
+            else{
+                openFile(intermid);
+            }
+
+        });
+
+        fileList.setOnItemLongClickListener((parent, view, position, id) -> {
+            String chosenElem =
+                    (view instanceof TwoLineListItem) ?
+                            ((TwoLineListItem) view).getText1().getText().toString() :
+                            ((TextView) view).getText().toString();
+
+
+            LongPressContextMenu ninja = new LongPressContextMenu(this, globalPath + "/" + chosenElem);
+            return true;
+        });
+
+        group.setOnCheckedChangeListener((group1, checkedId) -> {
+            globalPath = (checkedId == R.id.externalStoreButton) ? externalFiles : internalFiles;
+            updateListView();
+        });
+
+        backButton = (Button)findViewById(R.id.back_button);
+
+        backButton.setOnClickListener(v -> {
+            if(!( globalPath.equals(internalFiles) | globalPath.equals(externalFiles) )
+                    & !globalPath.isEmpty()
+                    & (new File(globalPath).exists())) {
+                globalPath = globalPath.substring(0, globalPath.lastIndexOf("/"));
+                updateListView();
             }
         });
-        observerThread.start();
+
+
+        //Настройка языка игры
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        ///preferences.set
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        backButton.callOnClick();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.options, menu);
+        return true;
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode){
+            case OPEN_FILE_ON_REPLACE_REQUEST:{
+                resultListener.onResult(data);
+            }break;
+
+            case READ_FILE_REQUEST_CODE:{
+                openResult.onResult(data);
+            }
+        }
+
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+
+            case R.id.optionRunTheGame: {
+                updateLanguage();
+                runGame();
+            }
+            break;
+
+            case R.id.optionSettings: {
+
+                Intent GoToSettings = new Intent(this, SettingsActivity.class);
+                startActivity(GoToSettings);
+
+            }
+            break;
+            case R.id.optionDeleteData: {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                builder.setTitle(getString(R.string.remove_action_title));
+                builder.setMessage(getString(R.string.sure_remove_all_data_title));
+                builder.setPositiveButton(R.string.ok_title, (dialogInterface, i) -> {
+                    File[] internals = new File(UtilitiesAndData.getInternalStorage()).listFiles();
+                    for (File internal : internals)
+                        if(!UtilitiesAndData.isExclusionName(internal.getName()))
+                            internal.delete();
+                });
+                builder.setNegativeButton(R.string.cancel_title, null);
+                builder.show();
+
+            }break;
+            case R.id.optionCheckRecovers:{
+
+                Intent GoToRecovers = new Intent(this, RecoverListActivity.class);
+                startActivity(GoToRecovers);
+
+            }break;
+
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public void openFile(File url) {
@@ -188,212 +315,62 @@ public class MainActivity extends Activity{
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch (requestCode){
-            case OPEN_FILE_ON_REPLACE_REQUEST:{
-                resultListener.onResult(data);
-            }break;
-
-            case READ_FILE_REQUEST_CODE:{
-                openResult.onResult(data);
-            }
-        }
-
-    }
-
     private void runGame() {
 
         Intent GoToGame = new Intent(this, GameActivity.class);
         startActivity(GoToGame);
 
     }
-    void copy(String from, String to) {
-        File source = new File(from);
 
-        File dest = new File(to);
-
-
-        if (!dest.exists()) {
+    // TODO Сделать номальную систему учета измения файлов
+    public static void observ(){
+        File save = new File(UtilitiesAndData.getInternalStorage() + File.separator + "files/var/nfstr_save.sb");
+        File fileOut = new File(UtilitiesAndData.getExternalStorage() + File.separator + "Log.txt");
+        File pathToSave = new File(UtilitiesAndData.getExternalStorage() + File.separator + "saves");
+        pathToSave.mkdir();
+        if(!fileOut.exists()) {
             try {
-                dest.createNewFile();
+                fileOut.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
-        InputStream is = null;
-        OutputStream os = null;
-        try {
-            is = new FileInputStream(source);
-            os = new FileOutputStream(dest);
-            //Math.max(getFileSize(source), getFileSize(dest));
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = is.read(buffer)) > 0) {
-                os.write(buffer, 0, length);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault());
+        UtilitiesAndData.setLogger(fileOut);
+        observerThread = new Thread(() -> {
+            int count = 1;
+            byte[] lastMD5 = new byte[10];
+            while (true){
+                byte[] md5 = generateMD5(save);
+                if(!Arrays.equals(md5, lastMD5)) {
+                    UtilitiesAndData.printLog(format.format(new Date()) + " | " + Utility.bytesToHexString(md5) + "\n");
+                    File change = new File(pathToSave.getAbsolutePath() + File.separator + "nfs_save_change_"+ count +".sb");
+                    try {
+                        change.createNewFile();
+                        copy(save, change);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                lastMD5 = md5;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                count++;
             }
-            is.close();
-            os.close();
-        } catch (FileNotFoundException e) {
-            Log.e(LOG_TAG, e.toString());
-            dest.delete();
-            e.printStackTrace();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, e.toString());
-            dest.delete();
-            e.printStackTrace();
-        }
+        });
+        observerThread.start();
     }
 
     private <T> List<T> asList(T[] a){
         return Arrays.asList(a);
     }
 
+    // TODO реализовать сокрытие лишних папок
     private List<File> asList(String path){
         return asList(new File(path).listFiles());
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        UtilitiesAndData.init(this);
-        UtilitiesAndData.init(this);
-        internalFiles = UtilitiesAndData.getInternalStorage();
-        externalFiles = UtilitiesAndData.getExternalStorage();
-/*
-        Проверка функционирования svmw
-        String absolutePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-
-        File save = new File(internalFiles + File.separator + "files" + File.separator + "var" + File.separator + "nfstr_save.sb");
-        File to = new File(absolutePath + File.separator + "Download" + File.separator + "lol.svmw");
-
-        SaveManager manager = new SaveManager(this);
-        manager.createBundleFile("хуйня ебана", to, save);
-
-        String description = manager.getDescriptionOf(to);
-        Toast.makeText(this, description, Toast.LENGTH_LONG).show();
-        Log.i("lol", description);
-
-        Date dateOfCreateOf = manager.getDateOfCreateOf(to);
-        Log.i("lol", dateOfCreateOf.toString());
-
-        manager.loadBundleFile(to);
-*/
-        File replacements = new File(UtilitiesAndData.getReplacementsStorage());
-        if(!replacements.exists()) replacements.mkdir();
-
-        File activityFlag = new File(externalFiles + File.separator + BuildConfig.DEV_MENU_ID);
-        // TODO доделать проверку первого запуска
-        if(isFirstRun()){
-            File data = new File(UtilitiesAndData.getExternalStorage());
-            if(!data.exists()){
-                File data1 = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + getPackageName() + "_");
-                if(data1.exists()) {
-                    String path = data1.getPath();
-                    data1.renameTo(new File(path.substring(0, path.length() - 2)));
-                    activityFlag = data1;
-                }
-            }
-            try {
-                File temp = new File(UtilitiesAndData.getInternalStorage() + File.separator + "load");
-                temp.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if(!activityFlag.exists()){
-            updateLanguage();
-            runGame();
-            return;
-        }
-
-        setContentView(R.layout.custom);
-
-
-        String title = String.format(getString(R.string.dev_menu_title), BuildConfig.DEV_MENU_VERSION);
-
-        getActionBar().setTitle(title);
-
-        fileList = (ListView) findViewById(R.id.FileList);
-
-        fileList.setAdapter(new FileAdapter(this, asList(externalFiles)));
-        globalPath = externalFiles;
-
-        RadioGroup group = (RadioGroup) findViewById(R.id.switcherFiles);
-
-        fileList.setOnItemClickListener((parent, view, position, id) -> {
-            String chosenElem =
-                    (view instanceof TwoLineListItem) ?
-                            ((TwoLineListItem) view).getText1().getText().toString() :
-                            ((TextView) view).getText().toString(); // получаем текст нажатого элемента
-
-            //String currentPath = (group.getCheckedRadioButtonId() == R.id.externalStoreButton) ? externalFiles : internalFiles;
-            File intermid =  new File(globalPath + "/" + chosenElem);
-            if(intermid.isDirectory()) {
-                globalPath += "/" + chosenElem;
-                File file = new File(globalPath);
-                fileList.setAdapter(new FileAdapter(getApplicationContext(), asList(file.listFiles())));
-            }
-            else{
-               openFile(intermid);
-            }
-
-        });
-
-        fileList.setOnItemLongClickListener((parent, view, position, id) -> {
-            String chosenElem =
-                    (view instanceof TwoLineListItem) ?
-                    ((TwoLineListItem) view).getText1().getText().toString() :
-                    ((TextView) view).getText().toString();
-
-
-            LongPressContextMenu ninja = new LongPressContextMenu(this, globalPath + "/" + chosenElem, fileList, position);
-            return true;
-        });
-
-        group.setOnCheckedChangeListener((group1, checkedId) -> {
-
-            if ((checkedId == R.id.externalStoreButton)) {
-                fileList.setAdapter(new FileAdapter(this, asList(externalFiles)));
-                globalPath = externalFiles;
-            }
-            else {
-                fileList.setAdapter(new FileAdapter(this, asList(internalFiles)));
-                globalPath = internalFiles;
-            }
-        });
-
-        backButton = (Button)findViewById(R.id.back_button);
-
-        backButton.setOnClickListener(v -> {
-            if(!( globalPath.equals(internalFiles) | globalPath.equals(externalFiles) )
-                    & !globalPath.isEmpty()
-                    & (new File(globalPath).exists())) {
-                globalPath = globalPath.substring(0, globalPath.lastIndexOf("/"));
-                fileList.setAdapter(new FileAdapter(this, asList(globalPath)));
-            }
-        });
-
-
-        //Настройка языка игры
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        ///preferences.set
-
-    }
-
-    @Override
-    public void onBackPressed() {
-        backButton.callOnClick();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.options, menu);
-        return true;
     }
 
     private void updateLanguage(){
@@ -450,51 +427,12 @@ public class MainActivity extends Activity{
 
     }
 
-
-    @SuppressLint("NonConstantResourceId")
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()) {
-
-            case R.id.optionRunTheGame: {
-                updateLanguage();
-                runGame();
-            }
-            break;
-
-            case R.id.optionSettings: {
-
-                Intent GoToSettings = new Intent(this, InjectedSettingsActivity.class);
-                startActivity(GoToSettings);
-
-            }
-            break;
-            case R.id.optionDeleteData: {
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-                builder.setTitle(getString(R.string.remove_action_title));
-                builder.setMessage(getString(R.string.sure_remove_all_data_title));
-                builder.setPositiveButton(R.string.ok_title, (dialogInterface, i) -> {
-                    File[] internals = new File(UtilitiesAndData.getInternalStorage()).listFiles();
-                    for (File internal : internals)
-                        if(!UtilitiesAndData.isExclusionName(internal.getName()))
-                            internal.delete();
-                });
-                builder.setNegativeButton(R.string.cancel_title, null);
-                builder.show();
-
-            }break;
-            case R.id.optionCheckRecovers:{
-
-                Intent GoToRecovers = new Intent(this, RecoverListActivity.class);
-                startActivity(GoToRecovers);
-
-            }break;
-
-        }
-
-        return super.onOptionsItemSelected(item);
+    public void setResultListener(ResultListener resultListener) {
+        this.resultListener = resultListener;
     }
+
+    public void updateListView(){
+        fileList.setAdapter(new FileAdapter(getApplicationContext(), asList(globalPath)));
+    }
+
 }

@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.TwoLineListItem;
 
 import com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper;
+import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 
 import java.io.File;
 import java.util.List;
@@ -44,12 +45,12 @@ class FileAdapter extends ArrayAdapter<File> {
                 PATH_TO_REPLACED_ELEMENT + " = \"" + getItem(position).getAbsolutePath() + "\""
                 , null, null, null, null);
 
-        if(query.getCount() > 0){
+        if (query.getCount() > 0) {
             TwoLineListItem listItem = (TwoLineListItem) inflater.inflate(android.R.layout.simple_list_item_2, null, true);
-            listItem.getText1().setText(name.substring(0, name.length()));
+            listItem.getText1().setText(name);
             listItem.getText2().setText("Заменен");
             view = listItem;
-        }else{
+        } else {
             TextView textView = (TextView) inflater.inflate(android.R.layout.simple_list_item_1, null, true);
             textView.setText(name);
             view = textView;
