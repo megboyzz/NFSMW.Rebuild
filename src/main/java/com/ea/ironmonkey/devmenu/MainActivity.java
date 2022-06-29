@@ -43,14 +43,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
+import lib.folderpicker.FolderPicker;
+
 //TODO сделать нормальный файл сохранения
 //TODO сделать его нрмальное отображние
 
 //TODO сделать нормальное отслеживние файлов сохранений
 //TODO сдлеать настройки отслеживания файла
-//TODO сделать отображение текущего пути в проводнике
 //TODO добавить иконки к проводику
-//TODO сделать динамическое контекстное меню файла
 
 //TODO реализовать сохранение файлов в память телефона из внутреннего хранилища
 public class MainActivity extends Activity{
@@ -68,6 +68,8 @@ public class MainActivity extends Activity{
     private TextView currentPath;
     private Button backButton;
     private static final int READ_FILE_REQUEST_CODE = 101;
+    public static final int FILE_PICKER_CODE = 3;
+    public static final int FOLDER_PICKER_CODE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +77,9 @@ public class MainActivity extends Activity{
         UtilitiesAndData.init(this);
         internalFiles = UtilitiesAndData.getInternalStorage();
         externalFiles = UtilitiesAndData.getExternalStorage();
+
+        Intent intent = new Intent(this, FolderPicker.class);
+        startActivity(intent);
 
         File replacements = new File(UtilitiesAndData.getReplacementsStorage());
         if(!replacements.exists()) replacements.mkdir();
