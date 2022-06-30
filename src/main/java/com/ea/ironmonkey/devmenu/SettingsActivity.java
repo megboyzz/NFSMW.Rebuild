@@ -1,10 +1,7 @@
 package com.ea.ironmonkey.devmenu;
 
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -12,7 +9,6 @@ import android.view.MenuItem;
 
 import com.ea.games.nfs13_na.BuildConfig;
 import com.ea.games.nfs13_na.R;
-import com.ea.ironmonkey.devmenu.dialog.OpenFileDialog;
 import com.ea.ironmonkey.devmenu.util.SaveManager;
 import com.ea.ironmonkey.devmenu.dialog.SvmwCreatorDialog;
 import com.ea.ironmonkey.devmenu.dialog.SvmwInspectorDialog;
