@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <ListPreference
         android:defaultValue="1"
         android:entries="@array/language_list"
@@ -21,11 +22,31 @@
         <Preference
             android:title="@string/create_svmw_file_title"
             android:key="@string/create_svmw_file_title"/>
+        <Preference
+            android:key="@string/title_choose_path_to_svmw"
+            android:title="@string/title_choose_path_to_svmw" />
 
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/title_tracking">
+        <SwitchPreference
+            android:id="@+id/preference3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:key="@string/title_enable_save_file_tracking"
+            android:title="@string/title_enable_save_file_tracking" />
         <Preference
-            android:title="@string/switch_off_devmenu_title"
-            android:key="@string/switch_off_devmenu_title"/>
+            android:key="@string/title_settings_save_file_track"
+            android:title="@string/title_settings_save_file_track" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/title_devmenu_status">
+        <Preference
+            android:key="@string/title_about_the_author"
+            android:title="@string/title_about_the_author" />
+        <Preference
+            android:key="@string/switch_off_devmenu_title"
+            android:title="@string/switch_off_devmenu_title" />
+    </PreferenceCategory>
 
 </PreferenceScreen>

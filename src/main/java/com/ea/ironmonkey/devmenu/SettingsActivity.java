@@ -21,6 +21,8 @@ import com.ea.nimble.ApplicationLifecycle;
 
 import java.io.File;
 
+import lib.folderpicker.FolderPicker;
+
 public class SettingsActivity extends PreferenceActivity {
 
     public static final String LOG_TAG = "SettingActivity";
@@ -30,7 +32,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final int PICK_SVMW_IN_CREATE = 228;
 
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +48,6 @@ public class SettingsActivity extends PreferenceActivity {
         Preference createSVMWfileButton = findPreference(getString(R.string.create_svmw_file_title));
         Preference turnOffTheDevMenuButton = findPreference(getString(R.string.switch_off_devmenu_title));
 
-        final Context myContext = this;
 
         turnOffTheDevMenuButton.setOnPreferenceClickListener(preference -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -60,28 +61,24 @@ public class SettingsActivity extends PreferenceActivity {
 
         chooseSaveFileButton.setOnPreferenceClickListener(preference -> {
 
-            OpenFileDialog fileDialog = new OpenFileDialog(myContext);
-            fileDialog
-                    .setFilter(".*\\.sb")
-                    .setOpenDialogListener(fileName -> {
+            Intent intent = new Intent(this, FolderPicker.class);
+            intent.putExtra("title", getString(R.string.choose_save_file_title));
+            intent.putExtra("pickFiles", true);
+            intent.putExtra("svmw", false);
 
-                        File save = new File(fileName);
-                        SaveManager manager = new SaveManager(this);
-                        manager.loadSaveFile(save);
-
-                    });
-
-            fileDialog.show();
+            startActivityForResult(intent, PICKFILE_REQUEST_CODE);
 
             return true;
         });
 
         chooseSVMWfileButton.setOnPreferenceClickListener(preference -> {
 
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("file/*");
-            startActivityForResult(intent, PICK_SVMW_REQUEST_CODE);
-            //TODO реализовать выбор svmw
+            Intent intent = new Intent(this, FolderPicker.class);
+            intent.putExtra("title", getString(R.string.choose_save_file_title));
+            intent.putExtra("pickFiles", true);
+            intent.putExtra("svmw", true);
+
+            startActivityForResult(intent, PICKFILE_REQUEST_CODE);
             return true;
         });
 
@@ -93,12 +90,8 @@ public class SettingsActivity extends PreferenceActivity {
 
             return true;
         });
-
-
-
+        
         getActionBar().setDisplayHomeAsUpEnabled(true);
-
-
     }
 
     @Override
@@ -106,20 +99,30 @@ public class SettingsActivity extends PreferenceActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(data != null) {
             switch (requestCode) {
+                //В случае если произошел файл пик
                 case PICKFILE_REQUEST_CODE: {
-                    String s = data.getData().toString();
-                    String s1 = s.replaceAll("file://", "");
-                    File file = new File(s1);
+                    //Интент имеет ключи data и svmw
+                    //data - путь к выбранному файлу
+                    //svmw - флаг отого что пришло sb или svmw
+                    if(data.hasExtra("data") && data.hasExtra("svmw")){
+                        
+                        String fileName = data.getExtras().getString("data");
+                        
+                        if(data.getExtras().getBoolean("svmw")) {
+                            File file = new File(fileName);
+                            SvmwInspectorDialog inspectorDialog = new SvmwInspectorDialog(this, file);
+                            inspectorDialog.show();
+                        }else{
+                            File save = new File(fileName);
+                            SaveManager manager = new SaveManager(this);
+                            manager.loadSaveFile(save);
+                        }
+                    }
                 }
-                    break;
                 case PICK_SVMW_REQUEST_CODE: {
                     String s = data.getData().toString();
                     String s1 = s.replaceAll("file://", "");
-                    File file = new File(s1);
-                    SvmwInspectorDialog inspectorDialog = new SvmwInspectorDialog(this, file);
-                    inspectorDialog.show();
                 }
-                    break;
             }
 
         }

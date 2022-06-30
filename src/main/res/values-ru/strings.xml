@@ -55,9 +55,9 @@
     <string name="synchronize_sys_lang_title">Язык системы</string>
     <string name="choose_lang_title">Язык игры</string>
 
-    <string name="choose_save_file_title">Выбрать nfstr_save.sb файл сохраниния</string>
-    <string name="choose_svmw_file_title">Выбрать *.svmw файл сохраниния</string>
-    <string name="create_svmw_file_title">Создать *.svmw файл сохраниния</string>
+    <string name="choose_save_file_title">Выбрать nfstr_save.sb файл сохранения</string>
+    <string name="choose_svmw_file_title">Выбрать *.svmw файл сохранения</string>
+    <string name="create_svmw_file_title">Создать *.svmw файл сохранения</string>
     <string name="switch_off_devmenu_title">Выключить DevMenu</string>
 
     <string name="ok_title">OK</string>
@@ -90,5 +90,11 @@
     <string name="title_load_svmw">Загрузить svmw</string>
     <string name="msg_devmenu_off">Уверен что хочешь выключить DevMenu? Чтобы его включить нужно будет создать пустой файл c именем DevMenu в корне кэша игры</string>
     <string name="title_current_path_format">Текущий путь: %s</string>
+    <string name="title_devmenu_status">Состояние DevMenu</string>
+    <string name="title_choose_path_to_svmw">Выбрать путь к папке с svmw</string>
+    <string name="title_about_the_author">О разработчике</string>
+    <string name="title_enable_save_file_tracking">"Вкл. отслеж. файла сохранения "</string>
+    <string name="title_settings_save_file_track">Настройки отслеж. сохранения</string>
+    <string name="title_tracking">Отслеживание</string>
 
 </resources>
