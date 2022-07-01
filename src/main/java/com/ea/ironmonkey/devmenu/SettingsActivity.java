@@ -3,9 +3,13 @@ package com.ea.ironmonkey.devmenu;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.SwitchPreference;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
 import com.ea.games.nfs13_na.BuildConfig;
 import com.ea.games.nfs13_na.R;
@@ -27,7 +31,14 @@ public class SettingsActivity extends PreferenceActivity {
     public static final int PICK_SVMW_REQUEST_CODE = 129;
     public static final int PICK_SVMW_IN_CREATE = 228;
 
+    private void findPreferenceAndSetBehavior(int stringTitleId, Preference.OnPreferenceClickListener behavior){
+        findPreference(getString(stringTitleId)).setOnPreferenceClickListener(behavior);
+    }
 
+
+    private void findSwitchPreferenceAndSetBehavior(int stringTitleId, Preference.OnPreferenceChangeListener behavior){
+        findPreference(getString(stringTitleId)).setOnPreferenceChangeListener(behavior);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,24 +50,8 @@ public class SettingsActivity extends PreferenceActivity {
         String title = String.format(getString(R.string.dev_menu_title), BuildConfig.DEV_MENU_VERSION);
         getActionBar().setTitle(title);
 
-        Preference chooseSaveFileButton = findPreference(getString(R.string.choose_save_file_title));
-        Preference chooseSVMWfileButton = findPreference(getString(R.string.choose_svmw_file_title));
-        Preference createSVMWfileButton = findPreference(getString(R.string.create_svmw_file_title));
-        Preference turnOffTheDevMenuButton = findPreference(getString(R.string.switch_off_devmenu_title));
-
-
-        turnOffTheDevMenuButton.setOnPreferenceClickListener(preference -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.switch_off_devmenu_title);
-            builder.setMessage(R.string.msg_devmenu_off);
-            builder.setPositiveButton(R.string.ok_title, (dialog, which) -> UtilitiesAndData.getDevMenuSwitcher().delete());
-            builder.setNegativeButton(R.string.cancel_title, null);
-            builder.show();
-            return true;
-        });
-
-        chooseSaveFileButton.setOnPreferenceClickListener(preference -> {
-
+        //Категория: Сохранения
+        findPreferenceAndSetBehavior(R.string.choose_save_file_title, preference -> {
             Intent intent = new Intent(this, FolderPicker.class);
             intent.putExtra("title", getString(R.string.choose_save_file_title));
             intent.putExtra("pickFiles", true);
@@ -66,9 +61,8 @@ public class SettingsActivity extends PreferenceActivity {
 
             return true;
         });
-
-        chooseSVMWfileButton.setOnPreferenceClickListener(preference -> {
-
+        findPreferenceAndSetBehavior(R.string.title_unload_save, preference -> true);
+        findPreferenceAndSetBehavior(R.string.choose_svmw_file_title, preference -> {
             Intent intent = new Intent(this, FolderPicker.class);
             intent.putExtra("title", getString(R.string.choose_save_file_title));
             intent.putExtra("pickFiles", true);
@@ -77,15 +71,31 @@ public class SettingsActivity extends PreferenceActivity {
             startActivityForResult(intent, PICKFILE_REQUEST_CODE);
             return true;
         });
-
         //По нажатии на кнопку создания svmw файла осуществляется переход в диалог создания svmw
-        createSVMWfileButton.setOnPreferenceClickListener(preference -> {
-
+        findPreferenceAndSetBehavior(R.string.create_svmw_file_title, preference -> {
             SvmwCreatorDialog dialog = new SvmwCreatorDialog(this);
             dialog.show();
 
             return true;
         });
+        findPreferenceAndSetBehavior(R.string.title_choose_path_to_svmw, preference -> true);
+
+        //Категория: Отслеживнание
+        findSwitchPreferenceAndSetBehavior(R.string.title_enable_save_file_tracking, (preference, o) -> true);
+        findPreferenceAndSetBehavior(R.string.title_settings_save_file_track, preference -> true);
+        
+        //Категория: Состояние DevMenu
+        findPreferenceAndSetBehavior(R.string.title_about_the_author, preference -> true);
+        findPreferenceAndSetBehavior(R.string.switch_off_devmenu_title, preference -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.switch_off_devmenu_title);
+            builder.setMessage(R.string.msg_devmenu_off);
+            builder.setPositiveButton(R.string.ok_title, (dialog, which) -> UtilitiesAndData.getDevMenuSwitcher().delete());
+            builder.setNegativeButton(R.string.cancel_title, null);
+            builder.show();
+            return true; 
+        });
+
         
         getActionBar().setDisplayHomeAsUpEnabled(true);
     }

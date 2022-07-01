@@ -97,5 +97,12 @@
     <string name="title_enable_save_file_tracking">Enable save file tracking</string>
     <string name="title_settings_save_file_track">Settings save file tracking</string>
     <string name="title_tracking">Tracking</string>
+    <string name="title_unload_save">Unload nfstr_save.sb into Folder</string>
+    <string name="todo" translatable="false">TODO</string>
+    <string name="title_save_in_external">Save in</string>
+    <string name="format_choose_replacement">Choose replacement to %s</string>
+    <string name="title_choose_folder">Choose folder</string>
+    <string name="title_no_one_to_recover">No one to Recover</string>
+    <string name="title_recover_all_files">Recover All</string>
 
 </resources>

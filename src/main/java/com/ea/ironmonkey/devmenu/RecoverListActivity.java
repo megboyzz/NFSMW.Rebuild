@@ -6,11 +6,16 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.ea.games.nfs13_na.R;
+import com.ea.ironmonkey.Log;
 import com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper;
 import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 
@@ -18,9 +23,12 @@ import java.util.ArrayList;
 
 public class RecoverListActivity extends Activity {
 
+    ArrayList<String> fullNames;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i("lol", "onCreate()");
 
         boolean flag = true;
 
@@ -28,13 +36,13 @@ public class RecoverListActivity extends Activity {
 
         ListView view = new ListView(this);
 
+        View result = view;
+
         SQLiteDatabase database = new ReplacementDataBaseHelper(this).getDatabase();
 
         Cursor cursor = database.rawQuery("SELECT " + ReplacementDataBaseHelper.PATH_TO_REPLACED_ELEMENT + " FROM " + ReplacementDataBaseHelper.MAIN_TABLE_NAME, null);
 
-        ArrayList<String> arrayList = new ArrayList<>();
-
-        ArrayList<String> fullNames = new ArrayList<>();
+        fullNames = new ArrayList<>();
         ArrayList<String> shortNames = new ArrayList<>();
 
         while (cursor.moveToNext()) {
@@ -44,7 +52,8 @@ public class RecoverListActivity extends Activity {
             shortNames.add(string.substring(from));
         }
         if(fullNames.isEmpty()){
-            shortNames.add("Не чего заменять!!");
+            shortNames.add("Нечего заменять!!");
+            result = getEmptyScreen();
             flag = false;
         }
         boolean thereIsSmthToRecover = flag;
@@ -83,9 +92,49 @@ public class RecoverListActivity extends Activity {
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, shortNames);
 
         view.setAdapter(adapter);
-
-        setContentView(view);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        setContentView(result);
         cursor.close();
+    }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if(!fullNames.isEmpty())
+            getMenuInflater().inflate(R.menu.recover_options, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()){
+            case R.id.recover_all:{
+                AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+                dialog.setTitle(R.string.recover_file_title);
+                dialog.setMessage(getString(R.string.title_recover_all_files) + "?");
+                dialog.setPositiveButton(R.string.ok_title, (c,v) -> {
+                    if(fullNames.isEmpty()) throw new RuntimeException("FullNames is Empty! Crash!");
+                    for(String path : fullNames)
+                        UtilitiesAndData.recoverFile(path);
+                    setContentView(getEmptyScreen());
+                });
+                dialog.setNegativeButton(R.string.cancel_title, null);
+                dialog.show();
+            }break;
+            case android.R.id.home:{
+                onBackPressed();
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private View getEmptyScreen(){
+
+        View emptyScreen = LayoutInflater
+                .from(this)
+                .inflate(R.layout.empty, null, false);
+        TextView text = (TextView) emptyScreen.findViewById(R.id.msg);
+        text.setText(R.string.title_no_one_to_recover);
+        return emptyScreen;
     }
 }

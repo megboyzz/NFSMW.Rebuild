@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <ListPreference
-        android:defaultValue="1"
+        android:defaultValue="sys"
         android:entries="@array/language_list"
         android:entryValues="@array/language_list_ids"
         android:key="@string/current_lang"
@@ -14,6 +14,10 @@
         <Preference
             android:title="@string/choose_save_file_title"
             android:key="@string/choose_save_file_title"/>
+
+        <Preference
+            android:title="@string/title_unload_save"
+            android:key="@string/title_unload_save"/>
 
         <Preference
             android:title="@string/choose_svmw_file_title"

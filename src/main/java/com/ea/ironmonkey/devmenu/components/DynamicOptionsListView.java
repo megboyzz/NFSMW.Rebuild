@@ -39,10 +39,24 @@ public class DynamicOptionsListView extends ListView {
                 ));
     }
 
+    /**
+     * Вставка опции с
+     * @param title - назавнием
+     * @param action - и поведением при нажатии
+     */
     public void addOption(String title, OptionAction action){
         names.add(title);
         actions.add(action);
         updateList();
+    }
+
+    /**
+     * Перегрузка addOption
+     * @param resId - строковый id
+     * @param action - и поведение при нажатии
+     */
+    public void addOption(int resId, OptionAction action){
+        addOption(context.getString(resId), action);
     }
 
     public void deleteOption(String title){

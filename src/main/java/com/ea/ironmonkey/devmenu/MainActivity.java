@@ -1,9 +1,11 @@
 package com.ea.ironmonkey.devmenu;
 
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.ELEMENT_SAVE_TO_EXTERNAL_CODE;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.FILE_PICKER_CODE;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.FILE_REPLACE_CODE;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.OPEN_FILE_ON_REPLACE_REQUEST;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.copy;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.copyRecursiveFolder;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.generateMD5;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.isFirstRun;
 
@@ -150,12 +152,18 @@ public class MainActivity extends Activity{
                 updateListView();
             }
         });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateListView();
+    }
 
-        //Настройка языка игры
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        ///preferences.set
-
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        updateListView();
     }
 
     @Override
@@ -167,11 +175,6 @@ public class MainActivity extends Activity{
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.options, menu);
         return true;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 
     @Override
@@ -193,6 +196,18 @@ public class MainActivity extends Activity{
                         Toast.makeText(this, "Заменено!", Toast.LENGTH_LONG).show();
                         updateListView();
                     }
+                    case ELEMENT_SAVE_TO_EXTERNAL_CODE:{
+                        if(data.hasExtra("fileToSave")) {
+                            File what = new File(data.getExtras().getString("fileToSave"));
+                            File where = new File(path + File.separator + what.getName());
+                            if (what.isDirectory()) {
+                                //TODO Реализовать коприование папок из внутреннего хранилища
+                                //copyRecursiveFolder(what, where);
+                            } else {
+                                copy(what, where);
+                            }
+                        }
+                    }
                 }
             }
         }else{
@@ -205,8 +220,6 @@ public class MainActivity extends Activity{
                 openResult.onResult(null);
             }
         }
-
-
     }
 
     @SuppressLint("NonConstantResourceId")

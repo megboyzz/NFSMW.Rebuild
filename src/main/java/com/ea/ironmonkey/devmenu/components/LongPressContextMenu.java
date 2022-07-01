@@ -1,37 +1,26 @@
 package com.ea.ironmonkey.devmenu.components;
 
-import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.MAIN_TABLE_NAME;
-import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.NAME_OF_BACKUPED_ELEMENT;
-import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.FILE_PICKER_CODE;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.ELEMENT_SAVE_TO_EXTERNAL_CODE;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.FILE_REPLACE_CODE;
-import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.OPEN_FILE_ON_REPLACE_REQUEST;
-import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.copy;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.getFileSize;
-
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.widget.Toast;
-
 import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.devmenu.MainActivity;
 import com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper;
-import com.ea.ironmonkey.devmenu.util.ResultListener;
 import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
-
 import java.io.File;
-import java.io.IOException;
 import java.text.CharacterIterator;
 import java.text.SimpleDateFormat;
 import java.text.StringCharacterIterator;
 import java.util.Date;
-import java.util.Random;
-
 import lib.folderpicker.FolderPicker;
 
 /**
  * Контекстное меню управления данными
+ * Контекстное меню файла
  */
 public class LongPressContextMenu extends AlertDialog.Builder implements FileAction {
 
@@ -66,12 +55,27 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
         this.writableDatabase = dataBaseHelper.getDatabase();
         this.values = new ContentValues();
 
-        optionsView.addOption(activity.getString(R.string.replace_file_title), this::actionReplaceFile);
-        optionsView.addOption(activity.getString(R.string.recover_file_title), this::actionRecoverFile);
-        optionsView.addOption(activity.getString(R.string.remove_file_title), this::actionRemoveFile);
-        optionsView.addOption(activity.getString(R.string.track_file_title), this::actionTrackTheFile);
-        optionsView.addOption(activity.getString(R.string.file_props_title), this::actionGetPropsOfFile);
-        optionsView.addOption(activity.getString(R.string.hide_file_title), this::actionHideTheFile);
+        if (UtilitiesAndData.isFileReplaced(pathToChosenElem))
+            optionsView.addOption(R.string.recover_file_title, this::actionRecoverFile);
+        else
+            optionsView.addOption(R.string.replace_file_title, this::actionReplaceFile);
+
+        //TODO обавить перенос папок
+        //Если файл во внутреннем хранилище и это файл то предложить
+        //пользователю сохранить его во внешнем хранилище
+        if (
+                pathToChosenElem.contains(UtilitiesAndData.getInternalStorage())
+                &
+                chosenFile.isFile()
+        )
+            optionsView.addOption(R.string.title_save_in_external, this::actionSaveFile);
+
+        //optionsView.addOption(R.string.track_file_title, this::actionTrackTheFile);
+        //optionsView.addOption(R.string.hide_file_title, this::actionHideTheFile);
+
+        //Обязательные пункты меню для каждого файла
+        optionsView.addOption(R.string.remove_file_title, this::actionRemoveFile);
+        optionsView.addOption(R.string.file_props_title, this::actionGetPropsOfFile);
 
         setView(optionsView);
         setTitle(chosenFile.getName()
@@ -87,8 +91,13 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
 
     @Override
     public void actionReplaceFile() {
+
+        String title = String.format(
+                getContext().getString(R.string.format_choose_replacement),
+                chosenFile.getName());
+
         Intent intent = new Intent(activity, FolderPicker.class);
-        intent.putExtra("title", "Выбрать файл на замену");
+        intent.putExtra("title", title);
         intent.putExtra("location", UtilitiesAndData.getExternalStorage());
         intent.putExtra("pickFiles", true);
         intent.putExtra("replace", chosenFile.getAbsolutePath());
@@ -97,6 +106,7 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
                 intent,
                 FILE_REPLACE_CODE
         );
+        show.cancel();
     }
 
     @Override
@@ -105,7 +115,6 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
         UtilitiesAndData.recoverFile(path);
         activity.updateListView();
         show.cancel();
-        //дщд
     }
 
     @Override
@@ -118,13 +127,15 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
         dialog.setPositiveButton(R.string.ok_title, (dialog1, which) -> {
             UtilitiesAndData.deleteRecursive(chosenFile);
             activity.updateListView();
+            show.cancel();
         });
         dialog.setNegativeButton(R.string.cancel_title, null);
         dialog.show();
+        show.cancel();
     }
 
     @Override
-    public void actionTrackTheFile() {}
+    public void actionTrackTheFile() {show.cancel();}
 
     @Override
     public void actionGetPropsOfFile() {
@@ -156,6 +167,20 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
 
     @Override
     public void actionHideTheFile() {
+        show.cancel();
+    }
 
+    @Override
+    public void actionSaveFile() {
+        Intent intent = new Intent(activity, FolderPicker.class);
+        intent.putExtra("title", getContext().getString(R.string.title_choose_folder));
+        intent.putExtra("pickFiles", false);
+        intent.putExtra("fileToSave", chosenFile.getAbsolutePath());
+
+        activity.startActivityForResult(
+                intent,
+                ELEMENT_SAVE_TO_EXTERNAL_CODE
+        );
+        show.cancel();
     }
 }

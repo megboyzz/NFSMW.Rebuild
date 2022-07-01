@@ -37,15 +37,22 @@ public class UtilitiesAndData {
     private static FileOutputStream stream;
     public static final int OPEN_FILE_ON_REPLACE_REQUEST = 100;
     public static final int READ_FILE_REQUEST_CODE = 101;
+
+    private static ReplacementDataBaseHelper dataBaseHelper;
+    private static SQLiteDatabase writableDatabase;
+
     private static final String LOG_TAG = "UtilitiesAndData";
 
     public static final int FILE_PICKER_CODE = 3;
     public static final int FOLDER_PICKER_CODE = 2;
 
     public static final int FILE_REPLACE_CODE = 4;
+    public static final int ELEMENT_SAVE_TO_EXTERNAL_CODE = 5;
 
     public static void init(Context context){
         UtilitiesAndData.context = context;
+        dataBaseHelper = new ReplacementDataBaseHelper(context);
+        writableDatabase = dataBaseHelper.getDatabase();
     }
 
     public static void setLogger(File file){
@@ -122,17 +129,19 @@ public class UtilitiesAndData {
         return false;
     }
 
-    private static final String[] exclusionNamesArr = {
-
-            BuildConfig.DEV_MENU_ID,
-            "replace",
-            "lib",
-            "databases"
-
-    };
-
     public static void copy(File from, File to){
         copy(from.getAbsolutePath(), to.getAbsolutePath());
+    }
+
+    public static void copyRecursiveFolder(File from, File to){
+        if(from.isFile() | to.isFile()) throw new RuntimeException("Cant copy Files as Folders(( Use just copy()");
+        //Проходимся рекурсивно по папке которую нужно скопировать
+        for (File child : from.listFiles())
+            if(child.isDirectory()) copyRecursiveFolder(child, to);
+            else {
+                File toFile = new File(to.getAbsolutePath() + File.separator + to.getName());
+                copy(child, toFile);
+            }
     }
 
     public static void copy(String from, String to) {
@@ -143,6 +152,7 @@ public class UtilitiesAndData {
 
         if (!dest.exists()) {
             try {
+                //dest.mkdirs();
                 dest.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -195,6 +205,16 @@ public class UtilitiesAndData {
         return result;
     }
 
+    private static final String[] exclusionNamesArr = {
+
+            BuildConfig.DEV_MENU_ID,
+            "replace",
+            "lib",
+            "databases",
+            "cache"
+
+    };
+
     private static final Set<String> exclusionNames = new HashSet<>(Arrays.asList(exclusionNamesArr));
 
     public static boolean isExclusionName(String name){
@@ -219,8 +239,6 @@ public class UtilitiesAndData {
      * Группа методов связанных с бд
      */
     public static void recoverFile(String path){
-        ReplacementDataBaseHelper dataBaseHelper = new ReplacementDataBaseHelper(context);
-        SQLiteDatabase writableDatabase = dataBaseHelper.getDatabase();
         Cursor query = writableDatabase.rawQuery("SELECT " + PATH_TO_REPLACED_ELEMENT + " , " + NAME_OF_BACKUPED_ELEMENT + " FROM " + MAIN_TABLE_NAME + " WHERE " + PATH_TO_REPLACED_ELEMENT + " = \"" + path + "\"", null);
         if(query.getCount() == 1) {
             query.moveToFirst();
@@ -240,13 +258,8 @@ public class UtilitiesAndData {
             writableDatabase.delete(MAIN_TABLE_NAME, PATH_TO_REPLACED_ELEMENT + " = ?", new String[]{path});
             backup.delete();
         }
-
-        query.close();
     }
     public static void replaceFile(String what, String forWhat){
-
-        ReplacementDataBaseHelper dataBaseHelper = new ReplacementDataBaseHelper(context);
-        SQLiteDatabase writableDatabase = dataBaseHelper.getDatabase();
         ContentValues values = new ContentValues();
 
         //Создание файла куда будет складывться замена
@@ -265,8 +278,11 @@ public class UtilitiesAndData {
         //Запись в бд
         writableDatabase.insert(MAIN_TABLE_NAME, null, values);
 
-        writableDatabase.close();
 
+    }
+    public static boolean isFileReplaced(String path){
+        Cursor query = writableDatabase.rawQuery("SELECT " + PATH_TO_REPLACED_ELEMENT + " , " + NAME_OF_BACKUPED_ELEMENT + " FROM " + MAIN_TABLE_NAME + " WHERE " + PATH_TO_REPLACED_ELEMENT + " = \"" + path + "\"", null);
+        return query.getCount() == 1;
     }
 
     public static byte[] generateMD5(File file){
