@@ -35,6 +35,7 @@ public class SaveManager {
         this.context = context;
     }
 
+    //TODO рефакторинг SVMW
     public File createBundleFile(String description, File fileToSave, File save) {
 
         if (fileToSave.exists()) fileToSave.delete();

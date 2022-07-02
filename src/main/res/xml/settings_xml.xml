@@ -37,7 +37,7 @@
             android:id="@+id/preference3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:key="@string/title_enable_save_file_tracking"
+            android:key="@string/enable_tracking"
             android:title="@string/title_enable_save_file_tracking" />
         <Preference
             android:key="@string/title_settings_save_file_track"

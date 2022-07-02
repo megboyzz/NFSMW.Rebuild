@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -40,12 +42,14 @@ public class SvmwCreatorDialog extends AlertDialog {
     public SvmwCreatorDialog(Activity activity) {
         super(activity);
         context = activity.getApplicationContext();
-        svmwPath = new File(UtilitiesAndData.getExternalStorage() + File.separator + "svmw");
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String path = preferences.getString(
+                context.getString(R.string.path_to_svmw_folder),
+                UtilitiesAndData.getExternalStorage() + File.separator + "svmw"
+        );
+        svmwPath = new File(path);
         svmwPath.mkdir();
         setTitle("Создание SVMW");
-        ImageButton a;
-
-        Button s;
         mainView = LayoutInflater
                 .from(context)
                 .inflate(R.layout.saves, null, false);
@@ -81,7 +85,10 @@ public class SvmwCreatorDialog extends AlertDialog {
             getOwnerActivity().startActivityForResult(intent, 228);
         });
 
-        isUseCurSaveBox.setOnCheckedChangeListener((buttonView, isChecked) -> getButton(AlertDialog.BUTTON3).setEnabled(!isChecked));
+        isUseCurSaveBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            useCurrentSave = isChecked;
+            getButton(AlertDialog.BUTTON3).setEnabled(!isChecked);
+        });
 
 
         // Если включена опция "Использовать текущее сохранение" то заюлокировтаь кнопку выбора файла сохранения
