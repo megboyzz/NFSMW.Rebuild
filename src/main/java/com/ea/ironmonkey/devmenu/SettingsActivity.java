@@ -46,14 +46,6 @@ public class SettingsActivity extends PreferenceActivity {
         String title = String.format(getString(R.string.dev_menu_title), BuildConfig.DEV_MENU_VERSION);
         getActionBar().setTitle(title);
 
-        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        //TODO переместить инициализацию всех значений по умолчанию в первый запуск
-        //Значения по умолчанию
-        editor.putString(getString(R.string.path_to_svmw_folder), UtilitiesAndData.getExternalStorage() + File.separator + "svmw");
-        editor.apply();
-
         //Категория: Сохранения
         findPreferenceAndSetBehavior(R.string.choose_save_file_title, preference -> {
             Intent intent = new Intent(this, FolderPicker.class);
@@ -119,7 +111,7 @@ public class SettingsActivity extends PreferenceActivity {
         });
         findPreferenceAndSetBehavior(R.string.title_choose_path_to_svmw, preference -> {
 
-            String location = preferences.getString(getString(R.string.path_to_svmw_folder), UtilitiesAndData.getExternalStorage());
+            String location = UtilitiesAndData.getObjectFromSharedPrefs(R.string.path_to_svmw_folder);
 
             Intent intent = new Intent(this, FolderPicker.class);
             intent.putExtra("pickFiles", false);
@@ -128,8 +120,7 @@ public class SettingsActivity extends PreferenceActivity {
             ResultHandler.addResultHandler(intent, (resultIntent) -> {
                 if(resultIntent.hasExtra("data")) {
                     String fileName = resultIntent.getExtras().getString("data");
-                    editor.putString(getString(R.string.path_to_svmw_folder), fileName);
-                    editor.commit();
+                    UtilitiesAndData.putObjectToSharedPrefs(R.string.path_to_svmw_folder, fileName);
                 }
             });
             startActivityForResult(intent, RESULT_HANDLER_REQUEST_CODE);

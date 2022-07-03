@@ -106,8 +106,8 @@
     <string name="title_recover_all_files">Recover All</string>
     <string name="enable_tracking" translatable="false">enable_tracking</string>
     <string name="path_to_svmw_folder" translatable="false">path_to_svmw_folder</string>
-    <string name="update_time_tracking" translatable="false">update_time_tracking</string>
-    <string name="path_changed_saves">path_changed_saves</string>
+    <string name="tracking_rate_ms" translatable="false">tracking_rate_ms</string>
+    <string name="path_changed_saves" translatable="false">path_changed_saves</string>
     <string name="title_replaced">Replaced!</string>
     <string name="title_recovered">Recovered!</string>
     <string name="title_unloaded">Unloaded</string>

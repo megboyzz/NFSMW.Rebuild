@@ -6,9 +6,12 @@ import static com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper.PATH_TO_R
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -28,31 +31,64 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Класс-утилита для работы с данными и прочими вещами
+ */
 public class UtilitiesAndData {
 
     private static Context context;
     private static FileOutputStream stream;
-    public static final int OPEN_FILE_ON_REPLACE_REQUEST = 100;
-    public static final int READ_FILE_REQUEST_CODE = 101;
 
     private static ReplacementDataBaseHelper dataBaseHelper;
     private static SQLiteDatabase writableDatabase;
 
     private static final String LOG_TAG = "UtilitiesAndData";
 
-    public static final int FILE_PICKER_CODE = 3;
-    public static final int FOLDER_PICKER_CODE = 2;
-
-    public static final int FILE_REPLACE_CODE = 4;
-    public static final int ELEMENT_SAVE_TO_EXTERNAL_CODE = 5;
+    private static SharedPreferences.Editor editor;
+    private static SharedPreferences preferences;
 
     public static void init(Context context){
         UtilitiesAndData.context = context;
         dataBaseHelper = new ReplacementDataBaseHelper(context);
         writableDatabase = dataBaseHelper.getDatabase();
+
+        editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+    }
+
+    public static void putObjectToSharedPrefs(String key, Object value){
+        if(value instanceof String) {
+            editor.putString(key, (String)value);
+        }else if(value instanceof Integer){
+            editor.putInt(key, (Integer)value);
+        }else if(value instanceof Boolean){
+            editor.putBoolean(key, (Boolean)value);
+        }else if(value instanceof Set){
+            editor.putStringSet(key, (Set)value);
+        }else if(value instanceof Long){
+            editor.putLong(key, (Long)value);
+        }else if(value instanceof Float){
+            editor.putFloat(key, (Float)value);
+        }
+        editor.commit();
+    }
+
+    public static void putObjectToSharedPrefs(int resStrId, Object value){
+        putObjectToSharedPrefs(context.getString(resStrId), value);
+    }
+
+    public static <T> T getObjectFromSharedPrefs(String key){
+        Map<String, ?> all = preferences.getAll();
+        return (T) all.get(key);
+    }
+
+    public static <T> T getObjectFromSharedPrefs(int resStrId){
+        return getObjectFromSharedPrefs(context.getString(resStrId));
     }
 
     public static void setLogger(File file){
@@ -97,7 +133,7 @@ public class UtilitiesAndData {
     }
 
     public static File getDevMenuSwitcher(){
-        return new File(UtilitiesAndData.getExternalStorage() + File.separator + "DevMenu");
+        return new File(UtilitiesAndData.getExternalStorage() + File.separator + BuildConfig.DEV_MENU_ID);
     }
 
     public static File getSaveFile(){
@@ -307,6 +343,9 @@ public class UtilitiesAndData {
             Log.wtf(LOG_TAG, "it does not exists!");
     }
 
+    /**
+     * Группа методов связанных с SVMW
+     */
     public static byte[] fileAsByteArray(File file){
         byte[] b = new byte[(int) file.length()];
         try {
@@ -317,7 +356,6 @@ public class UtilitiesAndData {
         }
         return b;
     }
-
     public static void saveBytesToFile(byte[] bytes, File saveTo){
         try{
             saveTo.createNewFile();
@@ -327,7 +365,6 @@ public class UtilitiesAndData {
             e.printStackTrace();
         }
     }
-
     public static int findHeaderInByteFile(byte[] byteFile, byte[] header){
         int[] pf = prefix(header);
         int index = 0;
@@ -338,7 +375,6 @@ public class UtilitiesAndData {
         }
         return -1;
     }
-
     /**
      * Префикс функция для алгоритма КМП
      */
@@ -346,13 +382,11 @@ public class UtilitiesAndData {
         int[] result = new int[s.length];
         result[0] = 0;
         int index = 0;
-
         for (int i = 1; i < s.length; i++) {
-            while (index >= 0 && s[index] != s[i]) { index--; }
+            while (index >= 0 && s[index] != s[i]) index--;
             index++;
             result[i] = index;
         }
-
         return result;
     }
 

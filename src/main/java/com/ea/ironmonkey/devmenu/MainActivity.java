@@ -1,15 +1,17 @@
 package com.ea.ironmonkey.devmenu;
 
-import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.ELEMENT_SAVE_TO_EXTERNAL_CODE;
-import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.FILE_REPLACE_CODE;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.copy;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.generateMD5;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.getDevMenuSwitcher;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.isFirstRun;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.putObjectToSharedPrefs;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -19,9 +21,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.TwoLineListItem;
-
 import com.ea.games.nfs13_na.BuildConfig;
 import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.GameActivity;
@@ -29,7 +29,6 @@ import com.ea.ironmonkey.devmenu.components.LongPressContextMenu;
 import com.ea.ironmonkey.devmenu.components.ResultHandler;
 import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 import com.ea.nimble.Utility;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -49,7 +48,6 @@ import java.util.Random;
 //TODO сдлеать настройки отслеживания файла
 //TODO добавить иконки к проводику
 
-//TODO реализовать сохранение файлов в память телефона из внутреннего хранилища
 public class MainActivity extends Activity{
 
     private final String LOG_TAG = "InjectedActivity";
@@ -62,7 +60,6 @@ public class MainActivity extends Activity{
     private String currentPathFormat;
     private TextView currentPath;
     private Button backButton;
-    private static final int READ_FILE_REQUEST_CODE = 101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,11 +68,22 @@ public class MainActivity extends Activity{
         internalFiles = UtilitiesAndData.getInternalStorage();
         externalFiles = UtilitiesAndData.getExternalStorage();
 
-        File replacements = new File(UtilitiesAndData.getReplacementsStorage());
-        if(!replacements.exists()) replacements.mkdir();
+        if (isFirstRun()) {
 
-        File activityFlag = new File(externalFiles + File.separator + BuildConfig.DEV_MENU_ID);
-        // TODO cделать проверку первого запуска
+            //Если это первый запуск то Задаем значения по умолчанию
+            putObjectToSharedPrefs(R.string.path_to_svmw_folder, externalFiles + File.separator + "svmw");
+            putObjectToSharedPrefs(R.string.path_changed_saves, externalFiles + File.separator + "saves");
+            putObjectToSharedPrefs(R.string.enable_tracking, false);
+            putObjectToSharedPrefs(R.string.tracking_rate_ms, 1000);
+
+            File replacements = new File(UtilitiesAndData.getReplacementsStorage());
+            replacements.mkdir();
+
+            Log.i(LOG_TAG, "this is first run after install!");
+        }else
+            Log.i(LOG_TAG, "this is not first run after install!");
+
+        File activityFlag = getDevMenuSwitcher();
 
         if(!activityFlag.exists()){
             updateLanguage();
@@ -173,37 +181,6 @@ public class MainActivity extends Activity{
 
         ResultHandler handler = new ResultHandler(this);
         handler.onIncomingIntent(data);
-
-        if(0 != 0)
-        if(data != null) {
-            if (data.hasExtra("data")) {
-                String path = data.getExtras().getString("data");
-                switch (requestCode) {
-
-                    case FILE_REPLACE_CODE: {
-                        if (data.hasExtra("replace")) {
-                            String replace = data.getExtras().getString("replace");
-                            UtilitiesAndData.replaceFile(replace, path);
-                        } else throw new RuntimeException(LOG_TAG + " Не на что заменять((((");
-                        //TODO Язык!!!!
-                        Toast.makeText(this, "Заменено!", Toast.LENGTH_LONG).show();
-                        updateListView();
-                    }
-                    case ELEMENT_SAVE_TO_EXTERNAL_CODE:{
-                        if(data.hasExtra("fileToSave")) {
-                            File what = new File(data.getExtras().getString("fileToSave"));
-                            File where = new File(path + File.separator + what.getName());
-                            if (what.isDirectory()) {
-                                //TODO Реализовать коприование папок из внутреннего хранилища
-                                //copyRecursiveFolder(what, where);
-                            } else {
-                                copy(what, where);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -270,7 +247,7 @@ public class MainActivity extends Activity{
             //Сохраняем ссылку на окрытый файл, в случае его изменения
             final File openedFile = url;
             File finalTempFile = tempFile;
-
+            url = tempFile;
             //Создаем хеш файла для того чтобы его потом сравнить
             final byte[] compTemp = generateMD5(finalTempFile);
 
@@ -282,7 +259,40 @@ public class MainActivity extends Activity{
                 finalTempFile.delete();
             });
 
-        }else ResultHandler.addResultHandler(intent, null);
+            //Самое главное тут - не возвращать null так как если везде будет null
+            //ResultHandler подумает что это ошибка и крашнет приложуху((
+            //                                            |
+            //                                           \|/
+            //                                      вот тут вота
+        }else ResultHandler.addResultHandler(intent, (i) -> {});
+
+        Uri uri = Uri.fromFile(url);
+
+        if (url.toString().contains(".doc") || url.toString().contains(".docx"))
+            intent.setDataAndType(uri, "application/msword");
+        else if(url.toString().contains(".pdf")) {
+            intent.setDataAndType(uri, "application/pdf");
+        } else if(url.toString().contains(".ppt") || url.toString().contains(".pptx")) {
+            intent.setDataAndType(uri, "application/vnd.ms-powerpoint");
+        } else if(url.toString().contains(".xls") || url.toString().contains(".xlsx")) {
+            intent.setDataAndType(uri, "application/vnd.ms-excel");
+        } else if(url.toString().contains(".zip") || url.toString().contains(".rar")) {
+            intent.setDataAndType(uri, "application/x-wav");
+        } else if(url.toString().contains(".rtf")) {
+            intent.setDataAndType(uri, "application/rtf");
+        } else if(url.toString().contains(".wav") || url.toString().contains(".mp3")) {
+            intent.setDataAndType(uri, "audio/x-wav");
+        } else if(url.toString().contains(".gif")) {
+            intent.setDataAndType(uri, "image/gif");
+        } else if(url.toString().contains(".jpg") || url.toString().contains(".jpeg") || url.toString().contains(".png")) {
+            intent.setDataAndType(uri, "image/jpeg");
+        } else if(url.toString().contains(".txt")) {
+            intent.setDataAndType(uri, "text/plain");
+        } else if(url.toString().contains(".3gp") || url.toString().contains(".mpg") || url.toString().contains(".mpeg") || url.toString().contains(".mpe") || url.toString().contains(".mp4") || url.toString().contains(".avi")) {
+            intent.setDataAndType(uri, "video/*");
+        } else {
+            intent.setDataAndType(uri, "*/*");
+        }
 
         startActivityForResult(intent, ResultHandler.RESULT_HANDLER_ACTION_VIEW_REQUEST_CODE);
 

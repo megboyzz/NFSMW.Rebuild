@@ -20,6 +20,7 @@ public class ResultHandler {
     private static Map<Integer, ResultAction> map = new HashMap<>();
     private static final String LOG_TAG = "ResultHandler";
     private static ResultAction actionViewResultAction;
+    private static final String INTENT_ERROR_MSG = "ResultHandler::RuntimeException can't parse incoming intent! Shutting down((";
 
     public static final int RESULT_HANDLER_REQUEST_CODE = 0;
     public static final int RESULT_HANDLER_ACTION_VIEW_REQUEST_CODE = 1;
@@ -48,18 +49,14 @@ public class ResultHandler {
                 if(resultAction != null) resultAction.action(data);
             }else{
                 Log.e(LOG_TAG, "Incoming intent haven't got ACTION_ID!!");
-                throw new RuntimeException(
-                        "ResultHandler::RuntimeException can't parse incoming intent! Shutting down(("
-                );
+                throw new RuntimeException(INTENT_ERROR_MSG);
             }
         }else{
             if(actionViewResultAction != null){
                 actionViewResultAction.action(new Intent());
             }else {
                 Log.e(LOG_TAG, "Incoming intent is null!!");
-                throw new RuntimeException(
-                        "ResultHandler::RuntimeException can't parse incoming intent! Shutting down(("
-                );
+                throw new RuntimeException(INTENT_ERROR_MSG);
             }
         }
     }

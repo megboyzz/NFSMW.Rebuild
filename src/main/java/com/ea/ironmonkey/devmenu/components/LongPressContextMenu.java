@@ -1,12 +1,13 @@
 package com.ea.ironmonkey.devmenu.components;
 
-import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.ELEMENT_SAVE_TO_EXTERNAL_CODE;
-import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.FILE_REPLACE_CODE;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.copy;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.getFileSize;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.widget.Toast;
+
 import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.devmenu.MainActivity;
 import com.ea.ironmonkey.devmenu.util.ReplacementDataBaseHelper;
@@ -60,7 +61,7 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
         else
             optionsView.addOption(R.string.replace_file_title, this::actionReplaceFile);
 
-        //TODO обавить перенос папок
+        //TODO добавить перенос папок
         //Если файл во внутреннем хранилище и это файл то предложить
         //пользователю сохранить его во внешнем хранилище
         if (
@@ -100,14 +101,17 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
         intent.putExtra("title", title);
         intent.putExtra("location", UtilitiesAndData.getExternalStorage());
         intent.putExtra("pickFiles", true);
-        intent.putExtra("replace", chosenFile.getAbsolutePath());
 
-        //ResultHandler.addResultHandler(intent, (result));
+        ResultHandler.addResultHandler(intent, (resultIntent) -> {
+            if(resultIntent.hasExtra("data")) {
+                String path = resultIntent.getExtras().getString("data");
+                UtilitiesAndData.replaceFile(chosenFile.getAbsolutePath(), path);
+                Toast.makeText(activity, R.string.title_replaced, Toast.LENGTH_LONG).show();
+            }
+            activity.updateListView();
+        });
 
-        activity.startActivityForResult(
-                intent,
-                FILE_REPLACE_CODE
-        );
+        activity.startActivityForResult(intent, ResultHandler.RESULT_HANDLER_REQUEST_CODE);
         show.cancel();
     }
 
@@ -177,12 +181,22 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
         Intent intent = new Intent(activity, FolderPicker.class);
         intent.putExtra("title", getContext().getString(R.string.title_choose_folder));
         intent.putExtra("pickFiles", false);
-        intent.putExtra("fileToSave", chosenFile.getAbsolutePath());
 
-        activity.startActivityForResult(
-                intent,
-                ELEMENT_SAVE_TO_EXTERNAL_CODE
-        );
+        ResultHandler.addResultHandler(intent, (resultIntent) -> {
+            if(resultIntent.hasExtra("data")) {
+                String path = resultIntent.getExtras().getString("data");
+                File what = chosenFile;
+                File where = new File(path + File.separator + what.getName());
+                if (what.isDirectory()) {
+                    //TODO Реализовать коприование папок из внутреннего хранилища
+                    //copyRecursiveFolder(what, where);
+                } else {
+                    copy(what, where);
+                }
+            }
+        });
+
+        activity.startActivityForResult(intent, ResultHandler.RESULT_HANDLER_REQUEST_CODE);
         show.cancel();
     }
 }

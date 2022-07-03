@@ -20,7 +20,7 @@ import java.util.Date;
 /**
  * Менедженер создания и загрузки сохранений в игру<br/>
  * Создает bundle-файлы .svmw и загружает их<br/>
- * Умеет загружать обчные .sb сохранения в игру
+ * Умеет загружать обычные .sb сохранения в игру
  */
 public class SaveManager {
 
@@ -52,7 +52,7 @@ public class SaveManager {
             bb.order(ByteOrder.LITTLE_ENDIAN);
             bb.putLong(time);
             bb.flip();
-            //bb.
+
             String curDate = dateFormat.format(new Date());
 
             fos.write(svmw_header);
