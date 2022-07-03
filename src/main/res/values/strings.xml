@@ -107,6 +107,6 @@
     <string name="enable_tracking" translatable="false">enable_tracking</string>
     <string name="path_to_svmw_folder" translatable="false">path_to_svmw_folder</string>
     <string name="update_time_tracking" translatable="false">update_time_tracking</string>
-    <string name="path_changed_saves" translatable="false">path_changed_saves</string>
+    <string name="path_changed_saves">path_changed_saves</string>
 
 </resources>

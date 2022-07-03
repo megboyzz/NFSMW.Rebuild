@@ -32,6 +32,7 @@ import com.ea.games.nfs13_na.BuildConfig;
 import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.GameActivity;
 import com.ea.ironmonkey.devmenu.components.LongPressContextMenu;
+import com.ea.ironmonkey.devmenu.components.ResultHandler;
 import com.ea.ironmonkey.devmenu.util.ResultListener;
 import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 import com.ea.nimble.Utility;
@@ -65,7 +66,7 @@ public class MainActivity extends Activity{
     private String internalFiles;
     private String externalFiles;
     private ResultListener resultListener;
-    private ResultListener openResult = new ResultListener() {};
+    private ResultListener openResult = new ResultListener.EmptyImpl();
     private static Thread observerThread;
     private String globalPath = "";
     private ListView fileList;
@@ -80,6 +81,13 @@ public class MainActivity extends Activity{
         UtilitiesAndData.init(this);
         internalFiles = UtilitiesAndData.getInternalStorage();
         externalFiles = UtilitiesAndData.getExternalStorage();
+/*
+        Intent intent = new Intent(this, FolderPicker.class);
+        ResultHandler.addResultHandler(intent, () -> {
+            Toast.makeText(this, "lol!", Toast.LENGTH_LONG).show();
+        });
+        startActivityForResult(intent, ResultHandler.RESULT_HANDLER_REQUEST_CODE);
+*/
 
         File replacements = new File(UtilitiesAndData.getReplacementsStorage());
         if(!replacements.exists()) replacements.mkdir();
@@ -180,6 +188,10 @@ public class MainActivity extends Activity{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        ResultHandler handler = new ResultHandler(this);
+        handler.onIncomingIntent(data);
+
         if(data != null) {
             if (data.hasExtra("data")) {
                 String path = data.getExtras().getString("data");
@@ -396,11 +408,7 @@ public class MainActivity extends Activity{
     private void updateLanguage(){
         //Получаем текущий язык
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String current_lang = preferences.getString(getString(R.string.current_lang), "00");
-        if(current_lang.equals("00")) {
-            Log.e(LOG_TAG, "Not found currentLang preference(");
-            return;
-        }
+        String current_lang = preferences.getString(getString(R.string.current_lang), "sys");
         if(current_lang.equals("sys"))
             current_lang = Locale.getDefault().getLanguage();
 
@@ -445,10 +453,6 @@ public class MainActivity extends Activity{
             e.printStackTrace();
         }
 
-    }
-
-    public void setResultListener(ResultListener resultListener) {
-        this.resultListener = resultListener;
     }
 
     /**

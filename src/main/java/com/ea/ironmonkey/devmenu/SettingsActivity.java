@@ -1,6 +1,7 @@
 package com.ea.ironmonkey.devmenu;
 
 import android.app.AlertDialog;
+import android.app.ApplicationErrorReport;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
 
@@ -47,8 +49,6 @@ public class SettingsActivity extends PreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.settings_xml);
-        
-        ApplicationLifecycle.onActivityCreate(savedInstanceState, this);
 
         String title = String.format(getString(R.string.dev_menu_title), BuildConfig.DEV_MENU_VERSION);
         getActionBar().setTitle(title);
@@ -176,6 +176,8 @@ public class SettingsActivity extends PreferenceActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+
         String fileName = "";
         if(data != null) {
 
