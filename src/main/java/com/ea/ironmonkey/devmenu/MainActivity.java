@@ -27,6 +27,7 @@ import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.GameActivity;
 import com.ea.ironmonkey.devmenu.components.LongPressContextMenu;
 import com.ea.ironmonkey.devmenu.components.ResultHandler;
+import com.ea.ironmonkey.devmenu.util.SaveManager;
 import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 import com.ea.nimble.Utility;
 import java.io.File;
@@ -67,7 +68,6 @@ public class MainActivity extends Activity{
         UtilitiesAndData.init(this);
         internalFiles = UtilitiesAndData.getInternalStorage();
         externalFiles = UtilitiesAndData.getExternalStorage();
-
         if (isFirstRun()) {
 
             //Если это первый запуск то Задаем значения по умолчанию

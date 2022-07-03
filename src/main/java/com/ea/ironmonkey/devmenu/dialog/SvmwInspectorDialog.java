@@ -49,6 +49,7 @@ public class SvmwInspectorDialog extends AlertDialog {
 
             setButton(context.getString(R.string.title_load_svmw), (dialog, which) -> {
                 manager.loadBundleFile(svmw);
+                Toast.makeText(context, R.string.title_replaced, Toast.LENGTH_LONG).show();
             });
             setButton2(context.getString(R.string.cancel_title), (OnClickListener) null);
 

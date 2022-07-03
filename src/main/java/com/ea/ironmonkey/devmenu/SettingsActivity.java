@@ -87,6 +87,7 @@ public class SettingsActivity extends PreferenceActivity {
             Intent intent = new Intent(this, FolderPicker.class);
             intent.putExtra("title", getString(R.string.choose_svmw_file_title));
             intent.putExtra("pickFiles", true);
+            intent.putExtra("location", (String) UtilitiesAndData.getObjectFromSharedPrefs(R.string.path_to_svmw_folder));
 
             ResultHandler.addResultHandler(intent, (resultIntent) -> {
                 if(resultIntent.hasExtra("data")) {
@@ -94,7 +95,6 @@ public class SettingsActivity extends PreferenceActivity {
                     File file = new File(fileName);
                     SvmwInspectorDialog inspectorDialog = new SvmwInspectorDialog(this, file);
                     inspectorDialog.show();
-                    Toast.makeText(this, R.string.title_replaced, Toast.LENGTH_LONG).show();
                 }
             });
 

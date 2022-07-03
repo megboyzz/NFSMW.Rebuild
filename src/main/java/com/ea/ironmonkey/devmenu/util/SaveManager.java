@@ -15,6 +15,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -28,6 +29,9 @@ public class SaveManager {
     private static final String LOG_TAG = "SaveManager";
     private static final byte[] svmw_header = "SVMW".getBytes(StandardCharsets.UTF_8);
     private static final byte[] save_header = "SBIN".getBytes(StandardCharsets.UTF_8);
+    private ByteBuffer byteBuffer;
+    private int bufferSize = 8;
+
     public static final String dateFormatStr = "dd.MM.yy:hh:mm:ss";
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatStr);
 
@@ -35,28 +39,34 @@ public class SaveManager {
         this.context = context;
     }
 
+    private Long wrap(byte[] array){
+        return ByteBuffer
+                .wrap(array)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .getLong();
+    }
+
+    private ByteBuffer putLong(Long long1){
+        return (ByteBuffer) ByteBuffer
+                .allocate(bufferSize)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putLong(long1)
+                .flip();
+    }
+
     //TODO рефакторинг SVMW
     public File createBundleFile(String description, File fileToSave, File save) {
 
-        if (fileToSave.exists()) fileToSave.delete();
-
         try {
-            fileToSave.createNewFile();
-            FileOutputStream fos = new FileOutputStream(fileToSave);
+
+            FileOutputStream fos = new FileOutputStream(fileToSave, false);
 
             Date date = new Date();
 
             Long time = date.getTime();
-
-            ByteBuffer bb = ByteBuffer.allocate(Long.SIZE);
-            bb.order(ByteOrder.LITTLE_ENDIAN);
-            bb.putLong(time);
-            bb.flip();
-
-            String curDate = dateFormat.format(new Date());
-
+            byteBuffer = putLong(time);
             fos.write(svmw_header);
-            fos.write(curDate.getBytes(StandardCharsets.UTF_8));
+            fos.write(byteBuffer.array());
             fos.write(description.getBytes(StandardCharsets.UTF_8));
             fos.write(UtilitiesAndData.fileAsByteArray(save));
         } catch (IOException e) {
@@ -95,7 +105,7 @@ public class SaveManager {
 
     public String getDescriptionOf(File svmw){
         if(isSvmwFile(svmw)){
-            int offset = svmw_header.length + dateFormatStr.length();
+            int offset = svmw_header.length + bufferSize;
             byte[] byteFile = UtilitiesAndData.fileAsByteArray(svmw);
             int headerInByteFile = UtilitiesAndData.findHeaderInByteFile(byteFile, save_header);
             return new String(byteFile, offset, headerInByteFile - offset, StandardCharsets.UTF_8);
@@ -109,13 +119,15 @@ public class SaveManager {
             int offset = svmw_header.length;
             byte[] byteFile = UtilitiesAndData.fileAsByteArray(svmw);
 
-            String s = new String(byteFile, offset, dateFormatStr.length(), StandardCharsets.UTF_8);
+            byte[] dateInBytes = new byte[bufferSize];
+            System.arraycopy(byteFile, offset, dateInBytes, 0, bufferSize);
 
-            try {
-                return dateFormat.parse(s);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            Long dateMs = wrap(dateInBytes);
+
+            Date date = new Date();
+            date.setTime(dateMs);
+
+            return date;
         }
         Log.i(LOG_TAG, "getDateOfCreateOf, this is not a svmw file((( Return null date(((");
         return null;
