@@ -102,5 +102,8 @@
     <string name="title_choose_folder">Выбери папку</string>
     <string name="title_no_one_to_recover">Нечего воостанавливать</string>
     <string name="title_recover_all_files">Вооставновить все</string>
+    <string name="title_replaced">Заменено!</string>
+    <string name="title_recovered">Воостановлено!</string>
+    <string name="title_unloaded">Выгружено!</string>
 
 </resources>

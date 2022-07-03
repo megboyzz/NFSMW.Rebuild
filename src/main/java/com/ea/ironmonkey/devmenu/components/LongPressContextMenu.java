@@ -102,6 +102,8 @@ public class LongPressContextMenu extends AlertDialog.Builder implements FileAct
         intent.putExtra("pickFiles", true);
         intent.putExtra("replace", chosenFile.getAbsolutePath());
 
+        //ResultHandler.addResultHandler(intent, (result));
+
         activity.startActivityForResult(
                 intent,
                 FILE_REPLACE_CODE

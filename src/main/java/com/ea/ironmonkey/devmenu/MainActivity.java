@@ -1,22 +1,16 @@
 package com.ea.ironmonkey.devmenu;
 
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.ELEMENT_SAVE_TO_EXTERNAL_CODE;
-import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.FILE_PICKER_CODE;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.FILE_REPLACE_CODE;
-import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.OPEN_FILE_ON_REPLACE_REQUEST;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.copy;
-import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.copyRecursiveFolder;
 import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.generateMD5;
-import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.isFirstRun;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -33,7 +27,6 @@ import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.GameActivity;
 import com.ea.ironmonkey.devmenu.components.LongPressContextMenu;
 import com.ea.ironmonkey.devmenu.components.ResultHandler;
-import com.ea.ironmonkey.devmenu.util.ResultListener;
 import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
 import com.ea.nimble.Utility;
 
@@ -49,8 +42,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-import lib.folderpicker.FolderPicker;
-
 //TODO сделать нормальный файл сохранения
 //TODO сделать его нрмальное отображние
 
@@ -65,8 +56,6 @@ public class MainActivity extends Activity{
 
     private String internalFiles;
     private String externalFiles;
-    private ResultListener resultListener;
-    private ResultListener openResult = new ResultListener.EmptyImpl();
     private static Thread observerThread;
     private String globalPath = "";
     private ListView fileList;
@@ -81,13 +70,6 @@ public class MainActivity extends Activity{
         UtilitiesAndData.init(this);
         internalFiles = UtilitiesAndData.getInternalStorage();
         externalFiles = UtilitiesAndData.getExternalStorage();
-/*
-        Intent intent = new Intent(this, FolderPicker.class);
-        ResultHandler.addResultHandler(intent, () -> {
-            Toast.makeText(this, "lol!", Toast.LENGTH_LONG).show();
-        });
-        startActivityForResult(intent, ResultHandler.RESULT_HANDLER_REQUEST_CODE);
-*/
 
         File replacements = new File(UtilitiesAndData.getReplacementsStorage());
         if(!replacements.exists()) replacements.mkdir();
@@ -192,13 +174,12 @@ public class MainActivity extends Activity{
         ResultHandler handler = new ResultHandler(this);
         handler.onIncomingIntent(data);
 
+        if(0 != 0)
         if(data != null) {
             if (data.hasExtra("data")) {
                 String path = data.getExtras().getString("data");
                 switch (requestCode) {
-                    case FILE_PICKER_CODE: {
-                        resultListener.onResult(data);
-                    }
+
                     case FILE_REPLACE_CODE: {
                         if (data.hasExtra("replace")) {
                             String replace = data.getExtras().getString("replace");
@@ -221,15 +202,6 @@ public class MainActivity extends Activity{
                         }
                     }
                 }
-            }
-        }else{
-            Log.e(LOG_TAG, "В onActivityResult пришел intent == null((((");
-
-            // Но возможно это был засранец Intent.ACTION_VIEW
-            // который возвращает intent == null
-            if(requestCode == READ_FILE_REQUEST_CODE){
-                Log.i(LOG_TAG, "Это Intent.ACTION_VIEW!");
-                openResult.onResult(null);
             }
         }
     }
@@ -282,7 +254,7 @@ public class MainActivity extends Activity{
     }
 
     public void openFile(File url) {
-        File tempFile = null;
+        File tempFile;
         Intent intent = new Intent(Intent.ACTION_VIEW);
 
         if(url.getAbsolutePath().contains(UtilitiesAndData.getInternalStorage())){
@@ -297,53 +269,22 @@ public class MainActivity extends Activity{
 
             //Сохраняем ссылку на окрытый файл, в случае его изменения
             final File openedFile = url;
-            url = tempFile;
             File finalTempFile = tempFile;
 
             //Создаем хеш файла для того чтобы его потом сравнить
             final byte[] compTemp = generateMD5(finalTempFile);
 
-            openResult = new ResultListener(){
-                @Override
-                public void onResult(Object data) {
-                    byte[] bytes = generateMD5(finalTempFile);
-                    //Если хеши не одинаковы то заменяем одно на другое
-                    if(!Arrays.equals(bytes, compTemp))
-                        copy(finalTempFile.getAbsolutePath(), openedFile.getAbsolutePath());
-                    finalTempFile.delete();
-                }
-            };
-        }
-        // Create URI
-        Uri uri = Uri.fromFile(url);
+            ResultHandler.addResultHandler(intent, (resultListener) -> {
+                byte[] bytes = generateMD5(finalTempFile);
+                //Если хеши не одинаковы то заменяем одно на другое
+                if(!Arrays.equals(bytes, compTemp))
+                    copy(finalTempFile.getAbsolutePath(), openedFile.getAbsolutePath());
+                finalTempFile.delete();
+            });
 
-        if (url.toString().contains(".doc") || url.toString().contains(".docx"))
-            intent.setDataAndType(uri, "application/msword");
-        else if(url.toString().contains(".pdf")) {
-            intent.setDataAndType(uri, "application/pdf");
-        } else if(url.toString().contains(".ppt") || url.toString().contains(".pptx")) {
-            intent.setDataAndType(uri, "application/vnd.ms-powerpoint");
-        } else if(url.toString().contains(".xls") || url.toString().contains(".xlsx")) {
-            intent.setDataAndType(uri, "application/vnd.ms-excel");
-        } else if(url.toString().contains(".zip") || url.toString().contains(".rar")) {
-            intent.setDataAndType(uri, "application/x-wav");
-        } else if(url.toString().contains(".rtf")) {
-            intent.setDataAndType(uri, "application/rtf");
-        } else if(url.toString().contains(".wav") || url.toString().contains(".mp3")) {
-            intent.setDataAndType(uri, "audio/x-wav");
-        } else if(url.toString().contains(".gif")) {
-            intent.setDataAndType(uri, "image/gif");
-        } else if(url.toString().contains(".jpg") || url.toString().contains(".jpeg") || url.toString().contains(".png")) {
-            intent.setDataAndType(uri, "image/jpeg");
-        } else if(url.toString().contains(".txt")) {
-            intent.setDataAndType(uri, "text/plain");
-        } else if(url.toString().contains(".3gp") || url.toString().contains(".mpg") || url.toString().contains(".mpeg") || url.toString().contains(".mpe") || url.toString().contains(".mp4") || url.toString().contains(".avi")) {
-            intent.setDataAndType(uri, "video/*");
-        } else {
-            intent.setDataAndType(uri, "*/*");
-        }
+        }else ResultHandler.addResultHandler(intent, null);
 
-        startActivityForResult(intent, READ_FILE_REQUEST_CODE);
+        startActivityForResult(intent, ResultHandler.RESULT_HANDLER_ACTION_VIEW_REQUEST_CODE);
 
     }
 

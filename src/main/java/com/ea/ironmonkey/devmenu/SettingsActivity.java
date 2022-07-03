@@ -1,5 +1,7 @@
 package com.ea.ironmonkey.devmenu;
 
+import static com.ea.ironmonkey.devmenu.components.ResultHandler.RESULT_HANDLER_REQUEST_CODE;
+
 import android.app.AlertDialog;
 import android.app.ApplicationErrorReport;
 import android.content.Intent;
@@ -12,10 +14,12 @@ import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ea.games.nfs13_na.BuildConfig;
 import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.devmenu.components.HyperLinkText;
+import com.ea.ironmonkey.devmenu.components.ResultHandler;
 import com.ea.ironmonkey.devmenu.util.SaveManager;
 import com.ea.ironmonkey.devmenu.dialog.SvmwCreatorDialog;
 import com.ea.ironmonkey.devmenu.dialog.SvmwInspectorDialog;
@@ -30,19 +34,8 @@ public class SettingsActivity extends PreferenceActivity {
 
     public static final String LOG_TAG = "SettingActivity";
 
-    private static final int PICKFILE_REQUEST_CODE = 128;
-    public static final int PICK_SVMW_REQUEST_CODE = 129;
-    public static final int PICK_SVMW_IN_CREATE = 228;
-    public static final int SAVE_FILE_INTO = 65;
-    public static final int PICK_FOLDER_SVMW_REQUEST_CODE = 130;
-
     private void findPreferenceAndSetBehavior(int stringTitleId, Preference.OnPreferenceClickListener behavior){
         findPreference(getString(stringTitleId)).setOnPreferenceClickListener(behavior);
-    }
-
-
-    private void findSwitchPreferenceAndSetBehavior(int stringTitleId, Preference.OnPreferenceChangeListener behavior){
-        findPreference(getString(stringTitleId)).setOnPreferenceChangeListener(behavior);
     }
 
     @Override
@@ -59,8 +52,6 @@ public class SettingsActivity extends PreferenceActivity {
         //TODO переместить инициализацию всех значений по умолчанию в первый запуск
         //Значения по умолчанию
         editor.putString(getString(R.string.path_to_svmw_folder), UtilitiesAndData.getExternalStorage() + File.separator + "svmw");
-
-
         editor.apply();
 
         //Категория: Сохранения
@@ -68,27 +59,57 @@ public class SettingsActivity extends PreferenceActivity {
             Intent intent = new Intent(this, FolderPicker.class);
             intent.putExtra("title", getString(R.string.choose_save_file_title));
             intent.putExtra("pickFiles", true);
-            intent.putExtra("svmw", false);
 
-            startActivityForResult(intent, PICKFILE_REQUEST_CODE);
+            ResultHandler.addResultHandler(intent, (resultIntent) -> {
+                if(resultIntent.hasExtra("data")) {
+                    String fileName = resultIntent.getExtras().getString("data");
+                    File save = new File(fileName);
+                    SaveManager manager = new SaveManager(this);
+                    manager.loadSaveFile(save);
+                    Toast.makeText(this, R.string.title_replaced, Toast.LENGTH_LONG).show();
+                }
+            });
 
+            startActivityForResult(intent, RESULT_HANDLER_REQUEST_CODE);
             return true;
         });
         findPreferenceAndSetBehavior(R.string.title_unload_save, preference -> {
             Intent intent = new Intent(this, FolderPicker.class);
             intent.putExtra("pickFiles", false);
-            startActivityForResult(intent, SAVE_FILE_INTO);
+
+            ResultHandler.addResultHandler(intent, (resultIntent) -> {
+                if(resultIntent.hasExtra("data")) {
+                    String fileName = resultIntent.getExtras().getString("data");
+                    File saveFile = UtilitiesAndData.getSaveFile();
+                    File to = new File(fileName + File.separator + saveFile.getName());
+                    UtilitiesAndData.copy(saveFile, to);
+                    Toast.makeText(this, R.string.title_unloaded, Toast.LENGTH_LONG).show();
+                }
+            });
+
+            startActivityForResult(intent, RESULT_HANDLER_REQUEST_CODE);
+
             return true;
         });
         findPreferenceAndSetBehavior(R.string.choose_svmw_file_title, preference -> {
             Intent intent = new Intent(this, FolderPicker.class);
-            intent.putExtra("title", getString(R.string.choose_save_file_title));
+            intent.putExtra("title", getString(R.string.choose_svmw_file_title));
             intent.putExtra("pickFiles", true);
-            intent.putExtra("svmw", true);
 
-            startActivityForResult(intent, PICKFILE_REQUEST_CODE);
+            ResultHandler.addResultHandler(intent, (resultIntent) -> {
+                if(resultIntent.hasExtra("data")) {
+                    String fileName = resultIntent.getExtras().getString("data");
+                    File file = new File(fileName);
+                    SvmwInspectorDialog inspectorDialog = new SvmwInspectorDialog(this, file);
+                    inspectorDialog.show();
+                    Toast.makeText(this, R.string.title_replaced, Toast.LENGTH_LONG).show();
+                }
+            });
+
+            startActivityForResult(intent, RESULT_HANDLER_REQUEST_CODE);
             return true;
         });
+
         //По нажатии на кнопку создания svmw файла осуществляется переход в диалог создания svmw
         findPreferenceAndSetBehavior(R.string.create_svmw_file_title, preference -> {
             SvmwCreatorDialog dialog = new SvmwCreatorDialog(this);
@@ -104,13 +125,19 @@ public class SettingsActivity extends PreferenceActivity {
             intent.putExtra("pickFiles", false);
             intent.putExtra("location", location);
 
-            startActivityForResult(intent, PICK_FOLDER_SVMW_REQUEST_CODE);
+            ResultHandler.addResultHandler(intent, (resultIntent) -> {
+                if(resultIntent.hasExtra("data")) {
+                    String fileName = resultIntent.getExtras().getString("data");
+                    editor.putString(getString(R.string.path_to_svmw_folder), fileName);
+                    editor.commit();
+                }
+            });
+            startActivityForResult(intent, RESULT_HANDLER_REQUEST_CODE);
 
             return true;
         });
 
         //Категория: Отслеживнание
-        findSwitchPreferenceAndSetBehavior(R.string.enable_tracking, (preference, o) -> true);
         findPreferenceAndSetBehavior(R.string.title_settings_save_file_track, preference -> true);
         
         //Категория: Состояние DevMenu
@@ -118,34 +145,7 @@ public class SettingsActivity extends PreferenceActivity {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
 
             HyperLinkText text =
-                    new HyperLinkText(
-                            "ЧТО НОВОГО v0.2\n" +
-                                    "\n" +
-                                    "+Обновлен проводник для выбора файлов и добавлена возможность\n" +
-                                    "выбирать папки для сохранения файлов из внутреннего хранилища(/data/data)\n" +
-                                    "\n" +
-                                    "+Код основной части отрефакторен\n" +
-                                    "\n" +
-                                    "+На Главной страннице, а именно в проводнике добавилась строка состояния\n" +
-                                    "Указывающаяя на то где по папкам мы находимся\n" +
-                                    "\n" +
-                                    "+Добавлен список всех замененных файлов с кнопкой воостановить все замененные файлы\n" +
-                                    "\n" +
-                                    "+-Реализованы bundle-файлы сохранений - *.svmw специальные файлы сохранений\n" +
-                                    "призванные упростить работу с сохранениями(Я писал о них постами ниже)\n" +
-                                    "Они хранят дату создания файла и его краткое описание\n" +
-                                    "Чтобы было проще различать файлы сохранений\n" +
-                                    "Эти файлы можно создавать как из текущего сохранения в игре так \n" +
-                                    "и из любого другого файла nfstr_save.sb \n" +
-                                    "\n" +
-                                    "+Реализована выгрузка любого файла из внутреннего хранилища(Кроме нативных библиотек(*.so) и папки lib)\n" +
-                                    "\n" +
-                                    "Добавлена кнопочка об авторе)\n" +
-                                    "\n" +
-                                    "Добавлена функция отслеживания изменения файла сохранения,\n" +
-                                    "что поможет в разборе *.sb/*.sba файлов\n" +
-                                    "\n" +
-                                    "+Реализована кнопка менб \"Удалить данные\"\n %s" ,
+                    new HyperLinkText("text %s",
                             new HyperLinkText.Container(BuildConfig.MY_VK_PAGE, "its me"));
 
             builder1.setMessage(text.getSpanned());
@@ -176,50 +176,8 @@ public class SettingsActivity extends PreferenceActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-
-        String fileName = "";
-        if(data != null) {
-
-            if(data.hasExtra("data"))
-                fileName = data.getExtras().getString("data");
-            else throw new RuntimeException("data has no data extras((");
-
-            switch (requestCode) {
-                //В случае если произошел файл пик
-                case PICKFILE_REQUEST_CODE: {
-                    //Интент имеет ключи data и svmw
-                    //data - путь к выбранному файлу
-                    //svmw - флаг отого что пришло sb или svmw
-                    if(data.hasExtra("svmw")){
-                        
-                        if(data.getExtras().getBoolean("svmw")) {
-                            File file = new File(fileName);
-                            SvmwInspectorDialog inspectorDialog = new SvmwInspectorDialog(this, file);
-                            inspectorDialog.show();
-                        }else{
-                            File save = new File(fileName);
-                            SaveManager manager = new SaveManager(this);
-                            manager.loadSaveFile(save);
-                        }
-                    }
-                }
-                case PICK_SVMW_REQUEST_CODE: {
-
-                }
-                case PICK_FOLDER_SVMW_REQUEST_CODE:{
-                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-                    editor.putString(getString(R.string.path_to_svmw_folder), fileName);
-                    editor.commit();
-                }
-                case SAVE_FILE_INTO:{
-                    File saveFile = UtilitiesAndData.getSaveFile();
-                    File to = new File(fileName + File.separator + saveFile.getName());
-                    UtilitiesAndData.copy(saveFile, to);
-                }
-            }
-
-        }
+        ResultHandler handler = new ResultHandler(this);
+        handler.onIncomingIntent(data);
     }
 
     @Override

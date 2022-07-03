@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<manifest 
+<manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:installLocation="auto" 
+    android:installLocation="auto"
     package="com.ea.games.nfs13_na">
 
     <uses-sdk android:targetSdkVersion="19"/>
