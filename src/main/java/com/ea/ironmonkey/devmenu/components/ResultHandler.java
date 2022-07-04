@@ -13,6 +13,20 @@ import java.util.Set;
 
 /**
  * Обработчик входящих Intent'ов в onActivityResult
+ * <br>
+ *
+ * <br>
+ * Работет это следующим образом:<br>
+ * Есть две Активности А и Б. Нужно из А переити в Б
+ * и вернуть результат из Б обратно А(Пример выбор папки или файла)<br><br>
+ * Для этого нужно создать интент перехода из А в Б
+ * Далее вызвать метод {@link ResultHandler#addResultHandler(Intent, ResultAction)}<br>
+ * с созданным интентом и действием по завершению работы Акстиности Б<br><br>
+ * Так же нужно не забыть произвести действия в onActivityResult(int, int, Intent)
+ * А именно Вызвать метод {@link ResultHandler#onIncomingIntent(Intent)} и передать туда входящий интент<br><br>
+ * Примечание:<br>
+ * Если Актиность Б определена как {@link Intent#ACTION_VIEW} то в onActivityResult(int, int, Intent)<br>
+ * вернется интент == null поэтому в этом классе есть {@link ResultHandler#actionViewResultAction} который предоставляет действие если это все таки был {@link Intent#ACTION_VIEW}
  */
 public class ResultHandler {
 

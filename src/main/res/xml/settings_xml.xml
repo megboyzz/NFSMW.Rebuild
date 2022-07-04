@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:custom="http://schemas.android.com/tools">
     <ListPreference
         android:defaultValue="sys"
         android:entries="@array/language_list"
@@ -28,20 +29,34 @@
             android:key="@string/create_svmw_file_title"/>
         <Preference
             android:key="@string/title_choose_path_to_svmw"
-            android:title="@string/title_choose_path_to_svmw" />
+            android:title="@string/title_choose_path_to_svmw"
+            android:summary=""/>
 
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/title_tracking">
         <SwitchPreference
+            android:key="@string/enable_tracking"
             android:id="@+id/preference3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:key="@string/enable_tracking"
             android:title="@string/title_enable_save_file_tracking" />
         <Preference
-            android:key="@string/title_settings_save_file_track"
-            android:title="@string/title_settings_save_file_track" />
+            android:key="@string/path_changed_saves"
+            android:summary=""
+            android:dependency="@string/enable_tracking"
+            android:title="@string/title_path_to_save_sb" />
+
+        <com.ea.ironmonkey.devmenu.dialog.TrackingRateBarDialogPreference
+            android:dependency="@string/enable_tracking"
+            android:defaultValue="1000"
+            android:dialogMessage="Выберите нужное значение:"
+            android:key="@string/tracking_rate_ms"
+            android:max="5000"
+            android:summary=""
+            android:title="@string/title_tracking_rate"
+            custom:min="0"
+            custom:progressTextSuffix=" ms" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/title_devmenu_status">

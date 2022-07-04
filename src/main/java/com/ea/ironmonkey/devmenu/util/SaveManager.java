@@ -32,7 +32,7 @@ public class SaveManager {
     private ByteBuffer byteBuffer;
     private int bufferSize = 8;
 
-    public static final String dateFormatStr = "dd.MM.yy:hh:mm:ss";
+    public static final String dateFormatStr = "dd.MM.yy hh:mm:ss";
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatStr);
 
     public SaveManager(Context context) {

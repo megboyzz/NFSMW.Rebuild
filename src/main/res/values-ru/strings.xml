@@ -91,7 +91,7 @@
     <string name="msg_devmenu_off">Уверен что хочешь выключить DevMenu? Чтобы его включить нужно будет создать пустой файл c именем DevMenu в корне кэша игры</string>
     <string name="title_current_path_format">Текущий путь: %s</string>
     <string name="title_devmenu_status">Состояние DevMenu</string>
-    <string name="title_choose_path_to_svmw">Выбор пути сохр. *.svmw</string>
+    <string name="title_choose_path_to_svmw">Путь сохранения *.svmw</string>
     <string name="title_about_the_author">О разработчике</string>
     <string name="title_enable_save_file_tracking">"Вкл. отслеж. файла сохранения "</string>
     <string name="title_settings_save_file_track">Настройки отслеж. сохранения</string>
@@ -105,5 +105,7 @@
     <string name="title_replaced">Заменено!</string>
     <string name="title_recovered">Воостановлено!</string>
     <string name="title_unloaded">Выгружено!</string>
+    <string name="title_tracking_rate">Скорость отслеживания</string>
+    <string name="title_path_to_save_sb">Путь для сохр. отслеж. файлов</string>
 
 </resources>

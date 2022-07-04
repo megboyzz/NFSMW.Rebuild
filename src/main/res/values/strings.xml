@@ -92,7 +92,7 @@
     <string name="msg_devmenu_off">Are you sure you want to disable DevMenu? To enable it, you will need to create an empty file called DevMenu in the root of the game cache</string>
     <string name="title_current_path_format">Current path: %s</string>
     <string name="title_devmenu_status">DevMenu status</string>
-    <string name="title_choose_path_to_svmw">Choose path to svmw</string>
+    <string name="title_choose_path_to_svmw">Path to svmw</string>
     <string name="title_about_the_author">About developer</string>
     <string name="title_enable_save_file_tracking">Enable save file tracking</string>
     <string name="title_settings_save_file_track">Settings save file tracking</string>
@@ -111,5 +111,7 @@
     <string name="title_replaced">Replaced!</string>
     <string name="title_recovered">Recovered!</string>
     <string name="title_unloaded">Unloaded</string>
+    <string name="title_tracking_rate">Tracking rate</string>
+    <string name="title_path_to_save_sb">Path to save tracked files</string>
 
 </resources>

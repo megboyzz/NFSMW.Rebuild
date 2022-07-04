@@ -1,17 +1,15 @@
 package com.ea.ironmonkey.devmenu;
 
 import static com.ea.ironmonkey.devmenu.components.ResultHandler.RESULT_HANDLER_REQUEST_CODE;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.getObjectFromSharedPrefs;
+import static com.ea.ironmonkey.devmenu.util.UtilitiesAndData.putObjectToSharedPrefs;
 
 import android.app.AlertDialog;
-import android.app.ApplicationErrorReport;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,7 +22,6 @@ import com.ea.ironmonkey.devmenu.util.SaveManager;
 import com.ea.ironmonkey.devmenu.dialog.SvmwCreatorDialog;
 import com.ea.ironmonkey.devmenu.dialog.SvmwInspectorDialog;
 import com.ea.ironmonkey.devmenu.util.UtilitiesAndData;
-import com.ea.nimble.ApplicationLifecycle;
 
 import java.io.File;
 
@@ -36,6 +33,10 @@ public class SettingsActivity extends PreferenceActivity {
 
     private void findPreferenceAndSetBehavior(int stringTitleId, Preference.OnPreferenceClickListener behavior){
         findPreference(getString(stringTitleId)).setOnPreferenceClickListener(behavior);
+    }
+
+    private void findPreferenceAndSetSummary(int stringTitleId, String summary){
+        findPreference(getString(stringTitleId)).setSummary(summary);
     }
 
     @Override
@@ -87,7 +88,7 @@ public class SettingsActivity extends PreferenceActivity {
             Intent intent = new Intent(this, FolderPicker.class);
             intent.putExtra("title", getString(R.string.choose_svmw_file_title));
             intent.putExtra("pickFiles", true);
-            intent.putExtra("location", (String) UtilitiesAndData.getObjectFromSharedPrefs(R.string.path_to_svmw_folder));
+            intent.putExtra("location", (String) getObjectFromSharedPrefs(R.string.path_to_svmw_folder));
 
             ResultHandler.addResultHandler(intent, (resultIntent) -> {
                 if(resultIntent.hasExtra("data")) {
@@ -111,7 +112,7 @@ public class SettingsActivity extends PreferenceActivity {
         });
         findPreferenceAndSetBehavior(R.string.title_choose_path_to_svmw, preference -> {
 
-            String location = UtilitiesAndData.getObjectFromSharedPrefs(R.string.path_to_svmw_folder);
+            String location = getObjectFromSharedPrefs(R.string.path_to_svmw_folder);
 
             Intent intent = new Intent(this, FolderPicker.class);
             intent.putExtra("pickFiles", false);
@@ -121,16 +122,46 @@ public class SettingsActivity extends PreferenceActivity {
                 if(resultIntent.hasExtra("data")) {
                     String fileName = resultIntent.getExtras().getString("data");
                     UtilitiesAndData.putObjectToSharedPrefs(R.string.path_to_svmw_folder, fileName);
+                    findPreferenceAndSetSummary(R.string.title_choose_path_to_svmw, fileName);
                 }
             });
             startActivityForResult(intent, RESULT_HANDLER_REQUEST_CODE);
 
             return true;
         });
+        findPreferenceAndSetSummary(R.string.title_choose_path_to_svmw, getObjectFromSharedPrefs(R.string.path_to_svmw_folder));
 
         //Категория: Отслеживнание
-        findPreferenceAndSetBehavior(R.string.title_settings_save_file_track, preference -> true);
-        
+        findPreferenceAndSetBehavior(R.string.path_changed_saves, preference -> {
+
+            Intent intent = new Intent(this, FolderPicker.class);
+            intent.putExtra("pickFiles", false);
+            intent.putExtra("location", (String)getObjectFromSharedPrefs(R.string.path_changed_saves));
+
+            ResultHandler.addResultHandler(intent, (resultIntent) -> {
+                if(resultIntent.hasExtra("data")){
+                    String data = resultIntent.getStringExtra("data");
+                    putObjectToSharedPrefs(R.string.path_changed_saves, data);
+                    findPreferenceAndSetSummary(
+                            R.string.path_changed_saves,
+                            data
+                    );
+                }
+            });
+
+            startActivityForResult(intent, RESULT_HANDLER_REQUEST_CODE);
+
+            return true;
+        });
+        findPreferenceAndSetSummary(
+                R.string.path_changed_saves,
+                getObjectFromSharedPrefs(R.string.path_changed_saves)
+        );
+        findPreferenceAndSetSummary(
+                R.string.tracking_rate_ms,
+                getObjectFromSharedPrefs(R.string.tracking_rate_ms) + " ms"
+        );
+
         //Категория: Состояние DevMenu
         findPreferenceAndSetBehavior(R.string.title_about_the_author, preference -> {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
