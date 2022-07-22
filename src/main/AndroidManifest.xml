@@ -22,24 +22,23 @@
         android:icon="@drawable/icon"
         android:label="@string/app_name" 
         android:screenOrientation="landscape">
-        
-        <activity android:name="com.ea.ironmonkey.devmenu.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
 
-        </activity>
+        <!-- Идентификатор сервера(может быть пригодится) -->
+        <meta-data
+            android:name="id"
+            android:value="1001"
+            />
 
-        <activity android:name="com.ea.ironmonkey.devmenu.PuppetActivity">
-
-        </activity>
-
-        <activity 
-            android:name="com.ea.ironmonkey.devmenu.SettingsActivity"
-            android:title="@string/settings_title">
-            
-        </activity>
+        <!-- Сервис для запуска сервера DevMenu -->
+        <service
+            android:name="com.devmenu.server.AppService"
+            android:enabled="true"
+            android:exported="true">
+            <!-- Идентификатор сервиса для сервера(может быть пригодится) -->
+            <meta-data
+                android:name="id"
+                android:value="1001"/>
+        </service>
         
         <activity 
             android:alwaysRetainTaskState="true" 
@@ -57,7 +56,6 @@
             android:configChanges="keyboardHidden|locale" 
             android:name="com.ea.ironmonkey.WebActivity" 
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"/>
-        <activity android:name="com.ea.ironmonkey.devmenu.RecoverListActivity" />
 
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/app_id"/>
         <meta-data android:name="com.ea.nimble.configuration" android:value="@string/nimble_configuration"/>
