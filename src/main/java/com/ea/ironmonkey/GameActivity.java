@@ -61,6 +61,8 @@ import java.util.Locale;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import me.michael.application.ServerKt;
+
 //TODO А тут тоже может происходить много чего интересного
 //TODO убить гугл дрм
 public class GameActivity extends Activity implements DrawFrameListener, IDeviceData, IDownloadActivity {

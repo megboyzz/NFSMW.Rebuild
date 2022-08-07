@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto"
-    package="com.ea.games.nfs13_na">
+    package="com.ea.games.nfs13_na"
+    tools:overrideLibrary="com.safframework.androidserver.converter.gson">
 
     <uses-sdk android:targetSdkVersion="19"/>
 
@@ -47,6 +48,10 @@
             android:name="com.ea.ironmonkey.GameActivity"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            <intent-filter>
+                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
             <meta-data
                 android:name="foo"
                 android:value="bar"/>

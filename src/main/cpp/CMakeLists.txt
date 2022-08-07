@@ -6,6 +6,7 @@
 
 cmake_minimum_required(VERSION 3.10.2)
 
+
 # Declares and names the project.
 
 project("nfs13_na")
@@ -16,13 +17,13 @@ project("nfs13_na")
 # Gradle automatically packages shared libraries with your APK.
 
 add_library( # Sets the name of the library.
-             gnustl_shared
+             kqueue
 
              # Sets the library as a shared library.
              SHARED
 
              # Provides a relative path to your source file(s).
-        gnustl_shared.cpp )
+        netty_kqueue_native.c )
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
@@ -42,7 +43,7 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-                        gnustl_shared
+                        kqueue
 
                        # Links the target library to the log library
                        # included in the NDK.
