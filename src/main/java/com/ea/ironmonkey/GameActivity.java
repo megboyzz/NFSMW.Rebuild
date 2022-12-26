@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,6 +33,7 @@ import android.view.ViewParent;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 
+import com.devmenu.server.UtilitiesAndData;
 import com.ea.EAIO.EAIO;
 import com.ea.EAMIO.StorageDirectory;
 import com.ea.easp.EASPHandler;
@@ -48,11 +50,14 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -60,8 +65,6 @@ import java.util.Locale;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
-import me.michael.application.ServerKt;
 
 //TODO А тут тоже может происходить много чего интересного
 //TODO убить гугл дрм
@@ -126,6 +129,97 @@ public class GameActivity extends Activity implements DrawFrameListener, IDevice
     private int splashCounter;
     private long splashDelay;
     private long splashTimer;
+
+    private float readCore(int i)
+    {
+        /*
+         * how to calculate multicore
+         * this function reads the bytes from a logging file in the android system (/proc/stat for cpu values)
+         * then puts the line into a string
+         * then spilts up each individual part into an array
+         * then(since he know which part represents what) we are able to determine each cpu total and work
+         * then combine it together to get a single float for overall cpu usage
+         */
+        try {
+            RandomAccessFile reader = new RandomAccessFile("/proc/stat", "r");
+            //skip to the line we need
+            for(int ii = 0; ii < i + 1; ++ii)
+            {
+                reader.readLine();
+            }
+            String load = reader.readLine();
+            if(load == null) return 0;
+            //cores will eventually go offline, and if it does, then it is at 0% because it is not being
+            //used. so we need to do check if the line we got contains cpu, if not, then this core = 0
+            if(load.contains("cpu"))
+            {
+                String[] toks = load.split(" ");
+
+                //we are recording the work being used by the user and system(work) and the total info
+                //of cpu stuff (total)
+                //https://stackoverflow.com/questions/3017162/how-to-get-total-cpu-usage-in-linux-c/3017438#3017438
+
+                long work1 = Long.parseLong(toks[1])+ Long.parseLong(toks[2]) + Long.parseLong(toks[3]);
+                long total1 = Long.parseLong(toks[1])+ Long.parseLong(toks[2]) + Long.parseLong(toks[3]) +
+                        Long.parseLong(toks[4]) + Long.parseLong(toks[5])
+                        + Long.parseLong(toks[6]) + Long.parseLong(toks[7]) + Long.parseLong(toks[8]);
+
+                try
+                {
+                    //short sleep time = less accurate. But android devices typically don't have more than
+                    //4 cores, and I'n my app, I run this all in a second. So, I need it a bit shorter
+                    Thread.sleep(200);
+                }
+                catch (Exception e) {}
+
+                reader.seek(0);
+                //skip to the line we need
+                for(int ii = 0; ii < i + 1; ++ii)
+                {
+                    reader.readLine();
+                }
+                load = reader.readLine();
+                //cores will eventually go offline, and if it does, then it is at 0% because it is not being
+                //used. so we need to do check if the line we got contains cpu, if not, then this core = 0%
+                if(load.contains("cpu"))
+                {
+                    reader.close();
+                    toks = load.split(" ");
+
+                    long work2 = Long.parseLong(toks[1])+ Long.parseLong(toks[2]) + Long.parseLong(toks[3]);
+                    long total2 = Long.parseLong(toks[1])+ Long.parseLong(toks[2]) + Long.parseLong(toks[3]) +
+                            Long.parseLong(toks[4]) + Long.parseLong(toks[5])
+                            + Long.parseLong(toks[6]) + Long.parseLong(toks[7]) + Long.parseLong(toks[8]);
+
+
+
+                    //here we find the change in user work and total info, and divide by one another to get our total
+                    //seems to be accurate need to test on quad core
+                    //https://stackoverflow.com/questions/3017162/how-to-get-total-cpu-usage-in-linux-c/3017438#3017438
+
+                    return (float)(work2 - work1) / ((total2 - total1));
+                }
+                else
+                {
+                    reader.close();
+                    return 0;
+                }
+
+            }
+            else
+            {
+                reader.close();
+                return 0;
+            }
+
+        }
+        catch (IOException ex)
+        {
+            ex.printStackTrace();
+        }
+
+        return 0;
+    }
 
     private void ForceHideVirtualKeyboard() {
         View currentFocus = getCurrentFocus();
@@ -462,6 +556,17 @@ public class GameActivity extends Activity implements DrawFrameListener, IDevice
     @Override
     public void onCreate(Bundle bundle) {
         Log.setEnable(true);
+
+        UtilitiesAndData.init(this);
+        File outTimberLog = new File(UtilitiesAndData.getExternalStorage() + "/log.txt");
+        try {
+            if(outTimberLog.exists()) outTimberLog.delete();
+            outTimberLog.createNewFile();
+        } catch (IOException e) {
+                e.printStackTrace();
+        }
+
+
         Log.i(TAG, "onCreate");
         Log.i(TAG, "GameActivity.state = " + state);
         super.onCreate(bundle);
@@ -533,10 +638,9 @@ public class GameActivity extends Activity implements DrawFrameListener, IDevice
             Log.w(TAG, "onDestroy ignored, lifecycle is already " + this.lifecycleNames[this.lifecycle]);
             return;
         }
+        
         setLifecycle(5);
-        if (this.googleDrm.isEnable()) {
-            this.googleDrm.destroy();
-        }
+
         this.easpHandler.onDestroy();
         if (state == 8) {
             ApplicationLifecycle.onActivityDestroy(this);
