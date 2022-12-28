@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,7 +32,7 @@ import android.view.ViewParent;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 
-import com.devmenu.server.UtilitiesAndData;
+import com.devmenu.server.util.UtilitiesAndData;
 import com.ea.EAIO.EAIO;
 import com.ea.EAMIO.StorageDirectory;
 import com.ea.easp.EASPHandler;
@@ -50,14 +49,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -333,27 +330,20 @@ public class GameActivity extends Activity implements DrawFrameListener, IDevice
         }
     }
 
-    public void ShowMessage(String message, String[] strArr, final boolean finish) {
+    //TODO Это метод причастен к выводу сообщения о битом файле сохранения(Вызывается из нативного кода)
+    public void ShowMessage(String message, String[] strArr, boolean finish) {
 
         Log.d(TAG, "ShowMessage msg = " + message + " finish = " + finish);
 
         this.mAd = new AlertDialog.Builder(this);
         this.mAd.setMessage(message);
         this.mAd.setCancelable(false);
-        this.mAd.setPositiveButton(strArr[0], new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (finish) {
-                    GameActivity.this.finish();
-                }
+        this.mAd.setPositiveButton(strArr[0], (dialogInterface, i) -> {
+            if (finish) {
+                GameActivity.this.finish();
             }
         });
-        this.handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                GameActivity.this.mAd.show();
-            }
-        }, 20);
+        this.handler.postDelayed(() -> GameActivity.this.mAd.show(), 20);
     }
 
     public float calcPerformanceScore(float f, int i, int i2, int i3) {

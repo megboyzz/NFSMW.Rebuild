@@ -1,12 +1,9 @@
 package com.devmenu.server;
 
-import android.app.Application;
 import android.app.IntentService;
 import android.app.Notification;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
@@ -14,17 +11,18 @@ import com.devmenu.server.impl.FileImpl;
 import com.devmenu.server.impl.OptionsImpl;
 import com.devmenu.server.impl.PlatformImpl;
 import com.devmenu.server.impl.ReplacementImpl;
+import com.devmenu.server.impl.SvmwImpl;
+import com.devmenu.server.util.UtilitiesAndData;
 import com.ea.games.nfs13_na.R;
 import com.ea.ironmonkey.Log;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-
 import ru.megboyzz.api.FileAPI;
 import ru.megboyzz.api.OptionsAPI;
 import ru.megboyzz.api.PlatformAPI;
 import ru.megboyzz.api.ReplacementAPI;
+import ru.megboyzz.api.SvmwAPI;
 import ru.megboyzz.application.ServerKt;
 import ru.megboyzz.factory.ApiFactory;
 
@@ -48,6 +46,10 @@ public class AppService extends IntentService {
         UtilitiesAndData.init(this);
         Context context = this.getApplicationContext();
         ApiFactory factory = new ApiFactory() {
+            @NotNull
+            @Override
+            public SvmwAPI createSvmwAPI() { return new SvmwImpl(context); }
+
             @NotNull
             @Override
             public FileAPI createFileAPI() {

@@ -1,4 +1,4 @@
-package com.devmenu.server;
+package com.devmenu.server.util;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import com.devmenu.server.util.ReplacementDataBaseHelper;
 import com.ea.games.nfs13_na.BuildConfig;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +36,9 @@ public class UtilitiesAndData {
     public static final String save_tracking_enabled_key = "save_tracking_enabled";
     public static final String save_tracking_frequency_key = "save_tracking_frequency";
     public static final String save_tracking_path_key = "save_tracking_path";
+    public static final String last_svmw_name_key = "last_svmw_name";
+    public static final String last_svmw_desc_key = "last_svmw_desc";
+    public static final String last_svmw_date_key = "last_svmw_date";
     private static FileOutputStream stream;
     private static SQLiteDatabase writableDatabase;
     private static final String[] exclusionNamesArr = {BuildConfig.DEV_MENU_ID, "replace", "lib", "databases", "cache"};
@@ -93,6 +98,10 @@ public class UtilitiesAndData {
 
     public static boolean isLoggerEnabled() {
         return stream != null;
+    }
+    
+    public static String getSVMWCacheStorage(){
+        return getInternalStorage() + "/svmw";
     }
 
     public static String getInternalStorage() {
@@ -201,6 +210,30 @@ public class UtilitiesAndData {
         return exclusionNames.contains(name);
     }
 
+    public static File generateSvmwFile(String name) {
+        if(!name.endsWith(".svmw")) name += ".svmw";
+        File original = new File(getSVMWCacheStorage() + File.separator + name);
+        try {
+            original.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return original;
+    }
+
+    public static File generateSvmwFile() {
+        Random random = new Random();
+        int index = random.nextInt();
+        String nameReplacedOriginal = "svmw_" + (index < 0 ? index * (-1) : index) + "";
+        File original = new File(getSVMWCacheStorage() + File.separator + nameReplacedOriginal);
+        try {
+            original.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return original;
+    }
+    
     public static File generateReplacementFile() {
         Random random = new Random();
         int index = random.nextInt();

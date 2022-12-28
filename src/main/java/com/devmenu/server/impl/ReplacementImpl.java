@@ -1,8 +1,8 @@
 package com.devmenu.server.impl;
 
 import android.database.Cursor;
-import com.devmenu.server.ReplacementDataBaseHelper;
-import com.devmenu.server.UtilitiesAndData;
+import com.devmenu.server.util.ReplacementDataBaseHelper;
+import com.devmenu.server.util.UtilitiesAndData;
 import entities.Replacement;
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.devmenu.server;
+package com.devmenu.server.util;
 
 import android.content.Context;
 import android.database.Cursor;
